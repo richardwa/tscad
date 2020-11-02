@@ -1,0 +1,24 @@
+{
+  "name": "jscad",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "ts": "ts-node",
+    "render": "ts-node ./render.ts",
+    "test": "ts-node ./render.ts ./src/torus.ts",
+    "server": "parcel viewer/index.html --out-dir viewer-cache --port 8000"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@jscad/core": "^0.4.0",
+    "@jscad/csg": "^0.7.0",
+    "@jscad/web": "^1.10.0",
+    "@types/node": "^14.14.6",
+    "copy-dir": "^1.3.0",
+    "parcel-bundler": "^1.12.4",
+    "ts-node": "^9.0.0",
+    "typescript": "^4.0.5"
+  }
+}
