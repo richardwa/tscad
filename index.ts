@@ -1,4 +1,4 @@
-export * from './lib/primitives';
-export * from './lib/operations';
-export * from './lib/render';
+export * from './src/primitives';
+export * from './src/operations';
+export * from './src/render';
 

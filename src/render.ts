@@ -11,14 +11,10 @@ type Props = {
 }
 
 export function render(p: Props) {
-
-
   const mesh = marchingCubes(p.resolution, p.shape, p.bounds);
   const faces = mesh.faces;
   const vertices = mesh.vertices;
-
-  const os = fs.createWriteStream(`../target/${p.name}.obj`);
-
+  const os = fs.createWriteStream(`./target/${p.name}.obj`);
 
   //write obj file
   for (const pos of vertices) {
