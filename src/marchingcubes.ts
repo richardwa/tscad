@@ -1,3 +1,5 @@
+import { GPU } from 'gpu.js';
+import * as ndarray from 'ndarray';
 /**
  * Javascript Marching Cubes
  *
@@ -7,45 +9,64 @@
  * JS port by Mikola Lysenko
  */
 type Bounds = [Vec3, Vec3];
-export default function (dims: Vec3, potential: Shape3, bounds: Bounds) {
-  if (!bounds) {
-    bounds = [[0, 0, 0], dims];
+
+function makeBuffer(dims: Vec3, potential: Shape3, scale: Vec3, shift: Vec3) {
+  // sample and buffer our function 
+  console.time('samplingSDF');
+  const sample = ndarray(new Float32Array(dims[0] * dims[1] * dims[2]), dims);
+  for (let k = 0; k <= dims[2]; ++k) {
+    for (let j = 0; j <= dims[1]; ++j) {
+      for (let i = 0; i <= dims[0]; ++i) {
+        const sp: Vec3 = [
+          scale[0] * i + shift[0],
+          scale[1] * j + shift[1],
+          scale[2] * k + shift[2]
+        ];
+        const val = potential(sp);
+        sample.set(i, j, k, val);
+      }
+    }
   }
-  var scale = [0, 0, 0];
-  var shift = [0, 0, 0];
-  for (var i = 0; i < 3; ++i) {
+  console.timeEnd('samplingSDF');
+  return sample;
+}
+
+export default function (dims: Vec3, potential: Shape3, bounds: Bounds) {
+  let scale: Vec3 = [0, 0, 0];
+  let shift: Vec3 = [0, 0, 0];
+  for (let i = 0; i < 3; ++i) {
     scale[i] = (bounds[1][i] - bounds[0][i]) / dims[i];
     shift[i] = bounds[0][i];
   }
 
+  const sample = makeBuffer(dims, potential, scale, shift);
   const vertices: Vec3[] = [];
   const faces: Vec3[] = [];
-  let n = 0
-    , grid = new Array(8)
-    , edges = new Array(12)
-    , x = [0, 0, 0];
-  //March over the volume
-  for (x[2] = 0; x[2] < dims[2] - 1; ++x[2], n += dims[0])
-    for (x[1] = 0; x[1] < dims[1] - 1; ++x[1], ++n)
-      for (x[0] = 0; x[0] < dims[0] - 1; ++x[0], ++n) {
+  const grid = new Array(8);
+  const edges = new Array(12);
+  const x = [0, 0, 0];
+
+  // March over the sample points
+  console.time('calcVertexFaces');
+  for (x[2] = 0; x[2] < dims[2] - 1; ++x[2])
+    for (x[1] = 0; x[1] < dims[1] - 1; ++x[1])
+      for (x[0] = 0; x[0] < dims[0] - 1; ++x[0]) {
+
         //For each cell, compute cube mask
-        var cube_index = 0;
-        for (var i = 0; i < 8; ++i) {
-          var v = cubeVerts[i]
-            , s = potential([
-              scale[0] * (x[0] + v[0]) + shift[0],
-              scale[1] * (x[1] + v[1]) + shift[1],
-              scale[2] * (x[2] + v[2]) + shift[2]
-            ]);
-          grid[i] = s;
-          cube_index |= (s > 0) ? 1 << i : 0;
+        let cube_index = 0;
+        for (let i = 0; i < 8; ++i) {
+          const v = cubeVerts[i];
+          const result = sample.get(x[0] + v[0], x[1] + v[1], x[2] + v[2]);
+          grid[i] = result;
+          cube_index |= (result > 0) ? 1 << i : 0;
         }
+
         //Compute vertices
-        var edge_mask = edgeTable[cube_index];
+        let edge_mask = edgeTable[cube_index];
         if (edge_mask === 0) {
           continue;
         }
-        for (var i = 0; i < 12; ++i) {
+        for (let i = 0; i < 12; ++i) {
           if ((edge_mask & (1 << i)) === 0) {
             continue;
           }
@@ -61,17 +82,18 @@ export default function (dims: Vec3, potential: Shape3, bounds: Bounds) {
           if (Math.abs(d) > 1e-6) {
             t = a / d;
           }
-          for (var j = 0; j < 3; ++j) {
+          for (let j = 0; j < 3; ++j) {
             nv[j] = scale[j] * ((x[j] + p0[j]) + t * (p1[j] - p0[j])) + shift[j];
           }
           vertices.push(nv);
         }
         //Add faces
-        var f = triTable[cube_index];
-        for (var i = 0; i < f.length; i += 3) {
+        let f = triTable[cube_index];
+        for (let i = 0; i < f.length; i += 3) {
           faces.push([edges[f[i]], edges[f[i + 1]], edges[f[i + 2]]]);
         }
       }
+  console.timeEnd('calcVertexFaces');
   return { vertices, faces };
 }
 
