@@ -1,5 +1,3 @@
-import { Shape3 } from "./primitives";
-
 /**
  * Javascript Marching Cubes
  *
@@ -8,9 +6,7 @@ import { Shape3 } from "./primitives";
  *
  * JS port by Mikola Lysenko
  */
-export type Vec3 = [number, number, number];
-export type Bounds = [Vec3, Vec3];
-
+type Bounds = [Vec3, Vec3];
 export default function (dims: Vec3, potential: Shape3, bounds: Bounds) {
   if (!bounds) {
     bounds = [[0, 0, 0], dims];
@@ -36,10 +32,11 @@ export default function (dims: Vec3, potential: Shape3, bounds: Bounds) {
         var cube_index = 0;
         for (var i = 0; i < 8; ++i) {
           var v = cubeVerts[i]
-            , s = potential(
+            , s = potential([
               scale[0] * (x[0] + v[0]) + shift[0],
               scale[1] * (x[1] + v[1]) + shift[1],
-              scale[2] * (x[2] + v[2]) + shift[2]);
+              scale[2] * (x[2] + v[2]) + shift[2]
+            ]);
           grid[i] = s;
           cube_index |= (s > 0) ? 1 << i : 0;
         }

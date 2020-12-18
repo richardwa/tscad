@@ -1,12 +1,9 @@
 {
   "compilerOptions": {
-    "typeRoots": [
-      "./types",
-      "./node_modules/@types"
-    ]
+    "declaration": true,
+    "outDir": "dist",
   },
   "include": [
-    "render.ts",
-    "src/**/*"
+    "index.ts"
   ]
 }
