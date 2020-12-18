@@ -11,7 +11,7 @@ const shape =
 render({
   name: "test",
   shape,
-  resolution: [100, 100, 100],
+  resolution: [200, 200, 200],
   bounds: [[-20, -20, -20], [30, 30, 30]]
 });
 
