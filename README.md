@@ -1,25 +1,33 @@
-# TS CAD 
-I pivoting this project a bit, i found that openjscad is changing alot and made it difficult for me to follow its code.  Instead, I will roll my own, sort of.
+# TSCAD 
+Constructive Solid Geometry (CSG) using Signed Distance Functions (SDF) and Typescript 
 
-# Goals
-* Language support / coder friendly - I want a 3D modeling tool similar to openscad, but with a full language, programming tools, IDE, etc for easy coding.  This is why typescript is my first choice.
-* Implicit Functions - The other aspect that peaked my interest is ImplicitCAD and the beauty and simplicity in its mathematics.  In my naive mind i feel write a lib with a few simple CSG functions would go along way, lets see if this pans out.
-* Viewer and STL support - this tool should refresh and update quickly on save, and reasonably export to STL.
+# Features
+* Language support / coder friendly - I want a 3D modeling tool similar to openscad, but with a full language, tools, IDE, etc for easy coding.  This is why typescript is my first choice.
 
+* Implicit Functions - The other aspect that peaked my interest is ImplicitCAD and the beauty and simplicity in its mathematics.  Haskell is an awesome language and i would recommend anyone learn it, however IDE support was still missing at the time of this writing.
+
+* Version Control - Obviously using code, has other major advantages like version control and diff's.
+
+# Nice to haves
+* GPU accerleration - would be cool if marching cubes can be done on gpu.
 
 # Setup
 * clone this repo
 * npm install
+* npm run test
+  - this will generate and obj file in target folder
 
-# run viewer - via parcel 
-* npm run server
-* open browser to the indicated port
+# render arbitrary file which exports a Shape3
+* npm run render ./filepath.ts
 
-# cli for generating stl
-* npm run render ./src/torus.ts
+# References
+* https://github.com/mikolalysenko/isosurface
+  - marching cubes function is pulled directly from here, minor changes for the typescript
+* http://paulbourke.net/geometry/polygonise/
+* https://github.com/colah/ImplicitCAD
+* https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
 
-# stack
-* parceljs for bundling
-* typescript
-* openjscad
-* preact - for customizing the viewer
+# Other refrences and/or inspirations
+* https://github.com/curv3d/curv
+* https://www.openscad.org/
+* https://openjscad.org/
