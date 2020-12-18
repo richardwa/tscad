@@ -1,3 +1,5 @@
+import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from "constants";
+
 type UnionParams = {
   radius: number;
 }
@@ -25,5 +27,15 @@ export function union(a: UnionParams | Shape3, ...s: Shape3[]): Shape3 {
   return (p) => {
     return Math.min(...shapes.map(f => f(p)));
   };
+}
+
+export function translate(translation: Vec3, s: Shape3): Shape3 {
+  return (p) => {
+    const translated: Vec3 = [0, 0, 0];
+    for (let i = 0; i < 3; i++) {
+      translated[i] = p[i] - translation[i];
+    }
+    return s(translated);
+  }
 
 }

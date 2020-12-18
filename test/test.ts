@@ -1,17 +1,19 @@
 import { Shpere, Box } from '../src/primitives';
-import { union } from '../src/operations';
+import { union, translate } from '../src/operations';
 import { render } from '../src/render';
 
 const shape =
   union(
-    Box(1.5),
-    Shpere()
+    translate([0, 0, 2], Shpere(1)),
+    Shpere(1.5)
   );
 
+console.time("render");
 render({
   name: "test",
-  resolution: [200, 200, 200],
   shape,
-  bounds: [[-3, -3, -3], [3, 3, 3]]
+  resolution: [150, 150, 150],
+  bounds: [[-3, -3, -3], [3, 3, 4]]
 });
+console.timeEnd("render");
 
