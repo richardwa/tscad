@@ -3,7 +3,7 @@
     "typeRoots": [
       "./types",
       "./node_modules/@types"
-    ],
+    ]
   },
   "include": [
     "render.ts",
