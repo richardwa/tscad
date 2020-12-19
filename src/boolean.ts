@@ -55,19 +55,3 @@ export function translate(translation: Vec3, s: Shape3): Shape3 {
   }
 }
 
-type ExtrudeParams = {
-  length: number;
-}
-export function extrude(p: ExtrudeParams | number, s: Shape2): Shape3 {
-  const h = ((typeof p === 'number') ? p : p.length) / 2;
-
-  return (p) => {
-    const d = s([p[0], p[1]]);
-    const w = Math.abs(p[2]) - h;
-
-    const outside = distance(Math.max(d, 0), Math.max(w, 0));
-    const inside = Math.min(Math.max(d, w), 0);
-    return outside + inside;
-
-  }
-}
