@@ -1,12 +1,12 @@
 import { GPU } from 'gpu.js';
 import * as ndarray from 'ndarray';
 /**
- * Javascript Marching Cubes
+ * Based on Javascript Marching Cubes - JS port by Mikola Lysenko
+ *    https://github.com/mikolalysenko/isosurface 
  *
  * Based on Paul Bourke's classic implementation:
  *    http://local.wasp.uwa.edu.au/~pbourke/geometry/polygonise/
  *
- * JS port by Mikola Lysenko
  */
 type Bounds = [Vec3, Vec3];
 

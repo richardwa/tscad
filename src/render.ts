@@ -8,13 +8,15 @@ type Props = {
   shape: Shape3;
   resolution: Vec3;
   bounds: [Vec3, Vec3];
+  outDir?: string;
 }
 
 export function render(p: Props) {
   const mesh = marchingCubes(p.resolution, p.shape, p.bounds);
   const faces = mesh.faces;
   const vertices = mesh.vertices;
-  const os = fs.createWriteStream(`./target/${p.name}.obj`);
+  const outDir = p.outDir || "./target";
+  const os = fs.createWriteStream(`${outDir}/${p.name}.obj`);
 
   //write obj file
   for (const pos of vertices) {

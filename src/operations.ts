@@ -1,7 +1,22 @@
-import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from "constants";
+import { distance } from "./math";
 
 type UnionParams = {
   radius: number;
+}
+
+function _union(s1: Shape3, s2: Shape3): Shape3 {
+  return (p) => {
+    return Math.min(s1(p), s2(p));
+  };
+}
+
+function _unionR(radius: number, s1: Shape3, s2: Shape3): Shape3 {
+  return (p) => {
+    const p1 = s1(p);
+    const p2 = s2(p);
+    const h = Math.max(radius - Math.abs(p1 - p2), 0);
+    return Math.min(p1, p2) - h * h * 0.25 / radius;
+  };
 }
 
 export function union(a: UnionParams | Shape3, ...s: Shape3[]): Shape3 {
@@ -23,19 +38,36 @@ export function union(a: UnionParams | Shape3, ...s: Shape3[]): Shape3 {
     return shapes[0];
   }
 
-  // do Union
-  return (p) => {
-    return Math.min(...shapes.map(f => f(p)));
-  };
+  const [head, ...rest] = shapes;
+  if (radius && radius > 0) {
+    return rest.reduce((a, v, i) => _unionR(radius, a, v), head);
+  } else {
+    return rest.reduce((a, v, i) => _union(a, v), head);
+  }
+
 }
 
 export function translate(translation: Vec3, s: Shape3): Shape3 {
+  const translate = (p: Vec3) =>
+    translation.map((v, i) => p[i] - v) as Vec3;
   return (p) => {
-    const translated: Vec3 = [0, 0, 0];
-    for (let i = 0; i < 3; i++) {
-      translated[i] = p[i] - translation[i];
-    }
-    return s(translated);
+    return s(translate(p));
   }
+}
 
+type ExtrudeParams = {
+  length: number;
+}
+export function extrude(p: ExtrudeParams | number, s: Shape2): Shape3 {
+  const h = ((typeof p === 'number') ? p : p.length) / 2;
+
+  return (p) => {
+    const d = s([p[0], p[1]]);
+    const w = Math.abs(p[2]) - h;
+
+    const outside = distance(Math.max(d, 0), Math.max(w, 0));
+    const inside = Math.min(Math.max(d, w), 0);
+    return outside + inside;
+
+  }
 }
