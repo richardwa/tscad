@@ -1,4 +1,4 @@
-import * as ndarray from 'ndarray';
+import { CircularLayerBuffer } from './layerbuffer';
 /**
  * Based on Javascript Marching Cubes - JS port by Mikola Lysenko
  *    https://github.com/mikolalysenko/isosurface 
@@ -10,48 +10,6 @@ import * as ndarray from 'ndarray';
 type Bounds = [Vec3, Vec3];
 
 
-/**
- * Buffers 3D data, once z limit is reached, new layers will cover over old ones
- */
-class CircularLayerBuffer {
-  buffer: Map<number, number>[];
-  current: number;
-  dims: Vec3;
-  shift: Vec3;
-  stepSize: number;
-  fn: Shape3;
-
-  constructor(dims: Vec3, stepSize: number, shift: Vec3, fn: Shape3) {
-    this.buffer = [];
-    for (let i = 0; i < dims[2]; i++) {
-      this.buffer[i] = new Map();
-    }
-    this.dims = dims;
-    this.stepSize = stepSize;
-    this.shift = shift;
-    this.fn = fn;
-  }
-  initLayer(z: number) {
-    this.buffer[z % this.dims[2]].clear();
-  }
-
-  get(x: number, y: number, z: number) {
-    const z1 = z % this.dims[2];
-    const ans = this.buffer[z1].get(x + y * this.dims[1]);
-    if (ans === undefined) {
-      const sp: Vec3 = [
-        this.stepSize * x + this.shift[0],
-        this.stepSize * y + this.shift[1],
-        this.stepSize * z + this.shift[2]
-      ];
-      const val = this.fn(sp);
-      this.buffer[z1].set(x + y * this.dims[1], val);
-      return val;
-    } else {
-      return ans;
-    }
-  }
-}
 
 // optimization, if we are really far away from an edge skip the next few in relation
 function doSkip(val: number, stepSize: number) {
@@ -63,19 +21,24 @@ function doSkip(val: number, stepSize: number) {
   }
 }
 
-
 export default function march(stepSize: number, potential: Shape3, [lower, upper]: Bounds) {
   const dims = upper.map((v, i) => Math.floor((v - lower[i]) / stepSize) + 1);
   console.log("volume size", dims);
 
   // create a buffer with 2 layers
-  const buffer = new CircularLayerBuffer([dims[0], dims[1], 2], stepSize, lower, potential);
+  const buffer = new CircularLayerBuffer([dims[0], dims[1], 2], ([x, y, z]: Vec3) => {
+    const sp: Vec3 = [
+      stepSize * x + lower[0],
+      stepSize * y + lower[1],
+      stepSize * z + lower[2]];
+    return potential(sp);
+  });
 
   const vertices: Vec3[] = [];
   const faces: Vec3[] = [];
   const grid = new Array(8);
   const edges = new Array(12);
-  const x = [0, 0, 0];
+  const x: Vec3 = [0, 0, 0];
 
   // March over the sample points
   buffer.initLayer(0);
@@ -83,7 +46,7 @@ export default function march(stepSize: number, potential: Shape3, [lower, upper
     buffer.initLayer(x[2] + 1);
     for (x[1] = 0; x[1] < dims[1] - 1; ++x[1]) {
       for (x[0] = 0; x[0] < dims[0] - 1; ++x[0]) {
-        const val = buffer.get(x[0], x[1], x[2]);
+        const val = buffer.get(x);
         const skip = doSkip(val, stepSize);
         if (skip) {
           x[0] += skip;
@@ -94,7 +57,7 @@ export default function march(stepSize: number, potential: Shape3, [lower, upper
         let cube_index = 0;
         for (let i = 0; i < 8; ++i) {
           const v = cubeVerts[i];
-          const result = buffer.get(x[0] + v[0], x[1] + v[1], x[2] + v[2]);
+          const result = buffer.get([x[0] + v[0], x[1] + v[1], x[2] + v[2]]);
           grid[i] = result;
           cube_index |= (result > 0) ? 1 << i : 0;
         }
