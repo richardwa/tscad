@@ -6,14 +6,14 @@ import march from './marchingcubes';
 type Props = {
   name: string;
   shape: Shape3;
-  resolution: Vec3;
+  stepSize: number;
   bounds: [Vec3, Vec3];
   outDir?: string;
 }
 
 export function render(p: Props) {
   console.time("render");
-  const mesh = march(p.resolution, p.shape, p.bounds);
+  const mesh = march(p.stepSize, p.shape, p.bounds);
   console.timeEnd("render");
 
   const faces = mesh.faces;

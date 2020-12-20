@@ -12,7 +12,7 @@ const shape = union(
 render({
   name: "test",
   shape,
-  resolution: [200, 200, 200],
+  stepSize: 0.4,
   bounds: [[-20, -20, -20], [21, 21, 21]]
 });
 

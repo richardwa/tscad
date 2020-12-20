@@ -17,13 +17,13 @@ class CircularLayerBuffer {
   buffer: ndarray<number>;
   current: number;
   dims: Vec3;
-  scale: Vec3;
   shift: Vec3;
+  stepSize: number;
 
-  constructor(dims: Vec3, scale: Vec3, shift: Vec3) {
+  constructor(dims: Vec3, stepSize: number, shift: Vec3) {
     this.buffer = ndarray(new Float32Array(dims[0] * dims[1] * dims[2]), dims);
     this.dims = dims;
-    this.scale = scale;
+    this.stepSize = stepSize;
     this.shift = shift;
   }
 
@@ -31,9 +31,9 @@ class CircularLayerBuffer {
     for (let j = 0; j <= this.dims[1]; ++j) {
       for (let i = 0; i <= this.dims[0]; ++i) {
         const sp: Vec3 = [
-          this.scale[0] * i + this.shift[0],
-          this.scale[1] * j + this.shift[1],
-          this.scale[2] * k + this.shift[2]
+          this.stepSize * i + this.shift[0],
+          this.stepSize * j + this.shift[1],
+          this.stepSize * k + this.shift[2]
         ];
         const val = fn(sp);
         this.buffer.set(i, j, k % this.dims[2], val);
@@ -45,16 +45,12 @@ class CircularLayerBuffer {
   }
 }
 
-export default function march(dims: Vec3, potential: Shape3, bounds: Bounds) {
-  let scale: Vec3 = [0, 0, 0];
-  let shift: Vec3 = [0, 0, 0];
-  for (let i = 0; i < 3; ++i) {
-    scale[i] = (bounds[1][i] - bounds[0][i]) / dims[i];
-    shift[i] = bounds[0][i];
-  }
+export default function march(stepSize: number, potential: Shape3, [lower, upper]: Bounds) {
+  const dims = upper.map((v, i) => Math.floor((v - lower[i]) / stepSize) + 1);
+  console.log("volume size", dims);
 
   // create a buffer with 2 layers
-  const buffer = new CircularLayerBuffer([dims[0], dims[1], 2], scale, shift);
+  const buffer = new CircularLayerBuffer([dims[0], dims[1], 2], stepSize, lower);
 
   const vertices: Vec3[] = [];
   const faces: Vec3[] = [];
@@ -100,7 +96,7 @@ export default function march(dims: Vec3, potential: Shape3, bounds: Bounds) {
             t = a / d;
           }
           for (let j = 0; j < 3; ++j) {
-            nv[j] = scale[j] * ((x[j] + p0[j]) + t * (p1[j] - p0[j])) + shift[j];
+            nv[j] = stepSize * ((x[j] + p0[j]) + t * (p1[j] - p0[j])) + lower[j];
           }
           vertices.push(nv);
         }
