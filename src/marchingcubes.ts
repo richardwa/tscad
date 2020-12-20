@@ -14,43 +14,62 @@ type Bounds = [Vec3, Vec3];
  * Buffers 3D data, once z limit is reached, new layers will cover over old ones
  */
 class CircularLayerBuffer {
-  buffer: ndarray<number>;
+  buffer: Map<number, number>[];
   current: number;
   dims: Vec3;
   shift: Vec3;
   stepSize: number;
+  fn: Shape3;
 
-  constructor(dims: Vec3, stepSize: number, shift: Vec3) {
-    this.buffer = ndarray(new Float32Array(dims[0] * dims[1] * dims[2]), dims);
+  constructor(dims: Vec3, stepSize: number, shift: Vec3, fn: Shape3) {
+    this.buffer = [];
+    for (let i = 0; i < dims[2]; i++) {
+      this.buffer[i] = new Map();
+    }
     this.dims = dims;
     this.stepSize = stepSize;
     this.shift = shift;
+    this.fn = fn;
+  }
+  initLayer(z: number) {
+    this.buffer[z % this.dims[2]].clear();
   }
 
-  fillLayer(k: number, fn: Shape3) {
-    for (let j = 0; j <= this.dims[1]; ++j) {
-      for (let i = 0; i <= this.dims[0]; ++i) {
-        const sp: Vec3 = [
-          this.stepSize * i + this.shift[0],
-          this.stepSize * j + this.shift[1],
-          this.stepSize * k + this.shift[2]
-        ];
-        const val = fn(sp);
-        this.buffer.set(i, j, k % this.dims[2], val);
-      }
+  get(x: number, y: number, z: number) {
+    const z1 = z % this.dims[2];
+    const ans = this.buffer[z1].get(x + y * this.dims[1]);
+    if (ans === undefined) {
+      const sp: Vec3 = [
+        this.stepSize * x + this.shift[0],
+        this.stepSize * y + this.shift[1],
+        this.stepSize * z + this.shift[2]
+      ];
+      const val = this.fn(sp);
+      this.buffer[z1].set(x + y * this.dims[1], val);
+      return val;
+    } else {
+      return ans;
     }
   }
-  get(x: number, y: number, z: number) {
-    return this.buffer.get(x, y, z % this.dims[2]);
+}
+
+// optimization, if we are really far away from an edge skip the next few in relation
+function doSkip(val: number, stepSize: number) {
+  const skip = Math.floor(Math.abs(val / stepSize) * 0.9) - 2;
+  if (skip > 5) {
+    return skip;
+  } else {
+    return 0;
   }
 }
+
 
 export default function march(stepSize: number, potential: Shape3, [lower, upper]: Bounds) {
   const dims = upper.map((v, i) => Math.floor((v - lower[i]) / stepSize) + 1);
   console.log("volume size", dims);
 
   // create a buffer with 2 layers
-  const buffer = new CircularLayerBuffer([dims[0], dims[1], 2], stepSize, lower);
+  const buffer = new CircularLayerBuffer([dims[0], dims[1], 2], stepSize, lower, potential);
 
   const vertices: Vec3[] = [];
   const faces: Vec3[] = [];
@@ -59,11 +78,17 @@ export default function march(stepSize: number, potential: Shape3, [lower, upper
   const x = [0, 0, 0];
 
   // March over the sample points
-  buffer.fillLayer(0, potential);
+  buffer.initLayer(0);
   for (x[2] = 0; x[2] < dims[2] - 1; ++x[2]) {
-    buffer.fillLayer(x[2] + 1, potential); // need to buffer one layer on top
+    buffer.initLayer(x[2] + 1);
     for (x[1] = 0; x[1] < dims[1] - 1; ++x[1]) {
       for (x[0] = 0; x[0] < dims[0] - 1; ++x[0]) {
+        const val = buffer.get(x[0], x[1], x[2]);
+        const skip = doSkip(val, stepSize);
+        if (skip) {
+          x[0] += skip;
+          continue;
+        }
 
         //For each cell, compute cube mask
         let cube_index = 0;
