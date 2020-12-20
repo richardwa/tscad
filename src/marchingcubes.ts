@@ -10,25 +10,39 @@ import * as ndarray from 'ndarray';
  */
 type Bounds = [Vec3, Vec3];
 
-function makeBuffer(dims: Vec3, potential: Shape3, scale: Vec3, shift: Vec3) {
-  // sample and buffer our function 
-  console.time('samplingSDF');
-  const sample = ndarray(new Float32Array(dims[0] * dims[1] * dims[2]), dims);
-  for (let k = 0; k <= dims[2]; ++k) {
-    for (let j = 0; j <= dims[1]; ++j) {
-      for (let i = 0; i <= dims[0]; ++i) {
+/**
+ * Buffers 3D data, once z limit is reached, new layers will cover over old ones
+ */
+class CircularLayerBuffer {
+  buffer: ndarray<number>;
+  current: number;
+  dims: Vec3;
+  scale: Vec3;
+  shift: Vec3;
+
+  constructor(dims: Vec3, scale: Vec3, shift: Vec3) {
+    this.buffer = ndarray(new Float32Array(dims[0] * dims[1] * dims[2]), dims);
+    this.dims = dims;
+    this.scale = scale;
+    this.shift = shift;
+  }
+
+  fillLayer(k: number, fn: Shape3) {
+    for (let j = 0; j <= this.dims[1]; ++j) {
+      for (let i = 0; i <= this.dims[0]; ++i) {
         const sp: Vec3 = [
-          scale[0] * i + shift[0],
-          scale[1] * j + shift[1],
-          scale[2] * k + shift[2]
+          this.scale[0] * i + this.shift[0],
+          this.scale[1] * j + this.shift[1],
+          this.scale[2] * k + this.shift[2]
         ];
-        const val = potential(sp);
-        sample.set(i, j, k, val);
+        const val = fn(sp);
+        this.buffer.set(i, j, k % this.dims[2], val);
       }
     }
   }
-  console.timeEnd('samplingSDF');
-  return sample;
+  get(x: number, y: number, z: number) {
+    return this.buffer.get(x, y, z % this.dims[2]);
+  }
 }
 
 export default function (dims: Vec3, potential: Shape3, bounds: Bounds) {
@@ -38,8 +52,10 @@ export default function (dims: Vec3, potential: Shape3, bounds: Bounds) {
     scale[i] = (bounds[1][i] - bounds[0][i]) / dims[i];
     shift[i] = bounds[0][i];
   }
+  
+  // create a buffer with 2 layers
+  const buffer = new CircularLayerBuffer([dims[0], dims[1], 2], scale, shift);
 
-  const sample = makeBuffer(dims, potential, scale, shift);
   const vertices: Vec3[] = [];
   const faces: Vec3[] = [];
   const grid = new Array(8);
@@ -48,15 +64,17 @@ export default function (dims: Vec3, potential: Shape3, bounds: Bounds) {
 
   // March over the sample points
   console.time('calcVertexFaces');
-  for (x[2] = 0; x[2] < dims[2] - 1; ++x[2])
-    for (x[1] = 0; x[1] < dims[1] - 1; ++x[1])
+  buffer.fillLayer(0, potential);
+  for (x[2] = 0; x[2] < dims[2] - 1; ++x[2]) {
+    buffer.fillLayer(x[2] + 1, potential); // need to buffer one layer on top
+    for (x[1] = 0; x[1] < dims[1] - 1; ++x[1]) {
       for (x[0] = 0; x[0] < dims[0] - 1; ++x[0]) {
 
         //For each cell, compute cube mask
         let cube_index = 0;
         for (let i = 0; i < 8; ++i) {
           const v = cubeVerts[i];
-          const result = sample.get(x[0] + v[0], x[1] + v[1], x[2] + v[2]);
+          const result = buffer.get(x[0] + v[0], x[1] + v[1], x[2] + v[2]);
           grid[i] = result;
           cube_index |= (result > 0) ? 1 << i : 0;
         }
@@ -93,6 +111,8 @@ export default function (dims: Vec3, potential: Shape3, bounds: Bounds) {
           faces.push([edges[f[i]], edges[f[i + 1]], edges[f[i + 2]]]);
         }
       }
+    }
+  }
   console.timeEnd('calcVertexFaces');
   return { vertices, faces };
 }

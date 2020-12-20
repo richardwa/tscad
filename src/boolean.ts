@@ -47,11 +47,4 @@ export function union(a: UnionParams | Shape3, ...s: Shape3[]): Shape3 {
 
 }
 
-export function translate(translation: Vec3, s: Shape3): Shape3 {
-  const translate = (p: Vec3) =>
-    translation.map((v, i) => p[i] - v) as Vec3;
-  return (p) => {
-    return s(translate(p));
-  }
-}
 

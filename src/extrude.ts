@@ -13,8 +13,26 @@ export function extrude(height: number, s: Shape2): Shape3 {
   }
 }
 
-export function revolve(d: number, s: Shape2): Shape3 {
-  return (p) => {
-    return s([distance(p[0], p[2]) - d, p[1]]);
+export function revolve(axis: Axis, offset: number, s: Shape2): Shape3 {
+  switch (axis) {
+    case 'x': return (p) => s([distance(p[1], p[2]) - offset, p[0]]);
+    case 'y': return (p) => s([distance(p[0], p[2]) - offset, p[1]]);
+    case 'z': return (p) => s([distance(p[0], p[1]) - offset, p[2]]);
   }
-} 
+}
+
+
+export function mirror(plane: Plane, s: Shape3): Shape3 {
+  switch (plane) {
+    case 'yz': return (p) => s([Math.abs(p[0]), p[1], p[2]]);
+    case 'xy': return (p) => s([p[0], p[1], Math.abs(p[2])]);
+    case 'xz': return (p) => s([p[0], Math.abs(p[1]), p[2]]);
+  }
+}
+
+type TileParams = {
+
+}
+export function tile(o: TileParams, s: Shape3): Shape3 {
+  return null;
+}
