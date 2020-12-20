@@ -1,4 +1,3 @@
-import { GPU } from 'gpu.js';
 import * as ndarray from 'ndarray';
 /**
  * Based on Javascript Marching Cubes - JS port by Mikola Lysenko
@@ -9,6 +8,7 @@ import * as ndarray from 'ndarray';
  *
  */
 type Bounds = [Vec3, Vec3];
+
 
 /**
  * Buffers 3D data, once z limit is reached, new layers will cover over old ones
@@ -45,14 +45,14 @@ class CircularLayerBuffer {
   }
 }
 
-export default function (dims: Vec3, potential: Shape3, bounds: Bounds) {
+export default function march(dims: Vec3, potential: Shape3, bounds: Bounds) {
   let scale: Vec3 = [0, 0, 0];
   let shift: Vec3 = [0, 0, 0];
   for (let i = 0; i < 3; ++i) {
     scale[i] = (bounds[1][i] - bounds[0][i]) / dims[i];
     shift[i] = bounds[0][i];
   }
-  
+
   // create a buffer with 2 layers
   const buffer = new CircularLayerBuffer([dims[0], dims[1], 2], scale, shift);
 
@@ -63,7 +63,6 @@ export default function (dims: Vec3, potential: Shape3, bounds: Bounds) {
   const x = [0, 0, 0];
 
   // March over the sample points
-  console.time('calcVertexFaces');
   buffer.fillLayer(0, potential);
   for (x[2] = 0; x[2] < dims[2] - 1; ++x[2]) {
     buffer.fillLayer(x[2] + 1, potential); // need to buffer one layer on top
@@ -113,7 +112,6 @@ export default function (dims: Vec3, potential: Shape3, bounds: Bounds) {
       }
     }
   }
-  console.timeEnd('calcVertexFaces');
   return { vertices, faces };
 }
 

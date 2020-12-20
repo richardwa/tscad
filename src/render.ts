@@ -1,7 +1,7 @@
 /// <reference path="./types.d.ts" />
 
 import * as fs from 'fs';
-import marchingCubes from './marchingcubes';
+import march from './marchingcubes';
 
 type Props = {
   name: string;
@@ -12,7 +12,10 @@ type Props = {
 }
 
 export function render(p: Props) {
-  const mesh = marchingCubes(p.resolution, p.shape, p.bounds);
+  console.time("render");
+  const mesh = march(p.resolution, p.shape, p.bounds);
+  console.timeEnd("render");
+
   const faces = mesh.faces;
   const vertices = mesh.vertices;
   const outDir = p.outDir || "./target";

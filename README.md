@@ -29,8 +29,7 @@ Constructive Solid Geometry (CSG) using Signed Distance Functions (SDF) and Type
 * https://github.com/mikolalysenko/isosurface
   - marching cubes function is pulled directly from here
   - minor changes for typescript
-  - significant speed improvement (8x) by buffering the SDF (uses more memory)
-  - WIP - use gpu to improve speed even more
+  - significant speed improvement (8x) by buffering the SDF (slightly more memory)
 
 * https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
   - Inigo has detailed many algorithms for SDF manipulation, I will be implementing alot of these.

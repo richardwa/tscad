@@ -20,7 +20,6 @@
     "typescript": "^4.0.5"
   },
   "dependencies": {
-    "gpu.js": "^2.10.6",
     "ndarray": "^1.0.19"
   }
 }

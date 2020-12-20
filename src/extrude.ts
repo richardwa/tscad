@@ -21,7 +21,6 @@ export function revolve(axis: Axis, offset: number, s: Shape2): Shape3 {
   }
 }
 
-
 export function mirror(plane: Plane, s: Shape3): Shape3 {
   switch (plane) {
     case 'yz': return (p) => s([Math.abs(p[0]), p[1], p[2]]);
