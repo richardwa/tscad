@@ -8,6 +8,7 @@
     "prebuild": "rimraf ./dist",
     "build": "tsc",
     "pretest": "rimraf ./target && mkdir target",
+    "ts": "ts-node",
     "test": "ts-node ./test/test.ts"
   },
   "author": "",
@@ -19,6 +20,5 @@
     "ts-node": "^9.0.0",
     "typescript": "^4.0.5"
   },
-  "dependencies": {
-  }
+  "dependencies": {}
 }

@@ -1,4 +1,6 @@
+import { sign } from 'crypto';
 import { CircularLayerBuffer } from './layerbuffer';
+import { Vector } from './math';
 /**
  * Based on Javascript Marching Cubes - JS port by Mikola Lysenko
  *    https://github.com/mikolalysenko/isosurface 
@@ -8,134 +10,122 @@ import { CircularLayerBuffer } from './layerbuffer';
  *
  */
 type Bounds = [Vec3, Vec3];
+type Triangle = [Vec3, Vec3, Vec3];
 
-
-
-// optimization, if we are really far away from an edge skip the next few in relation
-function doSkip(val: number, stepSize: number) {
-  const skip = Math.floor(Math.abs(val / stepSize) * 0.9) - 2;
-  if (skip > 5) {
-    return skip;
-  } else {
-    return 0;
-  }
+export function divideVolume(i: number, [lower, upper]: Bounds): Bounds[] {
+  const halfway = lower[i] + (upper[i] - lower[i]) / 2;
+  const midupper = [...upper] as Vec3;
+  midupper[i] = halfway;
+  const midlower = [...lower] as Vec3;
+  midlower[i] = halfway;
+  return [
+    [lower, midupper],
+    [midlower, upper]
+  ];
 }
 
-export default function march(stepSize: number, potential: Shape3, [lower, upper]: Bounds) {
-  const dims = upper.map((v, i) => Math.floor((v - lower[i]) / stepSize) + 1);
-  console.log("volume size", dims);
+export class MarchingCubes {
+  vertexCache: Map<string, number> = new Map();
+  vertices: Vec3[] = [];
+  faces: Vec3[] = []; // holds 3 vertex indexes
+  minStep: number;
+  maxStep: number;
+  fn: Shape3;
+  globalBounds: Bounds;
 
-  // create a buffer with 2 layers
-  const buffer = new CircularLayerBuffer([dims[0], dims[1], 2], ([x, y, z]: Vec3) => {
-    const sp: Vec3 = [
-      stepSize * x + lower[0],
-      stepSize * y + lower[1],
-      stepSize * z + lower[2]];
-    return potential(sp);
-  });
+  constructor([minStep, maxStep]: Vec2, potential: Shape3, bounds: Bounds) {
+    this.minStep = minStep;
+    this.maxStep = maxStep;
+    this.fn = potential;
+    this.globalBounds = bounds;
+  }
 
-  const vertices: Vec3[] = [];
-  const faces: Vec3[] = [];
-  const grid = new Array(8);
-  const edges = new Array(12);
-  const x: Vec3 = [0, 0, 0];
+  calls = 0;
+  doMarch = (bounds: Bounds) => {
+    this.calls++;
+    const [lower, upper] = bounds;
+    const steps = new Vector(upper).minus(lower).result;
+    const maxLen = Math.max(...steps);
+    const maxDim = steps.findIndex(v => v === maxLen);
 
-  // March over the sample points
-  buffer.initLayer(0);
-  for (x[2] = 0; x[2] < dims[2] - 1; ++x[2]) {
-    buffer.initLayer(x[2] + 1);
-    for (x[1] = 0; x[1] < dims[1] - 1; ++x[1]) {
-      for (x[0] = 0; x[0] < dims[0] - 1; ++x[0]) {
-        const val = buffer.get(x);
-        const skip = doSkip(val, stepSize);
-        if (skip) {
-          x[0] += skip;
-          continue;
-        }
+    // evaluate this cube
+    const vertexPositions = cubeVerts.map(v =>
+      v.map((o: number, i: number) =>
+        o ? upper[i] : lower[i]) as Vec3);
+    const results = vertexPositions.map(this.fn);
 
-        //For each cell, compute cube mask
-        let cube_index = 0;
-        for (let i = 0; i < 8; ++i) {
-          const v = cubeVerts[i];
-          const result = buffer.get([x[0] + v[0], x[1] + v[1], x[2] + v[2]]);
-          grid[i] = result;
-          cube_index |= (result > 0) ? 1 << i : 0;
-        }
-
-        //Compute vertices
-        let edge_mask = edgeTable[cube_index];
-        if (edge_mask === 0) {
-          continue;
-        }
-        for (let i = 0; i < 12; ++i) {
-          if ((edge_mask & (1 << i)) === 0) {
-            continue;
-          }
-          edges[i] = vertices.length;
-          const nv: Vec3 = [0, 0, 0];
-          let e = edgeIndex[i]
-            , p0 = cubeVerts[e[0]]
-            , p1 = cubeVerts[e[1]]
-            , a = grid[e[0]]
-            , b = grid[e[1]]
-            , d = a - b
-            , t = 0;
-          if (Math.abs(d) > 1e-6) {
-            t = a / d;
-          }
-          for (let j = 0; j < 3; ++j) {
-            nv[j] = stepSize * ((x[j] + p0[j]) + t * (p1[j] - p0[j])) + lower[j];
-          }
-          vertices.push(nv);
-        }
-        //Add faces
-        let f = triTable[cube_index];
-        for (let i = 0; i < f.length; i += 3) {
-          faces.push([edges[f[i]], edges[f[i + 1]], edges[f[i + 2]]]);
-        }
+    const cubeType = results.reduce((a, v, i) => {
+      if (v > 0) {
+        a |= 1 << i;
       }
+      return a;
+    }, 0);
+
+    // optimization, if this cube is far away from an edge relative to its own size, we can skip it
+    if (cubeType === 255 && Math.min(...results) > maxLen) {
+      return;
+    }
+    if (cubeType === 0 && Math.min(...results.map(Math.abs)) > maxLen) {
+      return;
+    }
+
+    // if volume is too large we need to split it
+    if (maxLen > this.maxStep) {
+      divideVolume(maxDim, bounds).forEach(this.doMarch);
+      return;
+    }
+
+    const triangles = this.getTriangles(cubeType, results, vertexPositions);
+    for (const triangle of triangles) {
+      const translated = triangle.map(vert => {
+        const hash = vert.join(' ');
+        if (this.vertexCache.has(hash)) {
+          return this.vertexCache.get(hash);
+        } else {
+          const index = this.vertices.length;
+          this.vertices.push(vert);
+          this.vertexCache.set(hash, index);
+          return index;
+        }
+      }) as Vec3;
+      this.faces.push(translated);
     }
   }
-  return { vertices, faces };
+
+  findZero = (p1: Vec3, v1: number, p2: Vec3, v2: number): Vec3 => {
+    const v1abs = Math.abs(v1);
+    const ratio = v1abs / (Math.abs(v2) + v1abs)
+    const vertex = new Vector(p2).minus(p1).scale(ratio).add(p1).result;
+    return vertex;
+  }
+
+
+  getTriangles = (cubeType: number, results: number[], vertexPositions: Vec3[]) => {
+    const triangles: Triangle[] = [];
+    const triEdges = triTable[cubeType];
+    for (let i = 0; i < triEdges.length; i += 3) {
+      const triangle: Triangle = [null, null, null];
+      for (let j = 0; j < 3; j++) {
+        const edgeType = triEdges[i + j];
+        // vertices
+        const [vertexType1, vertexType2] = edgeIndex[edgeType];
+
+        const p1 = vertexPositions[vertexType1];
+        const v1 = results[vertexType1];
+
+        const p2 = vertexPositions[vertexType2];
+        const v2 = results[vertexType2];
+
+        const vertex = this.findZero(p1, v1, p2, v2)
+        triangle[j] = vertex;
+      }
+      triangles.push(triangle);
+    }
+    return triangles;
+  }
 }
 
 // lookup data 
-
-const edgeTable = new Uint32Array([
-  0x0, 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
-  0x80c, 0x905, 0xa0f, 0xb06, 0xc0a, 0xd03, 0xe09, 0xf00,
-  0x190, 0x99, 0x393, 0x29a, 0x596, 0x49f, 0x795, 0x69c,
-  0x99c, 0x895, 0xb9f, 0xa96, 0xd9a, 0xc93, 0xf99, 0xe90,
-  0x230, 0x339, 0x33, 0x13a, 0x636, 0x73f, 0x435, 0x53c,
-  0xa3c, 0xb35, 0x83f, 0x936, 0xe3a, 0xf33, 0xc39, 0xd30,
-  0x3a0, 0x2a9, 0x1a3, 0xaa, 0x7a6, 0x6af, 0x5a5, 0x4ac,
-  0xbac, 0xaa5, 0x9af, 0x8a6, 0xfaa, 0xea3, 0xda9, 0xca0,
-  0x460, 0x569, 0x663, 0x76a, 0x66, 0x16f, 0x265, 0x36c,
-  0xc6c, 0xd65, 0xe6f, 0xf66, 0x86a, 0x963, 0xa69, 0xb60,
-  0x5f0, 0x4f9, 0x7f3, 0x6fa, 0x1f6, 0xff, 0x3f5, 0x2fc,
-  0xdfc, 0xcf5, 0xfff, 0xef6, 0x9fa, 0x8f3, 0xbf9, 0xaf0,
-  0x650, 0x759, 0x453, 0x55a, 0x256, 0x35f, 0x55, 0x15c,
-  0xe5c, 0xf55, 0xc5f, 0xd56, 0xa5a, 0xb53, 0x859, 0x950,
-  0x7c0, 0x6c9, 0x5c3, 0x4ca, 0x3c6, 0x2cf, 0x1c5, 0xcc,
-  0xfcc, 0xec5, 0xdcf, 0xcc6, 0xbca, 0xac3, 0x9c9, 0x8c0,
-  0x8c0, 0x9c9, 0xac3, 0xbca, 0xcc6, 0xdcf, 0xec5, 0xfcc,
-  0xcc, 0x1c5, 0x2cf, 0x3c6, 0x4ca, 0x5c3, 0x6c9, 0x7c0,
-  0x950, 0x859, 0xb53, 0xa5a, 0xd56, 0xc5f, 0xf55, 0xe5c,
-  0x15c, 0x55, 0x35f, 0x256, 0x55a, 0x453, 0x759, 0x650,
-  0xaf0, 0xbf9, 0x8f3, 0x9fa, 0xef6, 0xfff, 0xcf5, 0xdfc,
-  0x2fc, 0x3f5, 0xff, 0x1f6, 0x6fa, 0x7f3, 0x4f9, 0x5f0,
-  0xb60, 0xa69, 0x963, 0x86a, 0xf66, 0xe6f, 0xd65, 0xc6c,
-  0x36c, 0x265, 0x16f, 0x66, 0x76a, 0x663, 0x569, 0x460,
-  0xca0, 0xda9, 0xea3, 0xfaa, 0x8a6, 0x9af, 0xaa5, 0xbac,
-  0x4ac, 0x5a5, 0x6af, 0x7a6, 0xaa, 0x1a3, 0x2a9, 0x3a0,
-  0xd30, 0xc39, 0xf33, 0xe3a, 0x936, 0x83f, 0xb35, 0xa3c,
-  0x53c, 0x435, 0x73f, 0x636, 0x13a, 0x33, 0x339, 0x230,
-  0xe90, 0xf99, 0xc93, 0xd9a, 0xa96, 0xb9f, 0x895, 0x99c,
-  0x69c, 0x795, 0x49f, 0x596, 0x29a, 0x393, 0x99, 0x190,
-  0xf00, 0xe09, 0xd03, 0xc0a, 0xb06, 0xa0f, 0x905, 0x80c,
-  0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x0
-]);
-
 const triTable = [
   [],
   [0, 8, 3],

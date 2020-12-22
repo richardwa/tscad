@@ -1,23 +1,27 @@
 /// <reference path="./types.d.ts" />
 
 import * as fs from 'fs';
-import march from './marchingcubes';
+import { MarchingCubes } from './marchingcubes';
 
 type Props = {
   name: string;
   shape: Shape3;
-  stepSize: number;
+  minStep: number;
+  maxStep: number;
   bounds: [Vec3, Vec3];
   outDir?: string;
 }
 
 export function render(p: Props) {
   console.time("render");
-  const mesh = march(p.stepSize, p.shape, p.bounds);
+  const march = new MarchingCubes([p.minStep, p.maxStep], p.shape, p.bounds);
+  march.doMarch(p.bounds);
   console.timeEnd("render");
 
-  const faces = mesh.faces;
-  const vertices = mesh.vertices;
+  console.log(march.calls);
+
+  const faces = march.faces;
+  const vertices = march.vertices;
   const outDir = p.outDir || "./target";
   const os = fs.createWriteStream(`${outDir}/${p.name}.obj`);
 
