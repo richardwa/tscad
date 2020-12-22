@@ -18,8 +18,6 @@ export function render(p: Props) {
   march.doMarch(p.bounds);
   console.timeEnd("render");
 
-  console.log(march.calls);
-
   const faces = march.faces;
   const vertices = march.vertices;
   const outDir = p.outDir || "./target";
