@@ -13,8 +13,7 @@ const shape = rotate('z', 45,
 render({
   name: "test",
   shape,
-  minStep: 1,
-  maxStep: .4,
+  cubeSize: .4,
   bounds: [[-100, -100, -100], [100, 100, 100]]
 });
 

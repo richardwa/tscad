@@ -1,8 +1,8 @@
 import { Vector } from './math';
 import { triTable, edgeIndex, cubeVerts } from './marchingcubes-tables';
 
-type Bounds = [Vec3, Vec3];
-type Triangle = [Vec3, Vec3, Vec3];
+export type Bounds = [Vec3, Vec3];
+export type Triangle = [Vec3, Vec3, Vec3];
 
 export function divideVolume(i: number, [lower, upper]: Bounds): Bounds[] {
   const halfway = lower[i] + (upper[i] - lower[i]) / 2;
@@ -17,16 +17,12 @@ export function divideVolume(i: number, [lower, upper]: Bounds): Bounds[] {
 }
 
 export class MarchingCubes {
-  vertexCache: Map<string, number> = new Map();
-  vertices: Vec3[] = [];
-  faces: Vec3[] = []; // holds 3 vertex indexes
-  minStep: number;
-  maxStep: number;
+  triangles: Triangle[] = [];
+  cubeSize: number;
   fn: Shape3;
 
-  constructor([minStep, maxStep]: Vec2, shape: Shape3, bounds: Bounds) {
-    this.minStep = minStep;
-    this.maxStep = maxStep;
+  constructor(cubeSize: number, shape: Shape3) {
+    this.cubeSize = cubeSize;
     this.fn = shape;
   }
 
@@ -58,30 +54,12 @@ export class MarchingCubes {
     }
 
     // if volume is too large we need to split it
-    if (maxLen > this.maxStep) {
+    if (maxLen > this.cubeSize) {
       divideVolume(maxDim, bounds).forEach(this.doMarch);
       return;
     }
 
-    const triangles = this.getTriangles(cubeType, results, vertexPositions);
-    for (const triangle of triangles) {
-      const translated = triangle.map(vert => {
-        const hash = vert.join(' ');
-        if (this.vertexCache.has(hash)) {
-          return this.vertexCache.get(hash);
-        } else {
-          const index = this.vertices.length;
-          this.vertices.push(vert);
-          this.vertexCache.set(hash, index);
-          return index;
-        }
-      }) as Vec3;
-      this.faces.push(translated);
-    }
-  }
-
-  getTriangles = (cubeType: number, results: number[], vertexPositions: Vec3[]) => {
-    const triangles: Triangle[] = [];
+    // process Triangles
     const triEdges = triTable[cubeType];
     for (let i = 0; i < triEdges.length; i += 3) {
       const triangle: Triangle = [null, null, null];
@@ -89,21 +67,18 @@ export class MarchingCubes {
         const edgeType = triEdges[i + j];
         // vertices
         const [vertexType1, vertexType2] = edgeIndex[edgeType];
-
         const p1 = vertexPositions[vertexType1];
         const v1 = results[vertexType1];
-
         const p2 = vertexPositions[vertexType2];
         const v2 = results[vertexType2];
 
-        const v1_abs = Math.abs(v1);
         // interpolate
+        const v1_abs = Math.abs(v1);
         const ratio = v1_abs / (Math.abs(v2) + v1_abs);
         const vertex = new Vector(p2).minus(p1).scale(ratio).add(p1).result;
         triangle[j] = vertex;
       }
-      triangles.push(triangle);
+      this.triangles.push(triangle);
     }
-    return triangles;
   }
 }
