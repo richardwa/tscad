@@ -75,8 +75,14 @@ export class MeshBuilder {
   }
 
   addTriangle(p: [Vec3, Vec3, Vec3]) {
+    const keys = p.map(keyFn);
+    if (keys[0] === keys[1] || keys[0] === keys[2]) {
+      // two of the points are the same point, does not make a triangle
+      return;
+    }
+
     // Get and/or initialize
-    const verts = p.map(v => this.verts.add({ id: v }));
+    const verts = p.map((v, i) => this.verts.add({ id: v }, keys[i]));
     const edges = verts.map((v, i) =>
       this.edges.add({ id: [v, verts[(i + 1) % 3]] }));
     const face: Face = this.faces.add({ id: verts });
@@ -89,7 +95,6 @@ export class MeshBuilder {
     verts.forEach((v, i) => {
       v.edges.add(edges[i]);
     });
-    this.faces.add(face);
   }
 
   // public methods

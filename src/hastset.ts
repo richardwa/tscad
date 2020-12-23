@@ -9,8 +9,10 @@ export class HashSet<T> {
     this.initFn = initFunc;
   }
   // sets the object if it doesn't exits
-  add = (t: T): T => {
-    const key = this.keyFn(t);
+  add = (t: T, key?: string): T => {
+    if (!key){
+      key = this.keyFn(t);
+    }
     if (this.map.has(key)) {
       return this.map.get(key);
     } else {
