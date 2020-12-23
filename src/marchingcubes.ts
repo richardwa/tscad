@@ -1,6 +1,7 @@
 import { Vector } from './math';
 import { triTable, edgeIndex, cubeVerts } from './marchingcubes-tables';
-
+import { epsilon } from './constants';
+import { MeshBuilder } from './mesh';
 export type Bounds = [Vec3, Vec3];
 export type Triangle = [Vec3, Vec3, Vec3];
 
@@ -17,7 +18,7 @@ export function divideVolume(i: number, [lower, upper]: Bounds): Bounds[] {
 }
 
 export class MarchingCubes {
-  triangles: Triangle[] = [];
+  mesh: MeshBuilder = new MeshBuilder();
   cubeSize: number;
   fn: Shape3;
 
@@ -72,13 +73,30 @@ export class MarchingCubes {
         const p2 = vertexPositions[vertexType2];
         const v2 = results[vertexType2];
 
-        // interpolate
-        const v1_abs = Math.abs(v1);
-        const ratio = v1_abs / (Math.abs(v2) + v1_abs);
-        const vertex = new Vector(p2).minus(p1).scale(ratio).add(p1).result;
-        triangle[j] = vertex;
+        triangle[j] = this.interpolate(p1, v1, p2, v2);
       }
-      this.triangles.push(triangle);
+      this.mesh.addTriangle(triangle);
     }
+  }
+
+  interpolate = (p1: Vec3, v1: number, p2: Vec3, v2: number) => {
+    let middle: Vec3;
+    for (let i = 0; i < 10; i++) {
+      const v1_abs = Math.abs(v1);
+      const ratio = v1_abs / (Math.abs(v2) + v1_abs);
+      middle = new Vector(p2).minus(p1).scale(ratio).add(p1).result;
+      const midVal = this.fn(middle);
+      if (Math.abs(midVal) < epsilon) {
+        break;
+      } else if (Math.sign(midVal) === Math.sign(v1)) {
+        p1 = middle;
+        v1 = midVal
+      } else {
+        p2 = middle;
+        v2 = midVal;
+      }
+    }
+
+    return middle;
   }
 }

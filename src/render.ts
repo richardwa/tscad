@@ -11,14 +11,13 @@ type Props = {
   outDir?: string;
 }
 
-
 export function render(p: Props) {
   console.time("render");
   const march = new MarchingCubes(p.cubeSize, p.shape);
   march.doMarch(p.bounds);
   console.timeEnd("render");
 
-  const { faces, vertices } = processTriangles(march.triangles)
+  const { faces, vertices } = processTriangles(march.mesh.viewFaces())
   const outDir = p.outDir || "./target";
   const os = fs.createWriteStream(`${outDir}/${p.name}.obj`);
 
@@ -32,13 +31,14 @@ export function render(p: Props) {
   }
 }
 
-function processTriangles(triangles: Triangle[]) {
+function processTriangles(triangles: Vec3[][]) {
   const vertexCache: Map<string, number> = new Map();
   const vertices: Vec3[] = [];
-  const faces: Vec3[] = []; // holds 3 vertex indexes
+  const faces: Vec3[] = [];
+
   for (const t of triangles) {
     const translated = t.map(vert => {
-      const hash = vert.join(' ');
+      const hash = vert.map(v => v.toFixed(5)).join(' ');
       if (vertexCache.has(hash)) {
         return vertexCache.get(hash);
       } else {
@@ -50,6 +50,9 @@ function processTriangles(triangles: Triangle[]) {
     }) as Vec3;
     faces.push(translated);
   }
+
+  console.log("faces", faces.length);
+  console.log("vertices", vertices.length);
 
   return { vertices, faces };
 
