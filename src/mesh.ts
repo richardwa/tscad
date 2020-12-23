@@ -46,7 +46,7 @@ export class MeshBuilder {
     });
 
 
-  private _removeFace(f: Face) {
+  _removeFace(f: Face) {
     const removed = this.faces.remove(f);
     if (removed) {
       removed.edges.forEach(e => {
@@ -57,7 +57,7 @@ export class MeshBuilder {
       });
     }
   }
-  private _removeEdge(e: Edge) {
+  _removeEdge(e: Edge) {
     const removed = this.edges.remove(e);
     if (removed) {
       removed.faces.forEach(f => {
@@ -65,7 +65,7 @@ export class MeshBuilder {
       });
     }
   }
-  private _removeVertex(v: Vertex) {
+  _removeVertex(v: Vertex) {
     const removed = this.verts.remove(v);
     if (removed) {
       removed.edges.forEach(e => {
@@ -78,7 +78,8 @@ export class MeshBuilder {
     const keys = p.map(keyFn);
     if (keys[0] === keys[1] || keys[0] === keys[2]) {
       // two of the points are the same point, does not make a triangle
-      return;
+      console.log("bad triangle", p);
+      // return;
     }
 
     // Get and/or initialize

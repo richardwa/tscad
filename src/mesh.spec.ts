@@ -18,3 +18,18 @@ mesh.addTriangle([p2(), p4(), p3()]);
 console.log("verts", mesh.viewVertices());
 console.log("edges", mesh.viewEdges());
 console.log("faces", mesh.viewFaces());
+
+mesh.removeTriangle([p1(), p2(), p3()]);
+console.log("verts", mesh.viewVertices());
+console.log("edges", mesh.viewEdges());
+console.log("faces", mesh.viewFaces());
+
+mesh.removeTriangle([p4(), p2(), p3()]);
+console.log("verts", mesh.viewVertices());
+console.log("edges", mesh.viewEdges());
+console.log("faces", mesh.viewFaces());
+
+mesh.removeTriangle([p1(), p4(), p3()]);
+console.log("verts", mesh.viewVertices());
+console.log("edges", mesh.viewEdges());
+console.log("faces", mesh.viewFaces());

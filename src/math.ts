@@ -41,6 +41,11 @@ export class Vector<T extends number[]>{
     return this;
   }
 
+  toUnitVector() {
+    const mag = this.magnitude();
+    return this.scale(1 / mag);
+  }
+
   magnitude() {
     let sum = 0;
     for (let v of this.result) {
@@ -48,6 +53,8 @@ export class Vector<T extends number[]>{
     }
     return Math.sqrt(sum);
   }
+
+
 }
 
 
