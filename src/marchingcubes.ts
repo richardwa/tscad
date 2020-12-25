@@ -25,6 +25,67 @@ export class MarchingCubes {
 
   };
 
+  _divideVolume = (dim: number, results: number[], vertexPositions: Vec3[]) => {
+    const lower = vertexPositions[0];
+    const upper = vertexPositions[6];
+    const halfway = (lower[dim] + upper[dim]) / 2;
+
+    // collapse positions into a plane on the split dimesion
+    const collapsedPos = vertexPositions.map((p, i) => {
+      const temp = [...p];
+      temp[dim] = halfway;
+      return temp as Vec3;
+    });
+    const collapsePairings = [
+      [0, 1, 3, 2, 5, 4, 7, 6],
+      [3, 2, 1, 0, 7, 6, 5, 4],
+      [4, 5, 6, 7, 0, 1, 2, 3]
+    ][dim];
+    const newResults = []
+    for (let i = 0; i < cubeVerts.length; i++) {
+      if (newResults[collapsePairings[i]] === undefined) {
+        newResults[i] = this.fn(collapsedPos[i]);
+      } else {
+        newResults[i] = newResults[collapsePairings[i]];
+      }
+    }
+
+    // axis to poition mapping, lower side perspective
+    // 0 - keep original
+    // 1 - use halfway number
+    const mapping = [
+      0b01100110,
+      0b00110011,
+      0b00001111,
+    ][dim];
+
+    // setup data structurs for call
+    const results0 = [];
+    const vertexPositions0 = [];
+    const results1 = [];
+    const vertexPositions1 = [];
+    for (let i = 0; i < cubeVerts.length; i++) {
+      if (mapping & 1 << i) {
+        results0[i] = newResults[i];
+        vertexPositions0[i] = collapsedPos[i];
+        results1[i] = results[i];
+        vertexPositions1[i] = vertexPositions[i];
+      } else {
+        results0[i] = results[i];
+        vertexPositions0[i] = vertexPositions[i];
+        results1[i] = newResults[i];
+        vertexPositions1[i] = collapsedPos[i];
+      }
+    }
+
+    return {
+      results0,
+      vertexPositions0,
+      results1,
+      vertexPositions1
+    };
+  }
+
   _doMarch = (vertexPositions: Vec3[], results: number[]) => {
     const lower = vertexPositions[0];
     const upper = vertexPositions[6];
@@ -46,56 +107,7 @@ export class MarchingCubes {
 
     // if volume is too large we need to split it
     if (maxLen > this.cubeSize) {
-      const halfway = (lower[maxDim] + upper[maxDim]) / 2;
-
-      // collapse positions into a plane on the split dimesion
-      const collapsedPos = vertexPositions.map((p, i) => {
-        const temp = [...p];
-        temp[maxDim] = halfway;
-        return temp as Vec3;
-      });
-      const collapsePairings = [
-        [0, 1, 3, 2, 5, 4, 7, 6],
-        [3, 2, 1, 0, 7, 6, 5, 4],
-        [4, 5, 6, 7, 0, 1, 2, 3]
-      ][maxDim];
-      const newResults = []
-      for (let i = 0; i < cubeVerts.length; i++) {
-        if (newResults[collapsePairings[i]] === undefined) {
-          newResults[i] = this.fn(collapsedPos[i]);
-        } else {
-          newResults[i] = newResults[collapsePairings[i]];
-        }
-      }
-
-      // axis to poition mapping, lower side perspective
-      // 0 - keep original
-      // 1 - use halfway number
-      const mapping = [
-        0b01100110,
-        0b00110011,
-        0b00001111,
-      ][maxDim];
-
-      // setup data structurs for call
-      const results0 = [];
-      const vertexPositions0 = [];
-      const results1 = [];
-      const vertexPositions1 = [];
-      for (let i = 0; i < cubeVerts.length; i++) {
-        if (mapping & 1 << i) {
-          results0[i] = newResults[i];
-          vertexPositions0[i] = collapsedPos[i];
-          results1[i] = results[i];
-          vertexPositions1[i] = vertexPositions[i];
-        } else {
-          results0[i] = results[i];
-          vertexPositions0[i] = vertexPositions[i];
-          results1[i] = newResults[i];
-          vertexPositions1[i] = collapsedPos[i];
-        }
-      }
-
+      const { results0, vertexPositions0, results1, vertexPositions1 } = this._divideVolume(maxDim, results, vertexPositions);
       this._doMarch(vertexPositions0, results0);
       this._doMarch(vertexPositions1, results1);
       return;
