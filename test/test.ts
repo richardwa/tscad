@@ -10,10 +10,12 @@ const shape = rotate('y', 15, rotate('z', 16,
     translate([10, 10, 10], Shpere(10)))));
 
 const s = 256;
+
 render({
   name: "test",
   shape,
   cubeSize: 1,
   bounds: [[-s, -s, -s], [s, s, s]]
+  // bounds: [[-14, -8, -4], [-12, -6, 0]]
 });
 

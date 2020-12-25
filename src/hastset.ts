@@ -4,13 +4,13 @@ export class HashSet<T> {
   map: Map<string, T> = new Map();
   keyFn: (t: T) => string;
   initFn: (t: T) => T;
-  constructor(keyFn: (t: T) => string, initFunc: (t: T) => T) {
+  constructor(keyFn: (t: T) => string, initFunc?: (t: T) => T) {
     this.keyFn = keyFn;
-    this.initFn = initFunc;
+    this.initFn = initFunc ? initFunc : o => o;
   }
   // sets the object if it doesn't exits
   add = (t: T, key?: string): T => {
-    if (!key){
+    if (!key) {
       key = this.keyFn(t);
     }
     if (this.map.has(key)) {

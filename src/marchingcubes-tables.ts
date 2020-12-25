@@ -6,6 +6,18 @@
  *    http://local.wasp.uwa.edu.au/~pbourke/geometry/polygonise/
  *
  */
+
+
+/** 
+
+   7 ----- 6
+  /|      /|
+ / |     / |
+4 -|--- 5  |
+|  3 ---|- 2
+| /     | /
+0 ----- 1
+*/
 export const cubeVerts = [
   [0, 0, 0]
   , [1, 0, 0]
@@ -17,6 +29,19 @@ export const cubeVerts = [
   , [0, 1, 1]
 ];
 
+
+
+/** 
+         6
+     o ------- o
+   7/|       5/|
+  o -|--4-- o  | 10
+  |  |     9|  |
+ 8|  o -----|- o 
+  |3/       | /1
+  o ------- o
+      0
+*/
 export const edgeIndex = [
   [0, 1],
   [1, 2],
@@ -30,6 +55,30 @@ export const edgeIndex = [
   [1, 5],
   [2, 6],
   [3, 7]
+];
+
+export const faceToEdges = [
+  [8, 3, 11, 7], // 0 - left
+  [9, 1, 10, 5], // 1 - right
+  [0, 9, 4, 8],  // 2 - front
+  [2, 10, 6, 11],// 3 - back
+  [0, 1, 2, 3],  // 4 - bottom
+  [4, 5, 6, 7]   // 5 - top
+];
+
+export const edgeToFaces = [
+  [4, 2],
+  [4, 1],
+  [4, 3],
+  [4, 0],
+  [5, 2],
+  [5, 1],
+  [5, 3],
+  [5, 0],
+  [0, 2],
+  [2, 1],
+  [1, 3],
+  [3, 0]
 ];
 
 export const triTable = [
