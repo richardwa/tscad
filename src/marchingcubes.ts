@@ -1,5 +1,5 @@
 import { Vector } from './math';
-import { triTable, edgeIndex, cubeVerts } from './marchingcubes-tables';
+import { triTable, edgeIndex, cubeVerts, edgeTable } from './marchingcubes-tables';
 import { epsilon } from './constants';
 export type Bounds = [Vec3, Vec3];
 export type Triangle = [Vec3, Vec3, Vec3];
@@ -24,8 +24,9 @@ export class MarchingCubes {
     this._doMarch(vertexPositions, results);
 
   };
-
+ 
   _divideVolume = (dim: number, results: number[], vertexPositions: Vec3[]) => {
+    
     const lower = vertexPositions[0];
     const upper = vertexPositions[6];
     const halfway = (lower[dim] + upper[dim]) / 2;
@@ -113,20 +114,33 @@ export class MarchingCubes {
       return;
     }
 
-    // process Triangles
+    // get intercepts
+    const edgeMask = edgeTable[cubeType];
+    if (edgeMask === 0) {
+      return;
+    }
+    const intercepts: Vec3[] = [];
+    for (let i = 0; i < edgeIndex.length; i++) {
+      if ((edgeMask & 1 << i) === 0) {
+        continue;
+      }
+      // vertices
+      const [vertexType1, vertexType2] = edgeIndex[i];
+      const p1 = vertexPositions[vertexType1];
+      const v1 = results[vertexType1];
+      const p2 = vertexPositions[vertexType2];
+      const v2 = results[vertexType2];
+      intercepts[i] = this.interpolate(p1, v1, p2, v2);
+    }
+
+    // get triangles, there can many triangles that reuse the same intercepts
     const triEdges = triTable[cubeType];
     for (let i = 0; i < triEdges.length; i += 3) {
       const triangle: Triangle = [null, null, null];
       for (let j = 0; j < 3; j++) {
         const edgeType = triEdges[i + j];
-        // vertices
-        const [vertexType1, vertexType2] = edgeIndex[edgeType];
-        const p1 = vertexPositions[vertexType1];
-        const v1 = results[vertexType1];
-        const p2 = vertexPositions[vertexType2];
-        const v2 = results[vertexType2];
 
-        triangle[j] = this.interpolate(p1, v1, p2, v2);
+        triangle[j] = intercepts[edgeType];
       }
       this.triangles.push(triangle);
     }

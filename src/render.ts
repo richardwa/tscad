@@ -1,4 +1,4 @@
-/// <reference path="./types.d.ts" />
+/// <reference path="../types.d.ts" />
 
 import * as fs from 'fs';
 import { MarchingCubes, Triangle } from './marchingcubes';
@@ -20,7 +20,11 @@ export function render(p: Props) {
 
   const { faces, vertices } = processPolygons(march.triangles);
   const outDir = p.outDir || "./target";
-  const os = fs.createWriteStream(`${outDir}/${p.name}.obj`);
+  writeOBJ({ faces, vertices, outDir, name: p.name });
+}
+
+export function writeOBJ({ faces, vertices, outDir = './target', name }) {
+  const os = fs.createWriteStream(`${outDir}/${name}.obj`);
 
   //write obj file
   for (const pos of vertices) {
@@ -30,6 +34,7 @@ export function render(p: Props) {
   for (const face of faces) {
     os.write("f " + face.map(i => i + 1).join(' ') + '\n');
   }
+
 }
 
 function processPolygons(polygons: Vec3[][]) {

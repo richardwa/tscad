@@ -1,4 +1,4 @@
-import { Vector } from "./math";
+import { Vector } from "../src/math";
 
 type UnionParams = {
   radius: number;

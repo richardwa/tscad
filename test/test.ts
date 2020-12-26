@@ -1,8 +1,8 @@
-import { Shpere, Box, Circle, Rect } from '../src/primitives';
-import { union } from '../src/boolean';
+import { Shpere, Box, Circle, Rect } from '../csg/primitives';
+import { union } from '../csg/boolean';
 import { render } from '../src/render';
-import { revolve, tile } from '../src/extrude';
-import { rotate, translate } from '../src/manipulate';
+import { revolve, tile } from '../csg/extrude';
+import { rotate, translate } from '../csg/manipulate';
 
 const shape = rotate('y', 15, rotate('z', 16,
   union({ radius: 3 },

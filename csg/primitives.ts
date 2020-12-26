@@ -1,4 +1,4 @@
-import { Vector } from './math';
+import { Vector } from '../src/math';
 
 export function Circle(r: number = 1): Shape2 {
   return (p) => new Vector(p).magnitude() - r;

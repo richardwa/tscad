@@ -7,8 +7,8 @@
   "scripts": {
     "prebuild": "rimraf ./dist",
     "build": "tsc",
-    "pretest": "rimraf ./target && mkdir target",
     "ts": "ts-node",
+    "pretest": "rimraf ./target/test.obj",
     "test": "ts-node ./test/test.ts"
   },
   "author": "",
@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "hashmap-js": "^1.0.1",
+    "isosurface": "^1.0.0",
     "three": "^0.77.0"
   }
 }

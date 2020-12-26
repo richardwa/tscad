@@ -1,5 +1,5 @@
-/// <reference path="./types.d.ts" />
-import { Vector } from "./math";
+/// <reference path="../types.d.ts" />
+import { Vector } from "../src/math";
 
 export function extrude(height: number, s: Shape2): Shape3 {
   const h = height / 2;

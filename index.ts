@@ -1,6 +1,6 @@
 export * from './src/render';
-export * from './src/primitives';
-export * from './src/boolean';
-export * from './src/extrude';
-export * from './src/manipulate';
+export * from './csg/primitives';
+export * from './csg/boolean';
+export * from './csg/extrude';
+export * from './csg/manipulate';
 
