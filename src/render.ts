@@ -37,7 +37,7 @@ export function writeOBJ({ faces, vertices, outDir = './target', name }) {
 
 }
 
-function processPolygons(polygons: Vec3[][]) {
+export function processPolygons(polygons: Vec3[][]) {
   const vertexCache: Map<string, number> = new Map();
   const vertices: Vec3[] = [];
   const faces: number[][] = [];
