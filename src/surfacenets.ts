@@ -43,14 +43,13 @@ const combineFaces = (max_a: number, max_b: number, faces: CubeFace4): CubeFace 
 });
 
 function logFace(name: string, c: CubeFace) {
-  console.log("print face", name);
+  //console.log("print face", name);
   for (let j = c.b_size - 1; j >= 0; j--) {
     const sb = [];
     for (let i = 0; i < c.a_size; i++) {
       sb.push(c.get(i, j) ? 1 : 0);
-
     }
-    console.log(sb.join(' '));
+    // console.log(sb.join(' '));
   }
 }
 
@@ -181,14 +180,22 @@ export class SurfaceNets {
             const u1 = face1.get(a, b + 1);
             const u2 = face2.get(a, b + 1);
             if (u1 && u2) {
-              this.triangles.push([v1, v2, u1], [u1, v2, u2]);
+              if (i === 2) {
+                this.triangles.push([v1, v2, u1], [u1, v2, u2]);
+              } else {
+                this.triangles.push([v1, u1, v2], [v2, u1, u2]);
+              }
             }
           }
           if (a !== face1.a_size - 1) {
             const u1 = face1.get(a + 1, b);
             const u2 = face2.get(a + 1, b);
             if (u1 && u2) {
-              this.triangles.push([v1, v2, u1], [u1, v2, u2]);
+              if (i !== 0) {
+                this.triangles.push([v1, v2, u1], [u1, v2, u2]);
+              } else {
+                this.triangles.push([v1, u1, v2], [v2, u1, u2]);
+              }
             }
           }
         }
