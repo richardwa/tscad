@@ -1,4 +1,4 @@
-import { cubeVerts } from './marchingcubes-tables';
+import { cubeVerts, edgeIndex, edgeTable } from './marchingcubes-tables';
 import { Vector } from './math';
 export type Bounds = [Vec3, Vec3];
 export type Triangle = [Vec3, Vec3, Vec3];
@@ -6,7 +6,10 @@ export type Cube = [Vec3, Vec3, Vec3, Vec3, Vec3, Vec3, Vec3, Vec3];
 export type CubeFace = {
   a_size: number;
   b_size: number;
-  get: (a: number, b: number) => Vec3;
+  get: (a: number, b: number) => {
+    pos: Vec3,
+    cubeIndex: number;
+  }
 };
 const getAsize = (a: CubeFace) => a.a_size;
 const getBsize = (a: CubeFace) => a.b_size;
@@ -43,13 +46,13 @@ const combineFaces = (max_a: number, max_b: number, faces: CubeFace4): CubeFace 
 });
 
 function logFace(name: string, c: CubeFace) {
-  //console.log("print face", name);
+  console.log("print face", name);
   for (let j = c.b_size - 1; j >= 0; j--) {
     const sb = [];
     for (let i = 0; i < c.a_size; i++) {
       sb.push(c.get(i, j) ? 1 : 0);
     }
-    // console.log(sb.join(' '));
+    console.log(sb.join(' '));
   }
 }
 
@@ -106,6 +109,66 @@ export class SurfaceNets {
     ];
   }
 
+  putQuad = (a: Vec3, b: Vec3, c: Vec3, d: Vec3) => {
+    this.triangles.push([a, b, c], [c, b, d]);
+  }
+
+  findVertex = (cubeType: number, pos: Cube, results: number[]): Vec3 => {
+    // get intercepts
+    const edgeMask = edgeTable[cubeType];
+    if (edgeMask === 0) {
+      return;
+    }
+    const intercepts: Vec3[] = [];
+    for (let i = 0; i < edgeIndex.length; i++) {
+      if ((edgeMask & 1 << i) === 0) {
+        continue;
+      }
+      // vertices
+      const [vertexType1, vertexType2] = edgeIndex[i];
+      const p1 = pos[vertexType1];
+      const v1 = results[vertexType1];
+      const p2 = pos[vertexType2];
+      const v2 = results[vertexType2];
+      const ans = this.interpolate(p1, v1, p2, v2);
+      intercepts.push(ans);
+    }
+
+    const vert = new Vector(intercepts[0]);
+    for (let i = 1; i < intercepts.length; i++) {
+      vert.add(intercepts[i]);
+    }
+    return vert.scale(1 / intercepts.length).result;
+  }
+
+  interpolate = (p1: Vec3, v1: number, p2: Vec3, v2: number) => {
+    // the points are coming in from a cube, find the axis we are moving on
+    const limit = 16;
+    // we can use this trick, we are on axis cubes, otherwise full vector math is required
+    const axis = p1[0] !== p2[0] ? 0 : (p1[1] !== p2[1] ? 1 : 2);
+    const temp = [...p1] as Vec3;
+    let low = p1[axis];
+    let high = p2[axis];
+    for (let i = 0; i < limit; i++) {
+      const middle = (low + high) / 2;
+      temp[axis] = middle;
+      const midVal = this.fn(temp);
+      if (Math.abs(midVal) < 0.2) {
+        break;
+      } else if (Math.sign(midVal) === Math.sign(v1)) {
+        low = middle;
+        v1 = midVal
+      } else {
+        high = middle;
+        v2 = midVal;
+      }
+      if (i === limit - 1) {
+        console.log("reached limit of interpolation", axis, temp, p1, v1, p2, v2);
+      }
+    }
+    return temp;
+  }
+
   count = 0;
   _doMarch = (cube: Cube): CubeSurface => {
     const iteration = this.count++;
@@ -128,26 +191,24 @@ export class SurfaceNets {
       const cubeIndex = results.reduce(reduceCorners, 0);
       if (cubeIndex === 0xff || cubeIndex === 0x00) {
         return emptyCube;
-      } else {
-        // TODO - assign to cube center for now, need to choose a better point later
-        const center = new Vector(cube[0]).add(cube[6]).scale(1 / 2).result;
-        const cubeFace: CubeFace = {
-          a_size: 1,
-          b_size: 1,
-          get: () => center
-        };
-        return [cubeFace, cubeFace, cubeFace, cubeFace, cubeFace, cubeFace];
       }
+
+      const center = new Vector(cube[0]).add(cube[6]).scale(1 / 2).result;
+      // const center = this.findVertex(cubeIndex, cube, results);
+      const val = this.fn(center);
+      //if (Math.abs(val) < 0.5) {
+      const cubeFace: CubeFace = {
+        a_size: 1,
+        b_size: 1,
+        get: () => ({ pos: center, cubeIndex })
+      };
+      // terminate recursion
+      return [cubeFace, cubeFace, cubeFace, cubeFace, cubeFace, cubeFace];
+      //}
     }
 
     // recursion
     const subResults = this._divideVolume(cube).map(this._doMarch);
-    subResults.forEach((s, i) => {
-      logFace(`sub${iteration}:${i} left`, s[0]);
-    });
-    subResults.forEach((s, i) => {
-      logFace(`sub${iteration}:${i} righ`, s[1]);
-    });
 
     const cubeQuads = [
       [0, 3, 4, 7], // left
@@ -155,11 +216,17 @@ export class SurfaceNets {
       [0, 1, 4, 5], // front
       [3, 2, 7, 6], // back
       [0, 1, 3, 2], // bottom
-      [4, 5, 7, 6]  // top
+      [4, 5, 7, 6],  // top
     ];
 
     // output polygons - stitch together interior faces
+    const masks = [
+      [0b01100000, 0b01000100],
+      [0b11000000, 0b01000100],
+      [0b11000000, 0b01100000],
+    ]; // mask to check sign change for x,y,z directions
     for (let i = 0; i < 3; i++) {
+      const mask = masks[i];
       const lower = cubeQuads[i * 2].map(f => subResults[f][i * 2 + 1]) as CubeFace4;
       const upper = cubeQuads[i * 2 + 1].map(f => subResults[f][i * 2]) as CubeFace4;
       const max_a = Math.max(...lower.map(getAsize), ...upper.map(getAsize));
@@ -167,34 +234,44 @@ export class SurfaceNets {
 
       const face1 = combineFaces(max_a, max_b, lower);
       const face2 = combineFaces(max_a, max_b, upper);
-      logFace(`merge1 ${iteration}:${i}`, face1);
-      logFace(`merge2 ${iteration}:${i}`, face2);
+      logFace(`${iteration}:${i} lower`, face1);
+      logFace(`${iteration}:${i} higher`, face2);
 
       for (let b = 0; b < face1.b_size; b++) {
         for (let a = 0; a < face1.a_size; a++) {
           const v1 = face1.get(a, b);
-          if (!v1) continue;
           const v2 = face2.get(a, b);
-          if (!v2) continue;
-          if (b !== face1.b_size - 1) {
-            const u1 = face1.get(a, b + 1);
-            const u2 = face2.get(a, b + 1);
-            if (u1 && u2) {
-              if (i === 2) {
-                this.triangles.push([v1, v2, u1], [u1, v2, u2]);
-              } else {
-                this.triangles.push([v1, u1, v2], [v2, u1, u2]);
+          if (!v1 || !v2) continue;
+          let cross = v1.cubeIndex & mask[0];
+          if (cross !== mask[0] && cross !== 0) {
+            if (b !== face1.b_size - 1) {
+              const u1 = face1.get(a, b + 1);
+              const u2 = face2.get(a, b + 1);
+              if (u1 && u2) {
+                if (u1 === v1) {
+                  this.triangles.push([v1.pos, v2.pos, u2.pos]);
+                } else if (u2 === v2) {
+                  this.triangles.push([v1.pos, v2.pos, u1.pos]);
+                } else {
+                  this.putQuad(v1.pos, v2.pos, u1.pos, u2.pos);
+                }
               }
             }
           }
-          if (a !== face1.a_size - 1) {
-            const u1 = face1.get(a + 1, b);
-            const u2 = face2.get(a + 1, b);
-            if (u1 && u2) {
-              if (i !== 0) {
-                this.triangles.push([v1, v2, u1], [u1, v2, u2]);
-              } else {
-                this.triangles.push([v1, u1, v2], [v2, u1, u2]);
+
+          cross = v1.cubeIndex & mask[1]
+          if (cross !== mask[1] && cross !== 0) {
+            if (a !== face1.a_size - 1) {
+              const u1 = face1.get(a + 1, b);
+              const u2 = face2.get(a + 1, b);
+              if (u1 && u2) {
+                if (u1 === v1) {
+                  this.triangles.push([v1.pos, v2.pos, u2.pos]);
+                } else if (u2 === v2) {
+                  this.triangles.push([v1.pos, v2.pos, u1.pos]);
+                } else {
+                  this.putQuad(v1.pos, v2.pos, u1.pos, u2.pos);
+                }
               }
             }
           }
