@@ -2,11 +2,14 @@
   "compilerOptions": {
     "declaration": true,
     "outDir": "dist",
+    "sourceMap": true,
     "lib": [
-      "ES2019"
+      "ES2019",
+      "ES2019.Array"
     ]
   },
   "include": [
-    "index.ts"
+    "index.ts",
+    "test/index.ts",
   ]
 }

@@ -7,9 +7,8 @@
   "scripts": {
     "prebuild": "rimraf ./dist",
     "build": "tsc",
-    "ts": "ts-node",
-    "pretest": "rimraf ./target/test.obj",
-    "test": "ts-node ./test/test.ts"
+    "pretest": "rimraf ./dist/test && tsc",
+    "test": "node ./dist/test/surfacenets.js"
   },
   "author": "",
   "license": "ISC",
@@ -17,12 +16,8 @@
     "@types/ndarray": "^1.0.8",
     "@types/node": "^14.14.14",
     "rimraf": "^3.0.2",
-    "ts-node": "^9.0.0",
-    "typescript": "^4.0.5"
+    "typescript": "^4.2.0-dev.20201227"
   },
   "dependencies": {
-    "hashmap-js": "^1.0.1",
-    "isosurface": "^1.0.0",
-    "three": "^0.77.0"
   }
 }

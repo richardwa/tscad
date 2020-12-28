@@ -1,3 +1,5 @@
+/// <reference path="../types.d.ts" />
+
 import { cubeVerts, edgeIndex, edgeTable } from './marchingcubes-tables';
 import { Vector } from './math';
 export type Bounds = [Vec3, Vec3];
@@ -209,6 +211,8 @@ export class SurfaceNets {
 
     // recursion
     const subResults = this._divideVolume(cube).map(this._doMarch);
+  
+    
 
     const cubeQuads = [
       [0, 3, 4, 7], // left
@@ -218,6 +222,8 @@ export class SurfaceNets {
       [0, 1, 3, 2], // bottom
       [4, 5, 7, 6],  // top
     ];
+    
+    const a = cubeQuads[0].map(n => subResults[n]);
 
     // output polygons - stitch together interior faces
     const masks = [
