@@ -7,8 +7,12 @@
   "scripts": {
     "prebuild": "rimraf ./dist",
     "build": "tsc --project tsconfig.build.json",
+    
     "pretest": "tsc",
-    "test": "node ./target/test/test.js"
+    "test": "node ./target/test/test.js",
+
+    "prets": "tsc",
+    "ts": "node"
   },
   "author": "",
   "license": "ISC",
