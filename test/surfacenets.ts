@@ -1,6 +1,6 @@
 import { union } from '../csg/boolean';
 import { rotate, translate } from '../csg/manipulate';
-import { Box, Shpere } from '../csg/primitives';
+import { Box, Sphere } from '../csg/primitives';
 import { processPolygons, writeOBJ } from '../src/render';
 import { SurfaceNets } from '../src/surfacenets';
 

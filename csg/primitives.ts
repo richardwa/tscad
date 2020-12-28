@@ -4,7 +4,7 @@ export function Circle(r: number = 1): Shape2 {
   return (p) => new Vector(p).magnitude() - r;
 }
 
-export function Shpere(r: number = 1): Shape3 {
+export function Sphere(r: number = 1): Shape3 {
   return (p) => new Vector(p).magnitude() - r;
 }
 

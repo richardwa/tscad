@@ -1,13 +1,13 @@
 import * as isosurface from 'isosurface';
 import { union } from '../csg/boolean';
 import { rotate, translate } from '../csg/manipulate';
-import { Box, Shpere } from '../csg/primitives';
+import { Box, Sphere } from '../csg/primitives';
 import { writeOBJ } from '../src/render';
 
 const shape = rotate('y', 15, rotate('z', 16,
   union({ radius: 3 },
     Box(20.2),
-    translate([10, 10, 10], Shpere(10)))));
+    translate([10, 10, 10], Sphere(10)))));
 
 const s = 30;
 ['surfaceNets', 'marchingCubes', 'marchingTetrahedra'].forEach(algo => {

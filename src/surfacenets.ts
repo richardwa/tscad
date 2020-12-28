@@ -16,7 +16,6 @@ export type CubeFace = {
 const getAsize = (a: CubeFace) => a.a_size;
 const getBsize = (a: CubeFace) => a.b_size;
 
-
 type CubeFace4 = [CubeFace, CubeFace, CubeFace, CubeFace];
 type CubeSurface = [CubeFace, CubeFace, CubeFace, CubeFace, CubeFace, CubeFace];
 const reduceCorners = (a: number, v: number, i: number) => {
@@ -46,17 +45,6 @@ const combineFaces = (max_a: number, max_b: number, faces: CubeFace4): CubeFace 
     return subCubeFace.get(Math.floor(a / a_ratio), Math.floor(b / b_ratio));
   }
 });
-
-function logFace(name: string, c: CubeFace) {
-  console.log("print face", name);
-  for (let j = c.b_size - 1; j >= 0; j--) {
-    const sb = [];
-    for (let i = 0; i < c.a_size; i++) {
-      sb.push(c.get(i, j) ? 1 : 0);
-    }
-    console.log(sb.join(' '));
-  }
-}
 
 const emptyFace = {
   a_size: 1,
@@ -171,9 +159,7 @@ export class SurfaceNets {
     return temp;
   }
 
-  count = 0;
   _doMarch = (cube: Cube): CubeSurface => {
-    const iteration = this.count++;
     const results = cube.map(this.fn);
     // console.log(iteration, results);
 
@@ -211,8 +197,8 @@ export class SurfaceNets {
 
     // recursion
     const subResults = this._divideVolume(cube).map(this._doMarch);
-  
-    
+
+
 
     const cubeQuads = [
       [0, 3, 4, 7], // left
@@ -222,7 +208,7 @@ export class SurfaceNets {
       [0, 1, 3, 2], // bottom
       [4, 5, 7, 6],  // top
     ];
-    
+
     const a = cubeQuads[0].map(n => subResults[n]);
 
     // output polygons - stitch together interior faces
@@ -240,8 +226,6 @@ export class SurfaceNets {
 
       const face1 = combineFaces(max_a, max_b, lower);
       const face2 = combineFaces(max_a, max_b, upper);
-      logFace(`${iteration}:${i} lower`, face1);
-      logFace(`${iteration}:${i} higher`, face2);
 
       for (let b = 0; b < face1.b_size; b++) {
         for (let a = 0; a < face1.a_size; a++) {
@@ -294,7 +278,6 @@ export class SurfaceNets {
       const max_a = Math.max(...faces.map(getAsize));
       const max_b = Math.max(...faces.map(getBsize));
       newSurface[f] = combineFaces(max_a, max_b, faces);
-      logFace(`iter${iteration}:${f}`, newSurface[f]);
     }
     return newSurface;
   }

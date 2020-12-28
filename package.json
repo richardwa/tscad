@@ -7,17 +7,15 @@
   "scripts": {
     "prebuild": "rimraf ./dist",
     "build": "tsc",
-    "pretest": "rimraf ./dist/test && tsc",
-    "test": "node ./dist/test/surfacenets.js"
+    "pretest": "tsc",
+    "test": "node ./dist/test/test.js"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/ndarray": "^1.0.8",
     "@types/node": "^14.14.14",
+    "isosurface": "^1.0.0",
     "rimraf": "^3.0.2",
-    "typescript": "^4.2.0-dev.20201227"
-  },
-  "dependencies": {
+    "typescript": "^4.1.3"
   }
 }

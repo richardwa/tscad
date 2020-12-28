@@ -1,13 +1,13 @@
-import { Shpere, Box, Circle, Rect } from '../csg/primitives';
+import { Sphere, Box, Circle, Rect } from '../csg/primitives';
 import { union } from '../csg/boolean';
 import { render } from '../src/render';
 import { revolve, tile } from '../csg/extrude';
 import { rotate, translate } from '../csg/manipulate';
 
-const shape = rotate('y', 15, rotate('z', 16,
+const shape = rotate('y', 0, rotate('z', 0,
   union({ radius: 3 },
     Box(20.2),
-    translate([10, 10, 10], Shpere(10)))));
+    translate([10, 10, 10], Sphere(10)))));
 
 const s = 256;
 
