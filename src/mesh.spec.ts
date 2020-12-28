@@ -1,4 +1,4 @@
-/// <reference path="./types.d.ts" />
+/// <reference path="../types.d.ts" />
 
 import { epsilon } from "./constants";
 import { MeshBuilder } from "./mesh";

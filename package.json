@@ -6,9 +6,9 @@
   "types": "dist/index.d.js",
   "scripts": {
     "prebuild": "rimraf ./dist",
-    "build": "tsc",
+    "build": "tsc --project tsconfig.build.json",
     "pretest": "tsc",
-    "test": "node ./dist/test/test.js"
+    "test": "node ./target/test/test.js"
   },
   "author": "",
   "license": "ISC",

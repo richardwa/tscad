@@ -1,5 +1,5 @@
 
-/// <reference path="./types.d.ts" />
+/// <reference path="../types.d.ts" />
 
 /**
  * Buffers 3D data, once z limit is reached, new layers will cover over old ones
