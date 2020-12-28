@@ -8,7 +8,7 @@ export const log: Log = (...args) => {
   }
 }
 
-function logFace(name: string, c: CubeFace) {
+export const logFace = (name: string, c: CubeFace) => {
   if (DEBUG) {
     console.log("print face", name);
     for (let j = c.b_size - 1; j >= 0; j--) {

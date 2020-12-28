@@ -2,7 +2,6 @@
 
 import * as fs from 'fs';
 import { MarchingCubes, Triangle } from './marchingcubes';
-import { MarchingCubesAdaptive } from './marchingcubes-adaptive';
 
 type Props = {
   name: string;
