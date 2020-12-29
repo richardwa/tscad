@@ -1,8 +1,7 @@
-import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from "constants";
 
 export type ScalableSquare<T> = {
-  forEach: (f: (t: T, i: number) => void) => void;
-  get: (n: number) => T;
+  forEach: (f: (t: T, x: number, y: number) => void) => void;
+  get: (x: number, y: number) => T;
   size: number;
 }
 
@@ -12,11 +11,11 @@ class SingletonSquare<T> implements ScalableSquare<T> {
   constructor(t: T) {
     this.t = t;
   }
-  forEach(f: (t: T, index: number) => void) {
-    f(this.t, 0);
+  forEach(f: (t: T, x: number, y: number) => void) {
+    f(this.t, 0, 0);
   }
-  get(n: number) {
-    if (n === 0) {
+  get(x: number, y: number) {
+    if (x === 0 && y === 0) {
       return this.t;
     }
   }
@@ -35,8 +34,7 @@ class NullSquare<T> implements ScalableSquare<T> {
   constructor(size: number) {
     this.size = size;
   }
-  forEach(f: (t: T, i: number) => void) {
-
+  forEach() {
   }
   get() {
     return null;
@@ -48,61 +46,50 @@ export type Square4<T> = [ScalableSquare<T>, ScalableSquare<T>, ScalableSquare<T
 class CombinedSquare<T> implements ScalableSquare<T> {
   list: ScalableSquare<T>[] = [];
   size: number;
-  private halfSize: number;
-  private quarterSize: number;
+  private half: number;
   constructor(size: number, arr: Square4<T>) {
-    this.size = size * 4;
-    this.halfSize = Math.floor(Math.sqrt(this.size));
-    this.quarterSize = this.halfSize / 2;
+    this.size = size;
+    this.half = size / 2;
     this.list = arr;
   }
 
-  forEach(f: (t: T, index: number) => void) {
+  forEach(f: (t: T, x: number, y: number) => void) {
     this.list.forEach((quad, i) => {
-      const x_offset = Math.floor(i % 2) * this.quarterSize;
-      const y_offset = Math.floor(i / 2) * this.quarterSize;
-      quad.forEach((q, j) => {
-        const x = x_offset + Math.floor(j % this.quarterSize);
-        const y = y_offset + Math.floor(j / this.quarterSize);
-        f(q, x + this.halfSize * y);
+      const x_offset = Math.floor(i % 2) * this.half;
+      const y_offset = Math.floor(i / 2) * this.half;
+      quad.forEach((q, a, b) => {
+        f(q, a + x_offset, b + y_offset);
       });
     });
   }
 
-  get(n: number) {
-    const x = Math.floor(n % this.halfSize);
-    const y = Math.floor(n / this.halfSize);
-    const quad = Math.floor(x / this.quarterSize) + 2 * Math.floor(y / this.quarterSize);
-    if (quad <= 3) {
-      const index = Math.floor(x % this.quarterSize) + this.quarterSize * Math.floor(y % this.quarterSize);
-      return this.list[quad].get(index);
+  get(x: number, y: number) {
+    if (x < this.size && y < this.size) {
+      const quad = Math.floor(x / this.half) + 2 * Math.floor(y / this.half);
+      const a = Math.floor(x % this.half);
+      const b = Math.floor(y % this.half);
+      return this.list[quad].get(a, b);
     }
   }
 }
 
 // position matters
 export const combine4Squares = <T>(arr: Square4<T>): ScalableSquare<T> => {
-  const quadSize = Math.max(...arr.map(q => q.size));
+  const size = Math.max(...arr.map(q => q.size)) * 2;
   const hasValues = arr.map(a => a instanceof NullSquare ? 0 : 1);
   if (Math.max(...hasValues) === 0) {
-    return new NullSquare(quadSize * 4);
+    return new NullSquare(size);
   } else {
-    return new CombinedSquare(quadSize, arr);
+    return new CombinedSquare(size, arr);
   }
 }
 
-export const printSquare = <T>(s: ScalableSquare<T>, f?: (t: T) => any) => {
-  const width = Math.floor(Math.sqrt(s.size));
-  let sb = []
-  for (let i = 0; i < s.size; i++) {
-    sb.push(s.get(i));
-    if (Math.floor(i % width) === width - 1) {
-      if (f) {
-        console.log(sb.map(f).join('|'));
-      } else {
-        console.log(sb.join('|'));
-      }
-      sb = [];
+export const printSquare = <T>(s: ScalableSquare<T>, f: (t: T) => any = o => o) => {
+  for (let j = 0; j < s.size; j++) {
+    const sb = [];
+    for (let i = 0; i < s.size; i++) {
+      sb.push(s.get(i, j));
     }
+    console.log(sb.map(f).join('|'));
   }
 }
