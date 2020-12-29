@@ -3,7 +3,7 @@
 import { llog, log } from './debug';
 import { cubeVerts, edgeIndex, edgeTable } from './marchingcubes-tables';
 import { Vector } from './math';
-import { ScalableSquare, createSquare, combine4Squares, Square4 } from './treesquares';
+import { ScalableSquare, createSquare, combine4Squares, Square4, printSquare } from './treesquares';
 export type Bounds = [Vec3, Vec3];
 export type Triangle = [Vec3, Vec3, Vec3];
 export type CubeCorners = [Vec3, Vec3, Vec3, Vec3, Vec3, Vec3, Vec3, Vec3]; // eight corners
@@ -131,6 +131,41 @@ export class SurfaceNets {
     return temp;
   }
 
+  findFaces = (axis, left: CubeFace, right: CubeFace) => {
+    // console.log("left");
+    // printSquare(left, t => t.pos ? t.type : 0);
+    // console.log("right");
+    // printSquare(right, t => t.pos ? t.type : 0);
+
+    const longer = left.size <= right.size ? left : right;
+    const shorter = left !== longer ? left : right;
+    const rowSize = Math.floor(Math.sqrt(longer.size)); // we only have square shaped faces
+
+    const search = (offset: number, cube: Cube, match: Cube, mask: number[]) => {
+      const corner1 = cube.type & mask[0];
+      const corner2 = cube.type & mask[1];
+      //if (corner1 !== corner2) {
+      const cube2 = longer.get(offset);
+      const match2 = shorter.get(offset);
+      if (cube2 && match2) {
+        this.putQuad(cube.pos, match.pos, cube2.pos, match2.pos);
+      }
+      //}
+    }
+
+    const searchFaces0 = axisDirectionMasks[2 * axis];
+    const searchFaces1 = axisDirectionMasks[2 * axis + 1];
+    // iterate over the longer side (i.e smaller cubes)
+    longer.forEach((cube, i) => {
+      const match = shorter.get(i);
+      if (!match) {
+        return;
+      }
+      search(i + 1, cube, match, searchFaces0);
+      search(i + rowSize, cube, match, searchFaces1);
+    });
+  }
+
   doMarch = (bounds: Bounds) => {
     const [lower, upper] = bounds;
     // evaluate this cube
@@ -182,43 +217,15 @@ export class SurfaceNets {
     // recursion
     const subResults = divideVolume(corners).map(c => this._doMarch(c, generation + 1));
 
+
     // output polygons on interior faces
     for (let axis = 0; axis < 3; axis++) {
       const a = cubeQuads[axis * 2].map(n => subResults[n][axis * 2 + 1]);
       const b = cubeQuads[axis * 2 + 1].map(n => subResults[n][axis * 2]);
-      // 4 quad pairs
-      for (let i = 0; i < a.length; i++) {
-        const left = a[i]; // not nessasily left, but should be lower side of the face pairs
-        const right = b[i];
-        const longer = left.size <= right.size ? left : right;
-        const shorter = left !== longer ? left : right;
-        const ratio = shorter.size / longer.size;
-        const rowSize = Math.floor(Math.sqrt(longer.size)); // we only have square shaped faces
-
-        const search = (offset: number, cube: Cube, match: Cube, mask: number[]) => {
-          const corner1 = cube.type & mask[0];
-          const corner2 = cube.type & mask[1];
-          if (corner1 !== corner2) {
-            const cube2 = longer.get(offset);
-            const match2 = shorter.get(Math.floor((offset) / ratio));
-            if (cube2 && match2) {
-              this.putQuad(cube.pos, match.pos, cube2.pos, match2.pos);
-            }
-          }
-        }
-
-        const searchFaces0 = axisDirectionMasks[2 * axis];
-        const searchFaces1 = axisDirectionMasks[2 * axis + 1];
-        // iterate over the longer side (i.e smaller cubes)
-        longer.forEach((cube, i) => {
-          const match = shorter.get(Math.floor(i / ratio));
-          if (!match) {
-            return;
-          }
-          search(i + 1, cube, match, searchFaces0);
-          search(i + rowSize, cube, match, searchFaces1);
-        });
-      }
+      // leaf results need to be combined in order to find faces
+      const left = combine4Squares(a as Square4<Cube>);
+      const right = combine4Squares(b as Square4<Cube>);
+      this.findFaces(axis, left, right);
     }
 
     // combine and return exterior faces
@@ -228,6 +235,7 @@ export class SurfaceNets {
     for (let f = 0; f < newSurface.length; f++) {
       const quads = cubeQuads[f].map(c => subResults[c][f]) as Square4<Cube>;
       newSurface[f] = combine4Squares(quads);
+      // printSquare(newSurface[f], t => t.pos ? t.type : 0);
     }
     return newSurface;
   }

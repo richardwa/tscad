@@ -16,7 +16,9 @@ class SingletonSquare<T> implements ScalableSquare<T> {
     f(this.t, 0);
   }
   get(n: number) {
-    return this.t;
+    if (n === 0) {
+      return this.t;
+    }
   }
 }
 
@@ -60,8 +62,8 @@ class CombinedSquare<T> implements ScalableSquare<T> {
       const x_offset = Math.floor(i % 2) * this.quarterSize;
       const y_offset = Math.floor(i / 2) * this.quarterSize;
       quad.forEach((q, j) => {
-        const x = x_offset + Math.floor(i % this.quarterSize);
-        const y = y_offset + Math.floor(i / this.quarterSize);
+        const x = x_offset + Math.floor(j % this.quarterSize);
+        const y = y_offset + Math.floor(j / this.quarterSize);
         f(q, x + this.halfSize * y);
       });
     });
@@ -89,13 +91,17 @@ export const combine4Squares = <T>(arr: Square4<T>): ScalableSquare<T> => {
   }
 }
 
-export const printSquare = <T>(s: ScalableSquare<T>) => {
+export const printSquare = <T>(s: ScalableSquare<T>, f?: (t: T) => any) => {
   const width = Math.floor(Math.sqrt(s.size));
   let sb = []
   for (let i = 0; i < s.size; i++) {
     sb.push(s.get(i));
     if (Math.floor(i % width) === width - 1) {
-      console.log(sb.join('|'));
+      if (f) {
+        console.log(sb.map(f).join('|'));
+      } else {
+        console.log(sb.join('|'));
+      }
       sb = [];
     }
   }
