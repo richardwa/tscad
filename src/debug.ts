@@ -2,21 +2,14 @@ import { CubeFace } from "./surfacenets";
 
 const DEBUG = true;
 type Log = typeof console.log;
-export const log: Log = (...args) => {
+export const llog = (f: Log) => {
   if (DEBUG) {
-    console.log(...args);
+    console.log(f());
   }
 }
 
-export const logFace = (name: string, c: CubeFace) => {
+export const log: Log = (...args) => {
   if (DEBUG) {
-    console.log("print face", name);
-    for (let j = c.b_size - 1; j >= 0; j--) {
-      const sb = [];
-      for (let i = 0; i < c.a_size; i++) {
-        sb.push(c.get(i, j) ? 1 : 0);
-      }
-      console.log(sb.join(' '));
-    }
+    console.log(...args);
   }
 }

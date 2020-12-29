@@ -7,12 +7,8 @@
   "scripts": {
     "prebuild": "rimraf ./dist",
     "build": "tsc --project tsconfig.build.json",
-    
-    "pretest": "tsc",
-    "test": "node ./target/test/test.js",
-
-    "prets": "tsc",
-    "ts": "node"
+    "test": "ts-node ./test/test.ts",
+    "ts": "ts-node"
   },
   "author": "",
   "license": "ISC",
@@ -20,6 +16,8 @@
     "@types/node": "^14.14.14",
     "isosurface": "^1.0.0",
     "rimraf": "^3.0.2",
+    "ts-node": "^9.1.1",
     "typescript": "^4.1.3"
-  }
+  },
+  "dependencies": {}
 }
