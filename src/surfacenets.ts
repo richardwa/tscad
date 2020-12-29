@@ -56,8 +56,8 @@ const divideVolume = (pos: CubeCorners): CubeCorners[] => {
 }
 
 const axisDirectionMasks: number[][] = [
-  [6, 5], [6, 2],
-  [7, 6], [6, 2],
+  [5, 6], [6, 2],
+  [6, 7], [2, 6],
   [7, 6], [6, 5]
 ].map(i => i.map(j => 1 << j));
 
@@ -72,7 +72,7 @@ export class SurfaceNets {
   }
 
   putQuad = (a: Vec3, b: Vec3, c: Vec3, d: Vec3) => {
-    this.triangles.push([a, b, c], [c, b, d]);
+    this.triangles.push([a, b, c], [c, d, a]);
   }
 
   findVertex = (cubeType: number, pos: CubeCorners, results: number[]): Vec3 => {
@@ -139,7 +139,11 @@ export class SurfaceNets {
         const cube2 = left.get(x, y);
         const match2 = right.get(x, y);
         if (cube2 && match2) {
-          this.putQuad(cube.pos, match.pos, cube2.pos, match2.pos);
+          if (corner1 > corner2) {
+            this.putQuad(cube.pos, match.pos, match2.pos, cube2.pos);
+          } else {
+            this.putQuad(cube2.pos, match2.pos, match.pos, cube.pos);
+          }
         }
       }
     }
@@ -206,7 +210,6 @@ export class SurfaceNets {
 
     // recursion
     const subResults = divideVolume(corners).map(c => this._doMarch(c, generation + 1));
-
 
     // output polygons on interior faces
     for (let axis = 0; axis < 3; axis++) {

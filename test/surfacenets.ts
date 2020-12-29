@@ -13,7 +13,7 @@ const shape = rotate('y', 0, rotate('z', 45,
 
 const s = 12;
 console.time('render');
-const surfacenets = new SurfaceNets(8, shape);
+const surfacenets = new SurfaceNets(1, shape);
 surfacenets.doMarch([[-s, -s, -s], [s, s, s]]);
 console.timeEnd('render');
 
