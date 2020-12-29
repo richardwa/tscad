@@ -148,6 +148,8 @@ export class SurfaceNets {
       }
     }
 
+    const middle = Math.floor(left.size / 2);
+
     const searchFaces0 = axisDirectionMasks[2 * axis];
     const searchFaces1 = axisDirectionMasks[2 * axis + 1];
     // iterate over the longer side (i.e smaller cubes)
@@ -156,8 +158,12 @@ export class SurfaceNets {
       if (!match) {
         return;
       }
-      search(i, j + 1, cube, match, searchFaces0);
-      search(i + 1, j, cube, match, searchFaces1);
+      if (axis < 1 || (i + 1) !== middle) {
+        search(i + 1, j, cube, match, searchFaces1);
+      }
+      if (axis !== 2 || (j + 1) !== middle) {
+        search(i, j + 1, cube, match, searchFaces0);
+      }
     });
   }
 
