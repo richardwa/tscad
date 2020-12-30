@@ -4,6 +4,7 @@ import { llog, log } from './debug';
 import { cubeVerts, edgeIndex, edgeTable } from './marchingcubes-tables';
 import { CubeCorners, divideVolume, Vector } from './math';
 import { ScalableSquare, createSquare, combine4Squares, Square4, printSquare, getSize, scaleSquare, getLine } from './treesquares';
+import { findVertex } from './util';
 export type Bounds = [Vec3, Vec3];
 export type Triangle = [Vec3, Vec3, Vec3];
 
@@ -35,15 +36,15 @@ const cubeQuads = [
   [4, 5, 7, 6], // top
 ];
 const axisDirectionMasks: number[][][] = [
-  [[0, 1], [3, 2], [7, 6], [4, 5]],
-  [[0, 3], [1, 2], [5, 6], [4, 7]],
-  [[0, 4], [1, 5], [2, 6], [3, 7]]
+  [[7, 6], [4, 5], [0, 1], [3, 2]],
+  [[5, 6], [1, 2], [0, 3], [4, 7]],
+  [[2, 6], [3, 7], [0, 4], [1, 5]]
 ].map((i: number[][]) => i.map(j => j.map(k => 1 << k)));
 
 const checkCube = (cube: Cube, axis: number, corner: number): number => {
   const pair = axisDirectionMasks[axis][corner % 4];
-  const corner1 = cube.type & pair[0];
-  const corner2 = cube.type & pair[1];
+  const corner1 = (cube.type & pair[0]) > 0;
+  const corner2 = (cube.type & pair[1]) > 0;
   if (corner1 < corner2) {
     return 1;
   } else if (corner1 > corner2) {
@@ -93,13 +94,16 @@ export class SurfaceNets {
         const nextAxis2 = (nextAxis + 1) % 3;
         for (let i = 0; i < 2; i++) {
           const baseCorner = i * 2;
-          const check = checkCube(cube, axis, baseCorner + 2);
+          const check = checkCube(cube, axis, baseCorner);
           if (check !== 0) {
             const right = Array.from(cube.neightbors[i][nextAxis])
-              .filter(c => checkCube(c, axis, baseCorner + 3) !== 0);
+              .filter(c => checkCube(c, axis, baseCorner + 1) !== 0);
             const top = Array.from(cube.neightbors[i][nextAxis2])
-              .filter(c => checkCube(c, axis, baseCorner + 2) !== 0);
-            this.putTriangles(cube, [...right, ...top], check === -1);
+              .filter(c => checkCube(c, axis, baseCorner + 3) !== 0);
+            const combined = [...right, ...top];
+            if (combined.length >= 2) {
+              this.putTriangles(cube, combined, check === -1);
+            }
           }
         }
       }
@@ -125,11 +129,10 @@ export class SurfaceNets {
       if (cubeIndex === 0xff || cubeIndex === 0x00) {
         return emptyCube;
       }
-
       const center = new Vector(corners[0]).add(corners[6]).scale(1 / 2).result;
-      //const center = this.findVertex(cubeIndex, corners, results);
-      //const val = this.fn(center);
-      if (true && name !== "071") {
+      //const center = findVertex(cubeIndex, corners, results);
+      const val = this.fn(center);
+      if (true || Math.abs(val) < 0.5) {
         const cube: Cube = {
           corners,
           cornerResults: results,
