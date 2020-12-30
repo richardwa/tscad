@@ -21,6 +21,9 @@ const c = combine4Squares([a, b, a, b]);
 console.log("test c", c.size);
 printSquare(c, o => o === null ? ' ' : o);
 
+const d = combine4Squares([a, b, a, b], 8);
+console.log("test d", d.size);
+printSquare(d, o => o === null ? ' ' : o);
 
 const mat: number[][] = [[], [], [], []];
 const width = Math.sqrt(c.size);
@@ -31,3 +34,4 @@ c.forEach((n, i, j) => {
 });
 console.log(count);
 console.log(mat);
+

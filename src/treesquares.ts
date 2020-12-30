@@ -41,6 +41,42 @@ class NullSquare<T> implements ScalableSquare<T> {
   }
 }
 
+class EnlargedSquare<T> implements ScalableSquare<T> {
+  private t: ScalableSquare<T>;
+  size: number;
+  scale: number;
+  constructor(t: ScalableSquare<T>, scale: number) {
+    this.t = t;
+    this.size = scale * t.size;
+    this.scale = scale;
+  }
+  forEach(f: (t: T, x: number, y: number) => void) {
+    this.t.forEach((o, i, j) => {
+      for (let a = 0; a < this.scale; a++) {
+        for (let b = 0; b < this.scale; b++) {
+          f(o, i + a, j + b);
+        }
+      }
+    });
+  }
+
+  get(x: number, y: number) {
+    if (x < this.size && y < this.size) {
+      x = Math.floor(x / this.scale);
+      y = Math.floor(y / this.scale);
+      return this.t.get(x, y);
+    }
+  }
+}
+
+export const scaleSquare = <T>(t: ScalableSquare<T>, size: number) => {
+  if (t.size === size) {
+    return t;
+  } else {
+    return new EnlargedSquare<T>(t, size / Math.floor(t.size));
+  }
+}
+
 export type Square4<T> = [ScalableSquare<T>, ScalableSquare<T>, ScalableSquare<T>, ScalableSquare<T>];
 
 class CombinedSquare<T> implements ScalableSquare<T> {
@@ -73,16 +109,40 @@ class CombinedSquare<T> implements ScalableSquare<T> {
   }
 }
 
+export const getSize = <T>(t: ScalableSquare<T>) => t.size;
+
 // position matters
-export const combine4Squares = <T>(arr: Square4<T>): ScalableSquare<T> => {
-  const size = Math.max(...arr.map(q => q.size)) * 2;
+export const combine4Squares = <T>(arr: Square4<T>, size?: number): ScalableSquare<T> => {
+  if (!size) {
+    size = Math.max(...arr.map(getSize)) * 2;
+  }
   const hasValues = arr.map(a => a instanceof NullSquare ? 0 : 1);
   if (Math.max(...hasValues) === 0) {
     return new NullSquare(size);
   } else {
-    return new CombinedSquare(size, arr);
+    const list = arr.map(a => {
+      const ratio = Math.floor((size / 2) / a.size);
+      if (ratio !== 1) {
+        return new EnlargedSquare(a, ratio);
+      } else {
+        return a;
+      }
+    }) as Square4<T>;
+    return new CombinedSquare(size, list);
   }
 }
+export const getLine = <T>(n: ScalableSquare<T>, row?: number, col?: number) => {
+  const list: T[] = [];
+  n.forEach((t, x, y) => {
+    if (!col && x === row) {
+      list[y] = t;
+    }
+    if (!row && col === y) {
+      list[x] = t;
+    }
+  });
+  return list;
+};
 
 export const printSquare = <T>(s: ScalableSquare<T>, f: (t: T) => any = o => o) => {
   for (let j = 0; j < s.size; j++) {
