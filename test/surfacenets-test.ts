@@ -7,8 +7,8 @@ import { SurfaceNets } from '../src/surfacenets';
 // const shape = Box(30);
 const shape = rotate('y', 15, rotate('z', 45,
   union({ radius: 3 },
-    Box(21),
-    translate([10, 10, 10], Sphere(10))
+    Box(30),
+    translate([10, 10, 10], Sphere(15))
   )));
 
 const s = 32;
@@ -19,7 +19,3 @@ console.timeEnd('render');
 
 const mesh = processPolygons(surfacenets.triangles);
 writeOBJ({ faces: mesh.faces, vertices: mesh.vertices, name: 'surfacenets' });
-
-
-
-

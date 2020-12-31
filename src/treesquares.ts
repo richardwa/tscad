@@ -131,18 +131,6 @@ export const combine4Squares = <T>(arr: Square4<T>, size?: number): ScalableSqua
     return new CombinedSquare(size, list);
   }
 }
-export const getLine = <T>(n: ScalableSquare<T>, row?: number, col?: number) => {
-  const list: T[] = [];
-  n.forEach((t, x, y) => {
-    if (!col && x === row) {
-      list[y] = t;
-    }
-    if (!row && col === y) {
-      list[x] = t;
-    }
-  });
-  return list;
-};
 
 export const printSquare = <T>(s: ScalableSquare<T>, f: (t: T) => any = o => o) => {
   for (let j = 0; j < s.size; j++) {

@@ -1,15 +1,17 @@
 /// <reference path="../types.d.ts" />
 
+import { stringify } from 'querystring';
 import { llog, log } from './debug';
 import { cubeVerts, edgeIndex, edgeTable } from './marchingcubes-tables';
 import { CubeCorners, divideVolume, Vector } from './math';
-import { ScalableSquare, createSquare, combine4Squares, Square4, printSquare, getSize, scaleSquare, getLine } from './treesquares';
+import { ScalableSquare, createSquare, combine4Squares, Square4, printSquare, getSize, scaleSquare } from './treesquares';
 import { findVertex } from './util';
 export type Bounds = [Vec3, Vec3];
 export type Triangle = [Vec3, Vec3, Vec3];
 
 type Neighbors = [Set<Cube>, Set<Cube>, Set<Cube>];
 type Cube = {
+  name: string;
   corners: CubeCorners;
   cornerResults: number[];
   type: number;
@@ -65,14 +67,11 @@ export class SurfaceNets {
     this.fn = shape;
   }
 
-  putTriangles = (cube: Cube, neighbors: Cube[], reverse: boolean) => {
+  putTriangles = (cube: Cube, neighbors: Cube[]) => {
     let head = neighbors[0];
     for (let i = 1; i < neighbors.length; i++) {
-      if (reverse) {
-        this.triangles.push([cube.pos, neighbors[i].pos, head.pos]);
-      } else {
-        this.triangles.push([cube.pos, head.pos, neighbors[i].pos]);
-      }
+      this.triangles.push([cube.pos, neighbors[i].pos, head.pos]);
+      this.triangles.push([cube.pos, head.pos, neighbors[i].pos]);
       head = neighbors[i];
     }
   }
@@ -84,9 +83,7 @@ export class SurfaceNets {
       v.map((o: number, i: number) =>
         o ? upper[i] : lower[i]) as Vec3);
 
-    this._doMarch(vertexPositions as CubeCorners, "");
-
-    console.log(this.vecticies.length);
+    this.findVertices(vertexPositions as CubeCorners, "");
 
     this.vecticies.forEach(cube => {
       for (let axis = 0; axis < 3; axis++) {
@@ -97,12 +94,18 @@ export class SurfaceNets {
           const check = checkCube(cube, axis, baseCorner);
           if (check !== 0) {
             const right = Array.from(cube.neightbors[i][nextAxis])
-              .filter(c => checkCube(c, axis, baseCorner + 1) !== 0);
+              .filter(c => checkCube(c, axis, baseCorner + 1) !== 0)
+            //.sort((a, b) => (a.pos[nextAxis] - b.pos[nextAxis]));
             const top = Array.from(cube.neightbors[i][nextAxis2])
-              .filter(c => checkCube(c, axis, baseCorner + 3) !== 0);
-            const combined = [...right, ...top];
+              .filter(c => checkCube(c, axis, baseCorner + 3) !== 0)
+            //.sort((a, b) => (a.pos[nextAxis2] - b.pos[nextAxis2]));
+            const combined = check === -1 ? [...right, ...top] : [...top, ...right];
+
+            if (combined.length >= 3) {
+              console.log(cube.name, axis, combined.map(o => o.name));
+            }
             if (combined.length >= 2) {
-              this.putTriangles(cube, combined, check === -1);
+              this.putTriangles(cube, combined.filter(p => cube.name !== "05" || p.name !== "107"));
             }
           }
         }
@@ -110,7 +113,7 @@ export class SurfaceNets {
     });
   };
 
-  _doMarch = (corners: CubeCorners, name: string): CubeSurface => {
+  findVertices = (corners: CubeCorners, name: string): CubeSurface => {
     const results = corners.map(this.fn);
     const lower = corners[0];
     const upper = corners[6];
@@ -129,26 +132,25 @@ export class SurfaceNets {
       if (cubeIndex === 0xff || cubeIndex === 0x00) {
         return emptyCube;
       }
-      const center = new Vector(corners[0]).add(corners[6]).scale(1 / 2).result;
-      //const center = findVertex(cubeIndex, corners, results);
+      //const center = new Vector(corners[0]).add(corners[6]).scale(1 / 2).result;
+      const center = findVertex(cubeIndex, corners, results);
       const val = this.fn(center);
-      if (true || Math.abs(val) < 0.5) {
-        const cube: Cube = {
-          corners,
-          cornerResults: results,
-          type: cubeIndex,
-          pos: center,
-          neightbors: [[new Set(), new Set(), new Set()], [new Set(), new Set(), new Set()]]
-        };
-        this.vecticies.push(cube);
-        const cubeFace: CubeFace = createSquare(cube);
-        // terminate recursion
-        return [cubeFace, cubeFace, cubeFace, cubeFace, cubeFace, cubeFace];
-      }
+      const cube: Cube = {
+        name,
+        corners,
+        cornerResults: results,
+        type: cubeIndex,
+        pos: center,
+        neightbors: [[new Set(), new Set(), new Set()], [new Set(), new Set(), new Set()]]
+      };
+      this.vecticies.push(cube);
+      const cubeFace: CubeFace = createSquare(cube);
+      // terminate recursion
+      return [cubeFace, cubeFace, cubeFace, cubeFace, cubeFace, cubeFace];
     }
 
     // recursion
-    const subResults = divideVolume(corners).map((c, i) => this._doMarch(c, `${name}${i}`));
+    const subResults = divideVolume(corners).map((c, i) => this.findVertices(c, `${name}${i}`));
 
     // assign neighbors on interior faces
     for (let axis = 0; axis < 3; axis++) {

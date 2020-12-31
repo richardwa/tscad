@@ -12,7 +12,7 @@ const shape = rotate('y', 0, rotate('z', 0,
 const s = 256;
 
 render({
-  name: "test",
+  name: "marchingcubes",
   shape,
   cubeSize: 1,
   bounds: [[-s, -s, -s], [s, s, s]]

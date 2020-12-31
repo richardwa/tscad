@@ -20,7 +20,7 @@ const s = 30;
   console.log("vertices", mesh.positions.length);
   console.log("faces", mesh.cells.length);
 
-  writeOBJ({ faces: mesh.cells, vertices: mesh.positions, name: algo });
+  writeOBJ({ faces: mesh.cells, vertices: mesh.positions, name: `lib-${algo}` });
 
 })
 
