@@ -1,11 +1,9 @@
 /// <reference path="../types.d.ts" />
 
-import { stringify } from 'querystring';
-import { llog, log } from './debug';
-import { cubeVerts, edgeIndex, edgeTable } from './marchingcubes-tables';
-import { CubeCorners, divideVolume, Vector } from './math';
+import { cubeVerts } from './marchingcubes-tables';
+import { Vector } from './math';
 import { ScalableSquare, createSquare, combine4Squares, Square4, printSquare, getSize, scaleSquare } from './treesquares';
-import { findVertex } from './util';
+import { CubeCorners, divideVolume, findVertex } from './util';
 export type Bounds = [Vec3, Vec3];
 export type Triangle = [Vec3, Vec3, Vec3];
 

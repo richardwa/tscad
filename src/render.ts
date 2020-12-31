@@ -1,7 +1,7 @@
 /// <reference path="../types.d.ts" />
 
 import * as fs from 'fs';
-import { MarchingCubes, Triangle } from './marchingcubes';
+import { MarchingCubes } from './marchingcubes';
 
 type Props = {
   name: string;

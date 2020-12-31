@@ -1,6 +1,6 @@
 import { Vector } from './math';
 import { triTable, edgeIndex, cubeVerts, edgeTable } from './marchingcubes-tables';
-import { epsilon } from './constants';
+import { interpolate } from './util';
 export type Bounds = [Vec3, Vec3];
 export type Triangle = [Vec3, Vec3, Vec3];
 
@@ -22,11 +22,10 @@ export class MarchingCubes {
         o ? upper[i] : lower[i]) as Vec3);
     const results = vertexPositions.map(this.fn);
     this._doMarch(vertexPositions, results);
-
   };
- 
+
   _divideVolume = (dim: number, results: number[], vertexPositions: Vec3[]) => {
-    
+
     const lower = vertexPositions[0];
     const upper = vertexPositions[6];
     const halfway = (lower[dim] + upper[dim]) / 2;
@@ -130,7 +129,7 @@ export class MarchingCubes {
       const v1 = results[vertexType1];
       const p2 = vertexPositions[vertexType2];
       const v2 = results[vertexType2];
-      intercepts[i] = this.interpolate(p1, v1, p2, v2);
+      intercepts[i] = interpolate(p1, v1, p2, v2, this.fn);
     }
 
     // get triangles, there can many triangles that reuse the same intercepts
@@ -144,33 +143,5 @@ export class MarchingCubes {
       }
       this.triangles.push(triangle);
     }
-  }
-
-  interpolate = (p1: Vec3, v1: number, p2: Vec3, v2: number) => {
-    // the points are coming in from a cube, find the axis we are moving on
-    const limit = 16;
-    // we can use this trick, we are on axis cubes, otherwise full vector math is required
-    const axis = p1[0] !== p2[0] ? 0 : (p1[1] !== p2[1] ? 1 : 2);
-    const temp = [...p1] as Vec3;
-    let low = p1[axis];
-    let high = p2[axis];
-    for (let i = 0; i < limit; i++) {
-      const middle = (low + high) / 2;
-      temp[axis] = middle;
-      const midVal = this.fn(temp);
-      if (Math.abs(midVal) < epsilon) {
-        break;
-      } else if (Math.sign(midVal) === Math.sign(v1)) {
-        low = middle;
-        v1 = midVal
-      } else {
-        high = middle;
-        v2 = midVal;
-      }
-      if (i === limit - 1) {
-        console.log("reached limit of interpolation", axis, temp, p1, v1, p2, v2);
-      }
-    }
-    return temp;
   }
 }
