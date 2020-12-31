@@ -14,6 +14,13 @@ export class Vector<T extends number[]>{
     this.result = a;
     return this;
   }
+  dot(v: T) {
+    let sum = 0;
+    for (let i in this.result) {
+      sum += this.result[i] * v[i];
+    }
+    return sum;
+  }
 
   add(v: T) {
     const a = [] as T;
@@ -58,9 +65,8 @@ export class Vector<T extends number[]>{
 }
 
 
-
 // return x between a and b
-function clamp(x: number, a: number, b: number) {
+export function clamp(x: number, a: number, b: number) {
   if (x < a) {
     return a;
   } else if (x > b) {

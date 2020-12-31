@@ -1,14 +1,14 @@
 import { union } from '../csg/boolean';
 import { rotate, translate } from '../csg/manipulate';
-import { Box, Sphere } from '../csg/primitives';
+import { box, sphere } from '../csg/primitives';
 import { processPolygons, writeOBJ } from '../src/render';
 import { SurfaceNets } from '../src/surfacenets';
 
 // const shape = Box(30);
 const shape = rotate('y', 15, rotate('z', 45,
   union({ radius: 3 },
-    Box(30),
-    translate([10, 10, 10], Sphere(15))
+    box(30),
+    translate([10, 10, 10], sphere(15))
   )));
 
 const s = 32;
