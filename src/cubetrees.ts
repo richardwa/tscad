@@ -137,9 +137,8 @@ export class Cube<T, E, V> {
         fe[i].push(new Edge<T, E, V>([center, faceCenter]))
       }
     }
-    // all edges are instantiated, 
-
-
+    // all edges are instantiated, now its a matter of tediously 
+    // going through the naming scheme to list all edges for all octants
     const children: OctArray<Cube<T, E, V>> = [
       new Cube(`${this.name}0`, [
         ce[0][0], fe[4][0], fe[0][3], ce[3][0],
@@ -147,36 +146,39 @@ export class Cube<T, E, V> {
         ce[8][0], fe[2][0], fe[4][4], fe[0][1]
       ]),
       new Cube(`${this.name}1`, [
-        ce[0][1],ce[1][0],fe[4][1],fe[4][0],
-        fe[2][1],fe[1][0],fe[1][4],fe[2][4],
-        fe[2][0],ce[9][0],fe[1][2],fe[4][4]
+        ce[0][1], ce[1][0], fe[4][1], fe[4][0],
+        fe[2][1], fe[1][0], fe[1][4], fe[2][4],
+        fe[2][0], ce[9][0], fe[1][2], fe[4][4]
       ]),
       new Cube(`${this.name}2`, [
-        fe[4][1],ce[1][1],ce[2][1],fe[4][2],
-        fe[1][4],fe[1][2],fe[3][1],fe[3][4],
-        fe[4][4],fe[1][1],ce[10][0],fe[3][0]
+        fe[4][1], ce[1][1], ce[2][1], fe[4][2],
+        fe[1][4], fe[1][2], fe[3][1], fe[3][4],
+        fe[4][4], fe[1][1], ce[10][0], fe[3][0]
       ]),
       new Cube(`${this.name}3`, [
-        fe[4][3],fe[4][2],ce[2][0],ce[3][1],
-        fe[0][4],fe[3][0],fe[3][3],fe[0][2],
-        fe[0][1],fe[4][4],fe[3][0],ce[11][0]
+        fe[4][3], fe[4][2], ce[2][0], ce[3][1],
+        fe[0][4], fe[3][0], fe[3][3], fe[0][2],
+        fe[0][1], fe[4][4], fe[3][0], ce[11][0]
       ]),
       new Cube(`${this.name}4`, [
         fe[2][3], fe[2][4], fe[0][4], fe[0][0],
-        ce[4][0], fe[]
-
+        ce[4][0], fe[5][0], fe[5][3], ce[7][0],
+        ce[8][1], fe[2][2], fe[5][4], fe[0][3]
       ]),
       new Cube(`${this.name}5`, [
-        fe[2][1],fe[1][0],fe[1][4],fe[2][4],
-
+        fe[2][1], fe[1][0], fe[1][4], fe[2][4],
+        ce[4][1], ce[5][0], fe[5][1], fe[5][0],
+        fe[2][2], ce[9][1], fe[1][3], fe[5][4]
       ]),
       new Cube(`${this.name}6`, [
-        fe[1][4],fe[1][2],fe[3][1],fe[3][4],
-
+        fe[1][4], fe[1][2], fe[3][1], fe[3][4],
+        fe[5][1], ce[5][1], ce[6][1], fe[5][2],
+        fe[5][4], fe[1][3], ce[10][1], fe[3][2]
       ]),
       new Cube(`${this.name}7`, [
-        fe[0][4],fe[3][0],fe[3][3],fe[0][2],
-        
+        fe[0][4], fe[3][0], fe[3][3], fe[0][2],
+        fe[5][3], fe[5][2], ce[6][0], ce[7][1],
+        fe[0][3], fe[5][4], fe[3][2], ce[11][1]
       ]),
     ];
     this.children = children;
