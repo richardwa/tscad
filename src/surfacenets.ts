@@ -1,6 +1,6 @@
 /// <reference path="../types.d.ts" />
 
-import { cubeVerts } from './marchingcubes-tables';
+import { cubeVerts, faceToCorners } from './marchingcubes-tables';
 import { Vector } from './math';
 import { ScalableSquare, createSquare, combine4Squares, Square4, printSquare, getSize, scaleSquare } from './treesquares';
 import { CubeCorners, divideVolume, findVertex } from './util';
@@ -27,14 +27,6 @@ const reduceCorners = (a: number, v: number, i: number) => {
   }
   return a;
 };
-const cubeQuads = [
-  [0, 3, 4, 7], // left
-  [1, 2, 5, 6], // right
-  [0, 1, 4, 5], // front
-  [3, 2, 7, 6], // back
-  [0, 1, 3, 2], // bottom
-  [4, 5, 7, 6], // top
-];
 const axisDirectionMasks: number[][][] = [
   [[7, 6], [4, 5], [0, 1], [3, 2]],
   [[5, 6], [1, 2], [0, 3], [4, 7]],
@@ -152,8 +144,8 @@ export class SurfaceNets {
 
     // assign neighbors on interior faces
     for (let axis = 0; axis < 3; axis++) {
-      const a = cubeQuads[axis * 2].map(n => subResults[n][axis * 2 + 1]);
-      const b = cubeQuads[axis * 2 + 1].map(n => subResults[n][axis * 2]);
+      const a = faceToCorners[axis * 2].map(n => subResults[n][axis * 2 + 1]);
+      const b = faceToCorners[axis * 2 + 1].map(n => subResults[n][axis * 2]);
       for (let i = 0; i < 4; i++) {
         const size = Math.max(a[i].size, b[i].size);
         const left = scaleSquare(a[i], size);
@@ -171,7 +163,7 @@ export class SurfaceNets {
     // combine and return exterior faces
     const newSurface = new Array(6) as CubeSurface;
     for (let f = 0; f < newSurface.length; f++) {
-      const quads = cubeQuads[f].map(c => subResults[c][f]) as Square4<Cube>;
+      const quads = faceToCorners[f].map(c => subResults[c][f]) as Square4<Cube>;
       newSurface[f] = combine4Squares(quads);
     }
     return newSurface;

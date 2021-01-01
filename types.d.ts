@@ -1,3 +1,10 @@
+type Pair<T> = [T, T];
+type TriArray<T> = [T, T, T];
+type QuadArray<T> = [T, T, T, T];
+type HexArray<T> = [T, T, ...QuadArray<T>];
+type OctArray<T> = [...QuadArray<T>, ...QuadArray<T>];
+type Array12<T> = [...HexArray<T>, ...HexArray<T>];
+
 type Vec2 = [number, number];
 type Vec3 = [number, number, number];
 

@@ -9,14 +9,17 @@
 
 
 /** 
-
-   7 ----- 6
-  /|      /|
- / |     / |
-4 -|--- 5  |
-|  3 ---|- 2
-| /     | /
-0 ----- 1
+Corner numbering
+   7 ----------- 6
+  /|            /|
+ / |           / |
+4 -|--------- 5  |
+|  |          |  | 
+|  |          |  |
+|  3 ---------|- 2
+| /           |  /
+|/            | /
+0 ----------- 1
 */
 export const cubeVerts = [
   [0, 0, 0]
@@ -32,15 +35,16 @@ export const cubeVerts = [
 
 
 /** 
+ * Edge numbering
          6
-     o ------- o
-   7/|       5/|
-  o -|--4-- o  | 10
-  |  |     9|  |
- 8|  o -----|- o 
-  |3/       | /1
-  o ------- o
-      0
+     -----------
+  7 /|11     5/| 10
+  ---|--4----  | 
+8 |  |      |9 |
+  |  ----2--|--- 
+  |/3       | /1
+  -----0-----
+      
 */
 export const edgeIndex = [
   [0, 1],
@@ -58,12 +62,22 @@ export const edgeIndex = [
 ];
 
 export const faceToEdges = [
-  [8, 3, 11, 7], // 0 - left
-  [9, 1, 10, 5], // 1 - right
-  [0, 9, 4, 8],  // 2 - front
-  [2, 10, 6, 11],// 3 - back
-  [0, 1, 2, 3],  // 4 - bottom
-  [4, 5, 6, 7]   // 5 - top
+  [8, 3, 11, 7], // 0 - Left
+  [9, 1, 10, 5], // 1 - Right
+  [0, 9, 4, 8],  // 2 - Front
+  [2, 10, 6, 11],// 3 - Back
+  [0, 1, 2, 3],  // 4 - Bottom
+  [4, 5, 6, 7]   // 5 - Top
+];
+
+
+export const faceToCorners = [
+  [0, 3, 4, 7], // left
+  [1, 2, 5, 6], // right
+  [0, 1, 4, 5], // front
+  [3, 2, 7, 6], // back
+  [0, 1, 3, 2], // bottom
+  [4, 5, 7, 6], // top
 ];
 
 export const edgeToFaces = [
@@ -113,7 +127,7 @@ export const edgeTable = new Uint32Array([
   0x69c, 0x795, 0x49f, 0x596, 0x29a, 0x393, 0x99, 0x190,
   0xf00, 0xe09, 0xd03, 0xc0a, 0xb06, 0xa0f, 0x905, 0x80c,
   0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x0]);
-  
+
 export const triTable = [
   [],
   [0, 8, 3],
