@@ -1,4 +1,4 @@
-import { cubeVerts, faceToCorners, faceToEdges } from "./marchingcubes-tables";
+import { cubeVerts, edgeIndex, faceToCorners, faceToEdges } from "./marchingcubes-tables";
 import { Vector } from "./math";
 
 
@@ -52,7 +52,9 @@ export const createCube = <T, E, V>(bounds: [Vec3, Vec3]): Cube<T, E, V> => {
     v.map((o: number, i: number) =>
       o ? upper[i] : lower[i]) as Vec3);
   const corners = vertexPositions.map(p => new Corner(p)) as OctArray<Corner<T, E, V>>;
-  return new Cube("", corners, null);
+  const edges = edgeIndex.map(n =>
+    new Edge<T, E, V>([corners[n[0]], corners[n[1]]])) as Array12<Edge<T, E, V>>;
+  return new Cube("", edges);
 }
 
 
