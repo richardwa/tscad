@@ -22,15 +22,21 @@ export function render(p: Props) {
   writeOBJ({ faces, vertices, outDir, name: p.name });
 }
 
-export function writeOBJ({ faces, vertices, outDir = './target', name }) {
-  const os = fs.createWriteStream(`${outDir}/${name}.obj`);
+type WriteObjProps = {
+  faces: number[][];
+  vertices: number[][];
+  name: string;
+  outDir?: string;
+};
+export function writeOBJ(p: WriteObjProps) {
+  const os = fs.createWriteStream(`${p.outDir || './target'}/${p.name}.obj`);
 
   //write obj file
-  for (const pos of vertices) {
+  for (const pos of p.vertices) {
     os.write("v " + pos.join(' ') + '\n');
   }
 
-  for (const face of faces) {
+  for (const face of p.faces) {
     os.write("f " + face.map(i => i + 1).join(' ') + '\n');
   }
 

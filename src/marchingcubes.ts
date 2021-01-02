@@ -41,7 +41,7 @@ export class MarchingCubes {
       [3, 2, 1, 0, 7, 6, 5, 4],
       [4, 5, 6, 7, 0, 1, 2, 3]
     ][dim];
-    const newResults = []
+    const newResults: number[] = []
     for (let i = 0; i < cubeVerts.length; i++) {
       if (newResults[collapsePairings[i]] === undefined) {
         newResults[i] = this.fn(collapsedPos[i]);

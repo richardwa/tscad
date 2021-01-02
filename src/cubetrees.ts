@@ -1,6 +1,5 @@
 /// <reference path="../types.d.ts" />
 
-import { assert } from "console";
 import { cubeVerts, edgeIndex, faceToCorners, faceToEdges } from "./marchingcubes-tables";
 import { Vector } from "./math";
 

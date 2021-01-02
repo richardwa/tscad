@@ -38,11 +38,11 @@ export class SurfaceNets {
       }
     });
   };
-
   findVertices = (cube: Cube) => {
-    console.log(cube.name);
+    if (cube.name.length > 16) {
+      throw 'limit reached'
+    }
     const corners = cube.getCorners();
-    console.log(corners);
     const results = corners.map(c => {
       if (c.data) {
         return c.data
@@ -56,6 +56,7 @@ export class SurfaceNets {
     const upper = corners[6].pos;
     const lengths = new Vector(upper).minus(lower).result;
     const maxLen = Math.max(...lengths);
+    console.log(cube.name, maxLen, this.minSize);
 
     // optimization, this cube is far away from an edge relative to its own size
     // we can skip it even when this cube is above the min size

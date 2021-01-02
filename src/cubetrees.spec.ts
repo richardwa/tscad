@@ -1,4 +1,5 @@
 import { Corner, createCube, Cube, Edge } from "./cubetrees";
+import { Vector } from "./math";
 
 type Assert = typeof console.assert;
 type Test = (a: Assert) => void;
@@ -46,13 +47,11 @@ const tests: { [k: string]: Test } = {
       });
     }
   },
-  "split cube": (assert) => {
+  "get leaf edges": (assert) => {
     const cube = getCube();
-
     let count: number;
     count = cube.getLeafEdges().size;
     assert(count === 12, `expected 12 edges, got ${count}`);
-
     cube.split();
     count = cube.getLeafEdges().size;
     // 24 edge edge
@@ -77,8 +76,19 @@ const tests: { [k: string]: Test } = {
         assert(c, `child ${i}: ${ch.name}; corner ${j} ${c}`);
       })
     });
-
   },
+  "child sizes": (assert) => {
+    const cube = getCube();
+    cube.split().forEach((c: Cube, i) => {
+      const c1 = c.getCorner(0);
+      const c2 = c.getCorner(6);
+      const maxLen = new Vector(c2.pos).minus(c1.pos).result;
+
+      for (let j = 0; j < 3; j++) {
+        assert(maxLen[j] === 32, `size of child ${i}, ${j} not correct, expect 32 got: ${maxLen[j]}`);
+      }
+    });
+  }
 }
 
 
