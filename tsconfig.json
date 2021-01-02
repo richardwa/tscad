@@ -3,6 +3,7 @@
     "declaration": true,
     "outDir": "target",
     "sourceMap": true,
+    "noImplicitAny": true,
     "lib": [
       "ES2019",
       "ES2019.Array"

@@ -1,5 +1,6 @@
 /// <reference path="../types.d.ts" />
 
+import { assert } from "console";
 import { cubeVerts, edgeIndex, faceToCorners, faceToEdges } from "./marchingcubes-tables";
 import { Vector } from "./math";
 
@@ -14,19 +15,21 @@ export class Corner {
 
 export class Edge {
   corners: Pair<Corner>; // always the more negative corner
-  cubes: QuadArray<Cube>; // any edge can have a max of 4 neigboring cubes
+  cubes: Cube[] = []; // any edge can have a max of 4 neigboring cubes
   data?: Vec3;
   constructor(corners: Pair<Corner>) {
+    if (!corners[0] || !corners[1]) {
+      throw `corners cannot be undefined ${corners}`
+    }
     this.corners = corners;
-    this.cubes = new Array(4) as QuadArray<Cube>;
   }
   // child edges are made by cutting parent in half
-  children: Pair<Edge>;
-  split(f: (a: Corner, b: Corner) => Corner): Pair<Edge> {
+  children?: Pair<Edge>;
+  split(): Pair<Edge> {
     if (this.children) {
       return this.children;
     } else {
-      const middle = f(this.corners[0], this.corners[1]);
+      const middle = findCenter(this.corners[0], this.corners[1]);
       this.children = [
         new Edge([this.corners[0], middle]),
         new Edge([middle, this.corners[1]])
@@ -34,7 +37,6 @@ export class Edge {
       return this.children;
     }
   }
-
   getLeafs(): Edge[] {
     if (this.children) {
       return this.children.flatMap(c => c.getLeafs());
@@ -55,6 +57,10 @@ export const createCube = (bounds: [Vec3, Vec3]): Cube => {
   return new Cube("", edges);
 }
 
+const findCenter = (a: Corner, b: Corner): Corner => {
+  const middle = new Vector(a.pos).add(b.pos).scale(1 / 2).result;
+  return new Corner(middle);
+}
 
 export class Cube {
   edges: Array12<Edge>;
@@ -100,10 +106,6 @@ export class Cube {
   }
 
 
-  findCenter(a: Corner, b: Corner): Corner {
-    const middle = new Vector(a.pos).add(b.pos).scale(1 / 2).result;
-    return new Corner(a.pos);
-  }
 
   split(): OctArray<Cube> {
     if (this.children) {
@@ -115,20 +117,20 @@ export class Cube {
     // and 6 new corners (1 at the center of every cut edge)
     //
     // child edges - organized by parent edges
-    const ce = this.edges.map(e => e.split(this.findCenter));
+    const ce = this.edges.map(e => e.split());
     // need 7 more corners (1 at center of each face and 1 for the origin)
     // and 6 more interior edges
-    const center = this.findCenter(this.getCorner(0), this.getCorner(6));
+    const center = findCenter(this.getCorner(0), this.getCorner(6));
 
     // face edges
-    const fe = [[], [], [], [], [], []];
+    const fe: Edge[][] = [[], [], [], [], [], []];
 
     for (let i = 0; i < 6; i++) {
-      const fcorners = this.getFaceCorners(i)
-      const faceCenter = this.findCenter(fcorners[0], fcorners[2]);
+      const fcorners = this.getFaceCorners(i);
+      const faceCenter = findCenter(fcorners[0], fcorners[2]);
       //connect edge center to face center
       faceToEdges[i].forEach((eindex, j) => {
-        const edgeCenter = ce[eindex][0][1];
+        const edgeCenter: Corner = ce[eindex][0].corners[1];
         if (j <= 1) {
           fe[i].push(new Edge([edgeCenter, faceCenter]));
         } else {

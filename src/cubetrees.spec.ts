@@ -2,7 +2,6 @@ import { Corner, createCube, Cube, Edge } from "./cubetrees";
 
 type Assert = typeof console.assert;
 type Test = (a: Assert) => void;
-type TestCube = Cube;
 
 const getCube = (p: Pair<Vec3> = [[-32, -32, -32], [32, 32, 32]]) => createCube(p);
 
@@ -19,7 +18,7 @@ const tests: { [k: string]: Test } = {
       new Corner([0, 0, 0]),
       new Corner([0, 0, 2])
     ]);
-    const ch = edge.split((a, b) => new Corner([0, 0, 1]));
+    const ch = edge.split();
     ch.forEach((e, i) => {
       e.corners.forEach((c, j) => {
         assert(c, `${i} ${j} corner`);
@@ -35,7 +34,6 @@ const tests: { [k: string]: Test } = {
   "corners": (assert) => {
     const cube = getCube();
     cube.getCorners().forEach((c, i) => {
-      console.log(c);
       assert(c, `${i} corner is empty`);
     });
   },
@@ -73,24 +71,26 @@ const tests: { [k: string]: Test } = {
   },
   "child corners": (assert) => {
     const cube = getCube();
-    cube.split().forEach((ch, i) => {
+    const s = cube.split();
+    s.forEach((ch, i) => {
       ch.getCorners().forEach((c, j) => {
-        assert(c, `child ${i}, corner ${j} : ${c}`);
+        assert(c, `child ${i}: ${ch.name}; corner ${j} ${c}`);
       })
     });
+
   },
 }
 
 
-Object.entries(tests).forEach(([k, t], i) => {
-  let pass = true;
-  const assert: Assert = (a, b) => {
-    if (!a) {
-      pass = false;
-    }
-    console.assert(a, b);
-  };
-  if (!k.startsWith("_")) {
+const TestRunner = () => {
+  const runTest = ([k, t]: [k: string, t: Test]) => {
+    let pass = true;
+    const assert: Assert = (a, b) => {
+      if (!a) {
+        pass = false;
+      }
+      console.assert(a, b);
+    };
     console.log('TEST: ' + k);
     t(assert);
     if (pass) {
@@ -99,4 +99,9 @@ Object.entries(tests).forEach(([k, t], i) => {
       console.log('FAILED\n');
     }
   }
-});
+
+  Object.entries(tests).filter(([k, t]) => {
+    return !k.startsWith("_");
+  }).forEach(runTest);
+};
+TestRunner();
