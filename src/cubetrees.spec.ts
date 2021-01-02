@@ -79,14 +79,15 @@ const tests: { [k: string]: Test } = {
   },
   "child sizes": (assert) => {
     const cube = getCube();
+    const sizeCheck = (i: number, j: number, c1: Corner, c2: Corner) => {
+      const maxLen = new Vector(c2.pos).minus(c1.pos).result.map(Math.abs).join(' ');
+      assert(maxLen === '32 32 32', `child ${i} ${j} expect 32 got: ${maxLen}`);
+    };
     cube.split().forEach((c: Cube, i) => {
-      const c1 = c.getCorner(0);
-      const c2 = c.getCorner(6);
-      const maxLen = new Vector(c2.pos).minus(c1.pos).result;
-
-      for (let j = 0; j < 3; j++) {
-        assert(maxLen[j] === 32, `size of child ${i}, ${j} not correct, expect 32 got: ${maxLen[j]}`);
-      }
+      sizeCheck(i, 1, c.getCorner(0), c.getCorner(6));
+      sizeCheck(i, 2, c.getCorner(1), c.getCorner(7));
+      sizeCheck(i, 3, c.getCorner(2), c.getCorner(4));
+      sizeCheck(i, 4, c.getCorner(3), c.getCorner(5));
     });
   }
 }

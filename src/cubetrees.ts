@@ -104,8 +104,6 @@ export class Cube {
     return faceToCorners[faceNumber].map(n => this.getCorner(n)) as QuadArray<Corner>;
   }
 
-
-
   split(): OctArray<Cube> {
     if (this.children) {
       return this.children;
@@ -126,7 +124,7 @@ export class Cube {
 
     for (let i = 0; i < 6; i++) {
       const fcorners = this.getFaceCorners(i);
-      const faceCenter = findCenter(fcorners[0], fcorners[2]);
+      const faceCenter = findCenter(fcorners[0], fcorners[3]);
       //connect edge center to face center
       faceToEdges[i].forEach((eindex, j) => {
         const edgeCenter: Corner = ce[eindex][0].corners[1];
@@ -144,6 +142,7 @@ export class Cube {
         fe[i].push(new Edge([center, faceCenter]))
       }
     }
+
     // all edges are instantiated, now its a matter of tediously 
     // going through the naming scheme to list all edges for all octants
     const children: OctArray<Cube> = [
@@ -155,7 +154,7 @@ export class Cube {
       new Cube(`${this.name}1`, [
         ce[0][1], ce[1][0], fe[4][1], fe[4][0],
         fe[2][1], fe[1][0], fe[1][4], fe[2][4],
-        fe[2][0], ce[9][0], fe[1][2], fe[4][4]
+        fe[2][0], ce[9][0], fe[1][1], fe[4][4]
       ]),
       new Cube(`${this.name}2`, [
         fe[4][1], ce[1][1], ce[2][1], fe[4][2],
