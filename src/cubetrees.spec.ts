@@ -1,4 +1,5 @@
 import { Corner, createCube, Cube, Edge } from "./cubetrees";
+import { edgeIndex } from "./marchingcubes-tables";
 import { Vector } from "./math";
 
 type Assert = typeof console.assert;
@@ -37,6 +38,10 @@ const tests: { [k: string]: Test } = {
     cube.getCorners().forEach((c, i) => {
       assert(c, `${i} corner is empty`);
     });
+    assert(cube.getCorner(0).pos[0] === -32, 'check corner');
+    assert(cube.getCorner(1).pos[0] === 32, 'check corner');
+    assert(cube.getCorner(3).pos[1] === 32, 'check corner');
+    assert(cube.getCorner(4).pos[2] === 32, 'check corner');
   },
   "face corners": (assert) => {
     const cube = getCube();
@@ -76,18 +81,38 @@ const tests: { [k: string]: Test } = {
         assert(c, `child ${i}: ${ch.name}; corner ${j} ${c}`);
       })
     });
+
+    // after a split there should be 9x3 27 unique corners
+    const corners = s.flatMap(c => c.edges.flatMap(e => e.corners));
+    assert(corners.length === 8 * 12 * 2, '8 cubes, 12 edges, 2 corners');
+    assert(new Set(corners).size === 27, '27 unquie corners');
+
+    // try a different path to get all the corners
+    const corners2 = s.flatMap(c => c.getCorners());
+    assert(new Set(corners2).size === 27, '27 unquie corners');
+  },
+  "child distance checks": (assert) => {
+    const cube = getCube();
+    cube.split().forEach((c: Cube, i) => {
+      edgeIndex.forEach(([i, j], n) => {
+        const p1 = c.getCorner(i);
+        const p2 = c.getCorner(j);
+        const diff = new Vector(p2.pos).minus(p1.pos).result;
+        assert(diff[0] + diff[1] + diff[2] === 32, `${n} expect 32 got ${diff}`);
+      });
+    });
   },
   "child sizes": (assert) => {
     const cube = getCube();
-    const sizeCheck = (i: number, j: number, c1: Corner, c2: Corner) => {
-      const maxLen = new Vector(c2.pos).minus(c1.pos).result.map(Math.abs).join(' ');
-      assert(maxLen === '32 32 32', `child ${i} ${j} expect 32 got: ${maxLen}`);
+    const sizeCheck = (i: number, expected: string, c1: Corner, c2: Corner) => {
+      const maxLen = new Vector(c2.pos).minus(c1.pos).result.join(' ');
+      assert(maxLen === expected, `child ${i} expect ${expected} got: ${maxLen}`);
     };
     cube.split().forEach((c: Cube, i) => {
-      sizeCheck(i, 1, c.getCorner(0), c.getCorner(6));
-      sizeCheck(i, 2, c.getCorner(1), c.getCorner(7));
-      sizeCheck(i, 3, c.getCorner(2), c.getCorner(4));
-      sizeCheck(i, 4, c.getCorner(3), c.getCorner(5));
+      sizeCheck(i, '32 32 32', c.getCorner(0), c.getCorner(6));
+      sizeCheck(i, '-32 32 32', c.getCorner(1), c.getCorner(7));
+      sizeCheck(i, '-32 -32 32', c.getCorner(2), c.getCorner(4));
+      sizeCheck(i, '32 -32 32', c.getCorner(3), c.getCorner(5));
     });
   }
 }

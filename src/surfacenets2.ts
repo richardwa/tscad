@@ -56,13 +56,13 @@ export class SurfaceNets {
     const upper = corners[6].pos;
     const lengths = new Vector(upper).minus(lower).result;
     const maxLen = Math.max(...lengths);
-    console.log(cube.name, maxLen, this.minSize);
+    console.log(cube.name, lengths);
 
     // optimization, this cube is far away from an edge relative to its own size
     // we can skip it even when this cube is above the min size
-    if (Math.min(...results.map(Math.abs)) > maxLen) {
-      return;
-    }
+    // if (Math.min(...results.map(Math.abs)) > maxLen) {
+    //   return;
+    // }
 
     // base case, we are small enought to find a vertex
     if (maxLen <= this.minSize) {
@@ -71,10 +71,9 @@ export class SurfaceNets {
         return;
       }
 
-      //const center = new Vector(corners[0]).add(corners[6]).scale(1 / 2).result;
-      const center = findVertex(cubeIndex, corners.map(c => c.pos) as OctArray<Vec3>, results);
+      const center = new Vector(corners[0].pos).add(corners[6].pos).scale(1 / 2).result;
+      //const center = findVertex(cubeIndex, corners.map(c => c.pos) as OctArray<Vec3>, results);
       cube.data = center;
-      // terminate recursion
       return;
     }
 
