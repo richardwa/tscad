@@ -1,46 +1,59 @@
 /// <reference path="../types.d.ts" />
 
-import { Cube, Edge, Corner } from './cubetrees';
-import { cubeVerts } from './marchingcubes-tables';
+import { Cube, Edge, Corner, createCube } from './cubetrees';
 import { Vector } from './math';
-import { CubeCorners, divideVolume, findVertex } from './util';
+import { findVertex } from './util';
+
 export type Bounds = [Vec3, Vec3];
 export type Triangle = [Vec3, Vec3, Vec3];
 
-type SurfaceNetCube = Cube<Vec3, number, number>;
-type SurfaceNetEdge = Edge<Vec3, number, number>;
-type SurfaceNetCorner = Corner<Vec3, number, number>;
-
+const reduceCorners = (a: number, v: number, i: number) => {
+  if (v > 0) {
+    a |= 1 << i;
+  }
+  return a;
+};
 export class SurfaceNets {
   triangles: Triangle[] = [];
-  cubeSize: number;
+  minSize: number;
   fn: Shape3;
 
-  constructor(cubeSize: number, shape: Shape3) {
-    this.cubeSize = cubeSize;
+  constructor(minSize: number, shape: Shape3) {
+    this.minSize = minSize;
     this.fn = shape;
   }
 
-
   doMarch = (bounds: Bounds) => {
-    const baseCube = new Cube<Vec3, number, number>(bounds);
+    console.log('bounds', bounds);
+    const baseCube = createCube(bounds);
     this.findVertices(baseCube);
-    baseCube.forEachLeafEdge((edge: SurfaceNetEdge) => {
+    baseCube.getLeafEdges().forEach((edge: Edge) => {
       if (edge.data) {
         const quad = edge.cubes.map(c => c.data);
-        if (edge.corner0 > 0) {
-          this.triangles.push(quad);
+        if (edge.corners[0].data > 0) {
+          this.triangles.push(quad as Triangle);
         } else {
-          this.triangles.push(quad.reverse());
+          this.triangles.push(quad.reverse() as Triangle);
         }
       }
     });
   };
 
-  findVertices = (cube: SurfaceNetCube) => {
-    const results = cube.corners.map(c => this.fn(c.pos));
-    const lower = cube.corners[0].pos;
-    const upper = cube.corners[6].pos;
+  findVertices = (cube: Cube) => {
+    console.log(cube.name);
+    const corners = cube.getCorners();
+    console.log(corners);
+    const results = corners.map(c => {
+      if (c.data) {
+        return c.data
+      } else {
+        const ans = this.fn(c.pos);
+        c.data = ans;
+        return ans;
+      }
+    });
+    const lower = corners[0].pos;
+    const upper = corners[6].pos;
     const lengths = new Vector(upper).minus(lower).result;
     const maxLen = Math.max(...lengths);
 
@@ -51,14 +64,14 @@ export class SurfaceNets {
     }
 
     // base case, we are small enought to find a vertex
-    if (maxLen <= this.cubeSize) {
+    if (maxLen <= this.minSize) {
       const cubeIndex = results.reduce(reduceCorners, 0);
       if (cubeIndex === 0xff || cubeIndex === 0x00) {
         return;
       }
 
       //const center = new Vector(corners[0]).add(corners[6]).scale(1 / 2).result;
-      const center = findVertex(cubeIndex, cube.corners.map(c => c.pos) as OctArray<Vec3>, results);
+      const center = findVertex(cubeIndex, corners.map(c => c.pos) as OctArray<Vec3>, results);
       cube.data = center;
       // terminate recursion
       return;

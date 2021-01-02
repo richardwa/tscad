@@ -2,7 +2,7 @@ import { union } from '../csg/boolean';
 import { rotate, translate } from '../csg/manipulate';
 import { box, sphere } from '../csg/primitives';
 import { processPolygons, writeOBJ } from '../src/render';
-import { SurfaceNets } from '../src/surfacenets';
+import { SurfaceNets } from '../src/surfacenets2';
 
 // const shape = Box(30);
 const shape = rotate('y', 15, rotate('z', 45,

@@ -1,78 +1,79 @@
+/// <reference path="../types.d.ts" />
+
 import { cubeVerts, edgeIndex, faceToCorners, faceToEdges } from "./marchingcubes-tables";
 import { Vector } from "./math";
 
-
-class Corner<T, E, V> {
-  pos: Vec3;
-  data?: V;
-  constructor(v: Vec3) {
-    this.pos = v;
+export class Corner {
+  pos: Vec3
+  data?: number;
+  // no spatial data is required, but object reference is important
+  constructor(a: Vec3) {
+    this.pos = a;
   }
 }
 
-type EdgeSplit = (a: Vec3, b: Vec3) => Vec3;
-class Edge<T, E, V> {
-  corners: Pair<Corner<T, E, V>>; // always the more negative corner
-  cubes: QuadArray<Cube<T, E, V>>; // any edge can have a max of 4 neigboring cubes
-  data?: E;
-  constructor(corners: Pair<Corner<T, E, V>>) {
+export class Edge {
+  corners: Pair<Corner>; // always the more negative corner
+  cubes: QuadArray<Cube>; // any edge can have a max of 4 neigboring cubes
+  data?: Vec3;
+  constructor(corners: Pair<Corner>) {
     this.corners = corners;
-    this.cubes = new Array(4) as QuadArray<Cube<T, E, V>>;
+    this.cubes = new Array(4) as QuadArray<Cube>;
   }
-
   // child edges are made by cutting parent in half
-  children: Pair<Edge<T, E, V>>;
-
-  split(f: EdgeSplit): Pair<Edge<T, E, V>> {
+  children: Pair<Edge>;
+  split(f: (a: Corner, b: Corner) => Corner): Pair<Edge> {
     if (this.children) {
       return this.children;
     } else {
-      const middle = f(this.corners[0].pos, this.corners[1].pos);
-      const corner = new Corner<T, E, V>(middle);
+      const middle = f(this.corners[0], this.corners[1]);
       this.children = [
-        new Edge([this.corners[0], corner]),
-        new Edge([corner, this.corners[1]])
+        new Edge([this.corners[0], middle]),
+        new Edge([middle, this.corners[1]])
       ];
       return this.children;
     }
   }
 
-  getLeafs(): Edge<T, E, V>[] {
+  getLeafs(): Edge[] {
     if (this.children) {
-      return this.children.flatMap(this.getLeafs);
+      return this.children.flatMap(c => c.getLeafs());
     } else {
       return [this];
     }
   }
 }
 
-export const createCube = <T, E, V>(bounds: [Vec3, Vec3]): Cube<T, E, V> => {
+export const createCube = (bounds: [Vec3, Vec3]): Cube => {
   const [lower, upper] = bounds;
   const vertexPositions = cubeVerts.map(v =>
     v.map((o: number, i: number) =>
       o ? upper[i] : lower[i]) as Vec3);
-  const corners = vertexPositions.map(p => new Corner(p)) as OctArray<Corner<T, E, V>>;
+  const corners = vertexPositions.map(p => new Corner(p)) as OctArray<Corner>;
   const edges = edgeIndex.map(n =>
-    new Edge<T, E, V>([corners[n[0]], corners[n[1]]])) as Array12<Edge<T, E, V>>;
+    new Edge([corners[n[0]], corners[n[1]]])) as Array12<Edge>;
   return new Cube("", edges);
 }
 
 
-export class Cube<T, E, V> {
-  edges: Array12<Edge<T, E, V>>;
+export class Cube {
+  edges: Array12<Edge>;
   name: string;
-  data?: T;
-  private children?: OctArray<Cube<T, E, V>>;
-  constructor(name: string, edges: Array12<Edge<T, E, V>>) {
+  data?: Vec3;
+  children?: OctArray<Cube>;
+  constructor(name: string, edges: Array12<Edge>) {
     this.name = name;
     this.edges = edges;
+    for (let e of edges) {
+      e.cubes.push(this);
+    }
   }
 
   /**
    * using corner,edge indexing scheme as done in marching cubes by paul bourke.
    */
   getCorners() {
-    const arr: Corner<T, E, V>[] = [];
+    const arr: Corner[] = [];
     for (let i = 0; i < 8; i++) {
       const vedge = 8 + (i % 4);
       arr[i] = this.edges[vedge].corners[Math.floor(i / 4)];
@@ -83,25 +84,28 @@ export class Cube<T, E, V> {
     if (i < 8) {
       const vedge = 8 + (i % 4);
       return this.edges[vedge].corners[Math.floor(i / 4)];
+    } else {
+      console.warn(i, 'index out of range');
     }
   }
 
   /**
    * returns the 4 edges of a face 
    */
-  getFaceEdges(faceNumber: number): QuadArray<Edge<T, E, V> {
-    return faceToEdges[faceNumber].map(n => this.edges[n]) as QuadArray<Edge<T, E, V>>;
+  getFaceEdges(faceNumber: number): QuadArray<Edge> {
+    return faceToEdges[faceNumber].map(n => this.edges[n]) as QuadArray<Edge>;
   }
-  getFaceCorners(faceNumber: number): QuadArray<Corner<T, E, V>> {
-    return faceToCorners[faceNumber].map(n => this.getCorner[n]) as QuadArray<Corner<T, E, V>>;
-  }
-
-
-  findCenter(a: Vec3, b: Vec3): Vec3 {
-    return new Vector(a).add(b).scale(1 / 2).result;
+  getFaceCorners(faceNumber: number): QuadArray<Corner> {
+    return faceToCorners[faceNumber].map(n => this.getCorner(n)) as QuadArray<Corner>;
   }
 
-  split(): OctArray<Cube<T, E, V>> {
+
+  findCenter(a: Corner, b: Corner): Corner {
+    const middle = new Vector(a.pos).add(b.pos).scale(1 / 2).result;
+    return new Corner(a.pos);
+  }
+
+  split(): OctArray<Cube> {
     if (this.children) {
       return this.children;
     }
@@ -114,34 +118,34 @@ export class Cube<T, E, V> {
     const ce = this.edges.map(e => e.split(this.findCenter));
     // need 7 more corners (1 at center of each face and 1 for the origin)
     // and 6 more interior edges
-    const center = new Corner<T, E, V>(this.findCenter(this.getCorner(0).pos, this.getCorner(6).pos));
+    const center = this.findCenter(this.getCorner(0), this.getCorner(6));
 
     // face edges
     const fe = [[], [], [], [], [], []];
 
     for (let i = 0; i < 6; i++) {
       const fcorners = this.getFaceCorners(i)
-      const faceCenter = new Corner<T, E, V>(this.findCenter(fcorners[0].pos, fcorners[2].pos));
+      const faceCenter = this.findCenter(fcorners[0], fcorners[2]);
       //connect edge center to face center
       faceToEdges[i].forEach((eindex, j) => {
         const edgeCenter = ce[eindex][0][1];
         if (j <= 1) {
-          fe[i].push(new Edge<T, E, V>([edgeCenter, faceCenter]));
+          fe[i].push(new Edge([edgeCenter, faceCenter]));
         } else {
-          fe[i].push(new Edge<T, E, V>([faceCenter, edgeCenter]));
+          fe[i].push(new Edge([faceCenter, edgeCenter]));
         }
       });
 
       //conect face center to volume center
       if (i % 2 === 0) {
-        fe[i].push(new Edge<T, E, V>([faceCenter, center]))
+        fe[i].push(new Edge([faceCenter, center]))
       } else {
-        fe[i].push(new Edge<T, E, V>([center, faceCenter]))
+        fe[i].push(new Edge([center, faceCenter]))
       }
     }
     // all edges are instantiated, now its a matter of tediously 
     // going through the naming scheme to list all edges for all octants
-    const children: OctArray<Cube<T, E, V>> = [
+    const children: OctArray<Cube> = [
       new Cube(`${this.name}0`, [
         ce[0][0], fe[4][0], fe[0][3], ce[3][0],
         fe[2][3], fe[2][4], fe[0][4], fe[0][0],
@@ -187,28 +191,29 @@ export class Cube<T, E, V> {
     return children;
   }
 
-  forEachLeafEdge(f: (e: Edge<T, E, V>) => void) {
-    const unvisited: Cube<T, E, V>[] = [this];
-    const visited = new Set<Cube<T, E, V>>();
-    const visitedEdges = new Set<Edge<T, E, V>>();
-    const visitEdge = (e: Edge<T, E, V>) => {
-      if (!visitedEdges.has(e)) {
-        e.getLeafs().forEach(f);
-        visitedEdges.add(e);
-      }
-    };
+  getLeafs(): Cube[] {
+    const nextCubes: Cube[] = [this];
+    const leafs: Cube[] = [];
 
-    while (unvisited.length > 0) {
-      const cube = unvisited.pop();
-      if (visited.has(cube)) {
-        continue;
-      } else {
-        visited.add(cube);
-      }
-      cube.edges.forEach(visitEdge);
+    while (nextCubes.length > 0) {
+      const cube = nextCubes.pop();
       if (cube.children) {
-        unvisited.push(...cube.children);
+        nextCubes.push(...cube.children);
+      } else {
+        leafs.push(cube);
       }
     }
+
+    return leafs;
+  }
+
+  getLeafEdges(): Set<Edge> {
+    const edges = new Set<Edge>();
+    this.getLeafs().forEach(cube => {
+      for (let i = 0; i < cube.edges.length; i++) {
+        edges.add(cube.edges[i]);
+      }
+    });
+    return edges;
   }
 }
