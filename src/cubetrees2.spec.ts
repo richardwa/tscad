@@ -34,12 +34,12 @@ const tests: { [k: string]: Test } = {
   },
   "find corner": (assert) => {
     const cube = createCube();
-    assert(cube.find(0).data.id === 1, 'expect 1');
-    assert(cube.find(1).data.id === 3, 'expect 2');
-    assert(cube.find(2).data.id === 4, 'expect 4');
+    assert(cube.find(0, cube.size[0]).data.id === 1, 'expect 1');
+    assert(cube.find(1, cube.size[1]).data.id === 3, 'expect 2');
+    assert(cube.find(2, cube.size[2]).data.id === 4, 'expect 4');
     assert(cube.next[0].n.next[2].n.data.id === 5, 'expect 5');
-    assert(cube.find(0).find(2).data.id === 5, 'expect 5');
-    assert(cube.find(1).find(2).data.id === 7, 'expect 7');
+    assert(cube.find(0, cube.size[0]).find(2, cube.size[2]).data.id === 5, 'expect 5');
+    assert(cube.find(1, cube.size[1]).find(2, cube.size[2]).data.id === 7, 'expect 7');
   },
   "all corners": (assert) => {
     const cube = createCube();
@@ -49,7 +49,7 @@ const tests: { [k: string]: Test } = {
       assert(c === initNodes[i], `${i} is null`);
     });
   },
-  "_divide cube": (assert) => {
+  "divide cube": (assert) => {
     const cube = createCube();
     const originalSize = cube.size[0];
     const cubes = cube.divideCube(0);
@@ -62,7 +62,7 @@ const tests: { [k: string]: Test } = {
     assert(cubes[0].size[2] === originalSize, `size check z`);
 
   },
-  "_octant divide": (assert) => {
+  "octant divide": (assert) => {
     const cube = createCube();
     cube.octantDivide();
     const nodes = cube.getNodes();
@@ -70,7 +70,7 @@ const tests: { [k: string]: Test } = {
 
     const corners = cube.getCorners();
     assert(corners[0] === initNodes[0], 'ensure corner zero is same');
-    assert(corners[1].find(0) === initNodes[1], 'ensure corner 1 is same');
+    assert(corners[1].find(0, cube.size[0]) === initNodes[1], 'ensure corner 1 is same');
 
     assert(corners[6].getCorners()[6] === initNodes[6], 'ensure last corner is same');
   },
@@ -96,7 +96,7 @@ const TestRunner = () => {
   }
 
   Object.entries(tests).filter(([k, t]) => {
-    return k.startsWith("_");
+    return !k.startsWith("_");
   }).forEach(runTest);
 };
 TestRunner();
