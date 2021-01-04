@@ -13,7 +13,7 @@ const connectionMatrix = [
  * 'this' will be the first node
  */
 export const connectNodes = <T>(n: Node<T>[]) => {
-  const size = Math.pow(2, 52);
+  const size = Math.pow(2, 8);
   n[0].size = [size, size, size];
   for (let i = 0; i < connectionMatrix.length; i++) {
     const conn = connectionMatrix[i];
@@ -44,19 +44,22 @@ export class Node<T> {
     return corners;
   }
 
-  find(axis: Direction, length: number = this.size[axis]): Node<T> {
+  find(axis: Direction, length: number): Node<T> {
     if (!this.next[axis]) {
       console.warn(`node: ${this}, nothing in ${axis} direction`);
       return;
     }
     let { len, n } = this.next[axis];
     while (len < length) {
-      console.log(this);
       const p = n.next[axis];
       n = p.n;
       len += p.len;
     }
-    return n;
+    if (len === length) {
+      return n;
+    } else {
+      console.warn(`not found, axis ${axis}: ${len} != ${length}`, this);
+    }
   }
 
   getNodes(): Set<Node<T>> {
@@ -89,7 +92,11 @@ export class Node<T> {
     const dir1 = (axis + 1) % 3 as Direction;
     const dir2 = (axis + 2) % 3 as Direction;
     // find all points on this plane
-    const points = [this, this.find(dir1), this.find(dir2), this.find(dir1).find(dir2)];
+    const points = [this,
+      this.find(dir1, this.size[dir1]),
+      this.find(dir2, this.size[dir2])];
+    points[3] = points[1].find(dir2, this.size[dir2]);
+
     const newSize = this.size[axis] / 2;
     const middle = points.map(p => p.divideEdge(axis, newSize));
 
