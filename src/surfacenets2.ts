@@ -1,6 +1,7 @@
 /// <reference path="../types.d.ts" />
 
-import { Cube, Edge, Corner, createCube } from './cubetrees';
+import { Node, Direction, connectNodes } from './cubetrees2';
+import { cubeVerts } from './marchingcubes-tables';
 import { Vector } from './math';
 import { findVertex } from './util';
 
@@ -13,6 +14,29 @@ const reduceCorners = (a: number, v: number, i: number) => {
   }
   return a;
 };
+
+type Data = {
+  pos: Vec3;
+  val: number;
+}
+class Cube extends Node<Data> {
+  constructor(pos: Vec3) {
+    super();
+    this.data = {
+      pos, val: null
+    }
+  }
+  createNode(direction: Direction, to: Node<Data>) {
+    const node = super.createNode(direction, to);
+    const from = this.data.pos;
+    const toPos = to.data.pos;
+    node.data = {
+      pos: new Vector(from).add(toPos).scale(1 / 2).result,
+      val: null
+    };
+    return node;
+  }
+}
 export class SurfaceNets {
   triangles: Triangle[] = [];
   minSize: number;
@@ -25,23 +49,17 @@ export class SurfaceNets {
 
   doMarch = (bounds: Bounds) => {
     console.log('bounds', bounds);
-    const baseCube = createCube(bounds);
+    const [lower, upper] = bounds;
+    // evaluate this cube
+    const corners: Vec3[] = cubeVerts.map(v =>
+      v.map((o: number, i: number) =>
+        o ? upper[i] : lower[i]) as Vec3);
+    const cubeCorners = corners.map(p => new Cube(p))
+    connectNodes(cubeCorners);
+    const baseCube = cubeCorners[0];
     this.findVertices(baseCube);
-    baseCube.getLeafEdges().forEach((edge: Edge) => {
-      if (edge.data) {
-        const quad = edge.cubes.map(c => c.data);
-        if (edge.corners[0].data > 0) {
-          this.triangles.push(quad as Triangle);
-        } else {
-          this.triangles.push(quad.reverse() as Triangle);
-        }
-      }
-    });
   };
   findVertices = (cube: Cube) => {
-    if (cube.name.length > 16) {
-      throw 'limit reached'
-    }
     const corners = cube.getCorners();
     const results = corners.map(c => {
       if (c.data) {
