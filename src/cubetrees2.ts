@@ -13,7 +13,7 @@ const connectionMatrix = [
  * 'this' will be the first node
  */
 export const connectNodes = <T>(n: Node<T>[]) => {
-  const size = Math.pow(2, 8);
+  const size = Math.pow(2, 50);
   n[0].size = [size, size, size];
   for (let i = 0; i < connectionMatrix.length; i++) {
     const conn = connectionMatrix[i];
@@ -21,6 +21,8 @@ export const connectNodes = <T>(n: Node<T>[]) => {
   }
   return n[0];
 }
+
+
 
 let counter = 0;
 export class Node<T> {
@@ -57,13 +59,15 @@ export class Node<T> {
 
   find(axis: Direction, length: number): Node<T> {
     if (!this.next[axis]) {
-      console.warn(`node: ${this}, nothing in ${axis} direction`);
-      return;
+      throw new Error(`node: ${this.id}, nothing in ${axis} direction`);
     }
     let len = 0;
     let n: Node<T> = this;
     while (len < length && n.next[axis]) {
       const p = n.next[axis];
+      if (!p.len) {
+        throw 'err';
+      }
       n = p.n;
       len += p.len;
     }
@@ -90,22 +94,38 @@ export class Node<T> {
 
   divideEdge(axis: Direction, size: number): Node<T> {
     const next = this.find(axis, size);
-    if (!next){
-      throw 'error';
-    }
     let middle = this.find(axis, size / 2);
     if (!middle) {
       middle = this.createNode(axis, next);
+      console.log(`created ${middle.id}, pointed by ${this.id} on ${axis}`);
       middle.next[axis] = { len: size / 2, n: next };
       this.next[axis] = { len: size / 2, n: middle }
+    } else {
+      middle.next[axis].len = size / 2;
     }
     return middle;
   }
 
+  log(): string {
+    return `${this.id} -> [${this.next.map(n => n && n.n.id).join(',')}]`;
+  }
+
+  makeConnection(axis: Direction, length: number, b: Node<T>) {
+    let t: Node<T> = this;
+    let len = 0;
+    while (len < length && t !== b && t.next[axis]) {
+      const next = t.next[axis];
+      t = next.n;
+      len += next.len;
+    }
+    if (t !== b) {
+      t.next[axis] = { len: length - len, n: b };
+    }
+  }
+
   // divides a cube in 2 along indicated axis
   divideCube(axis: Direction): Pair<Node<T>> {
-    console.log(axis, this.size, this.id);
-    this.show();
+    console.log(axis, this.log(), 'start');
     let dir1 = (axis + 1) % 3 as Direction;
     let dir2 = (axis + 2) % 3 as Direction;
 
@@ -114,25 +134,33 @@ export class Node<T> {
       this.find(dir1, this.size[dir1]),
       this.find(dir2, this.size[dir2])];
     points[3] = points[1].find(dir2, this.size[dir2]);
-
+    if (!points[3]) {
+      points[3] = points[2].find(dir1, this.size[dir1]);
+    }
+    points.forEach(m => console.log('base', m.log()));
     const middle = points.map(p => p.divideEdge(axis, this.size[axis]));
 
-    middle[0].next[dir1] = { len: this.size[dir1], n: middle[1] }
-    middle[0].next[dir2] = { len: this.size[dir2], n: middle[2] };
-    middle[1].next[dir2] = { len: this.size[dir2], n: middle[3] };
-    middle[2].next[dir1] = { len: this.size[dir1], n: middle[3] };
-    console.log('middle3', middle[3]);
+    middle[0].makeConnection(dir1, this.size[dir1], middle[1]);
+    middle[0].makeConnection(dir2, this.size[dir2], middle[2]);
+    middle[1].makeConnection(dir2, this.size[dir2], middle[3]);
+    middle[2].makeConnection(dir1, this.size[dir1], middle[3]);
+
+    // middle[0].next[dir1] = middle[0].next[dir1] || { len: this.size[dir1], n: middle[1] };
+    // middle[0].next[dir2] = middle[0].next[dir2] || { len: this.size[dir2], n: middle[2] };
+    // middle[1].next[dir2] = middle[1].next[dir2] || { len: this.size[dir2], n: middle[3] };
+    // middle[2].next[dir1] = middle[2].next[dir1] || { len: this.size[dir1], n: middle[3] };
+
+
+    console.log('after', this.log());
+    middle.forEach(m => console.log('middle', m.log()));
 
     // middle[3] doesn't point to anything for now.
     this.size[axis] /= 2;
     middle[0].size = [...this.size];
 
     // return the bottom left of each cube
-
-    console.log('after')
     this.show();
     return [this, middle[0]];
-
   }
 
   /**
@@ -149,7 +177,6 @@ export class Node<T> {
     return cubes;
   }
 
-
   getArray(axis: Direction) {
     const cubes: Node<T>[] = [this];
     let next = this.next[axis];
@@ -160,12 +187,12 @@ export class Node<T> {
     return cubes;
   }
 
-  show(f?: (n: Node<T>[]) => string) {
-    const z = this.getArray(2);
+  show(offset: Direction = 0, f?: (n: Node<T>[]) => string) {
+    const z = this.getArray((2 + offset) % 3 as Direction);
     for (let k of z) {
-      const y = k.getArray(1);
+      const y = k.getArray((1 + offset) % 3 as Direction);
       for (let j of y) {
-        const x = j.getArray(0);
+        const x = j.getArray(offset);
         console.log(f ? f(x) : x.map(c => `${c.id}`.padStart(3, '0')).join('|'));
       }
       console.log('')

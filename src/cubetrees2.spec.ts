@@ -97,7 +97,7 @@ const tests: { [k: string]: Test } = {
     assert(smallCube.getCorners()[7].getCorners()[7] === cube.getCorners()[6]);
 
   },
-  "_recursive divide": (assert) => {
+  "recursive divide": (assert) => {
     const divide = (cube: Node<Props>, n: number) => {
       if (n > 0) {
         cube.octantDivide().forEach((c, i) => {
@@ -108,7 +108,6 @@ const tests: { [k: string]: Test } = {
     const cube = createCube();
     divide(cube, 1);
     console.log('done');
-    cube.show();
   },
   "_recursive divide 2": (assert) => {
     const divide = (cube: Node<Props>, n: number) => {
@@ -121,6 +120,7 @@ const tests: { [k: string]: Test } = {
     const cube = createCube();
     divide(cube, 2);
     console.log('done');
+    assert(cube.getNodes().size === 125)
     cube.show();
   },
 }
