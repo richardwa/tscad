@@ -13,7 +13,7 @@ const connectionMatrix = [
  * 'this' will be the first node
  */
 export const connectNodes = <T>(n: Node<T>[]) => {
-  const size = Math.pow(2, 8);
+  const size = Math.pow(2, 50);
   n[0].size = [size, size, size];
   for (let i = 0; i < connectionMatrix.length; i++) {
     const conn = connectionMatrix[i];
@@ -34,14 +34,20 @@ export class Node<T> {
     return new Node<T>();
   }
 
+  isCube() {
+    return this.size[0] || this.size[1] || this.size[2];
+  }
+
   getCorners() {
-    const corners: OctArray<Node<T>> = [this, null, null, null, null, null, null, null];
-    for (let i = 1; i < 8; i++) {
-      const conn = connectionMatrix[i];
-      const direction = conn[1] as Direction;
-      corners[conn[2]] = corners[conn[0]].find(direction, this.size[direction]);
+    if (this.isCube()) {
+      const corners: OctArray<Node<T>> = [this, null, null, null, null, null, null, null];
+      for (let i = 1; i < 8; i++) {
+        const conn = connectionMatrix[i];
+        const direction = conn[1] as Direction;
+        corners[conn[2]] = corners[conn[0]].find(direction, this.size[direction]);
+      }
+      return corners;
     }
-    return corners;
   }
 
   find(axis: Direction, length: number): Node<T> {
@@ -57,34 +63,34 @@ export class Node<T> {
     }
     if (len === length) {
       return n;
-    } else {
-      console.warn(`not found, axis ${axis}: ${len} != ${length}`, this);
     }
   }
 
   getNodes(): Set<Node<T>> {
-    const nodes = this.next.filter(o => o).flatMap(({ n }) => {
-      return Array.from(n.getNodes());
-    });
-    const set = new Set(nodes);
-    set.add(this);
-    return set;
+    const nodes = new Set<Node<T>>();
+    const stack: Node<T>[] = [this];
+    while (stack.length > 0) {
+      const n = stack.pop();
+      nodes.add(n);
+      for (let i = 0; i < 3; i++) {
+        const child = n.next[i];
+        if (child && !nodes.has(child.n)) {
+          stack.push(child.n);
+        }
+      }
+    }
+    return nodes;
   }
 
   divideEdge(axis: Direction, size: number): Node<T> {
-    let { len, n } = this.next[axis];
-    if (len === size) {
-      return n;
-    } else if (len > size) {
-      // do the split
-      const middle = this.createNode(axis, this.next[axis].n);
-      middle.next[axis] = { len: size, n: this.next[axis].n };
-      this.next[axis] = { len: size, n: middle }
-      return middle;
-    } else {
-      // traveled less than new size, keep going and return that
-      return this.find(axis, size);
+    const next = this.find(axis, size);
+    let middle = this.find(axis, size / 2);
+    if (!middle) {
+      middle = this.createNode(axis, next);
+      middle.next[axis] = { len: size / 2, n: next };
+      this.next[axis] = { len: size / 2, n: middle }
     }
+    return middle;
   }
 
   // divides a cube in 2 along indicated axis
@@ -97,8 +103,7 @@ export class Node<T> {
       this.find(dir2, this.size[dir2])];
     points[3] = points[1].find(dir2, this.size[dir2]);
 
-    const newSize = this.size[axis] / 2;
-    const middle = points.map(p => p.divideEdge(axis, newSize));
+    const middle = points.map(p => p.divideEdge(axis, this.size[axis]));
 
     middle[0].next[dir1] = { len: this.size[dir1], n: middle[1] }
     middle[0].next[dir2] = { len: this.size[dir2], n: middle[2] };
@@ -114,12 +119,40 @@ export class Node<T> {
 
   }
 
+  /**
+   * this is OctArray is not in same order as corners, 
+   * this ordering (low to high) is required when doing recursion
+   */
   octantDivide() {
     let cubes: Node<T>[] = [this];
     for (let i = 0; i < 3; i++) {
       cubes = cubes.flatMap(c => {
         return c.divideCube(i as Direction);
       });
+    }
+    return cubes;
+  }
+
+
+  getArray(axis: Direction) {
+    const cubes: Node<T>[] = [this];
+    let next = this.next[axis];
+    while (next) {
+      cubes.push(next.n);
+      next = next.n.next[axis];
+    }
+    return cubes;
+  }
+
+  show(f?: (n: Node<T>[]) => string) {
+    const z = this.getArray(2);
+    for (let k of z) {
+      const y = k.getArray(1);
+      for (let j of y) {
+        const x = j.getArray(0);
+        console.log(f ? f(x) : x);
+      }
+      console.log('')
     }
   }
 }

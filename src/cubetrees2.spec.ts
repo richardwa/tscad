@@ -64,15 +64,50 @@ const tests: { [k: string]: Test } = {
   },
   "octant divide": (assert) => {
     const cube = createCube();
-    cube.octantDivide();
+    const div = cube.octantDivide();
     const nodes = cube.getNodes();
     assert(nodes.size === 27, `expect 27 nodes, got  ${nodes.size}`);
+    const countBoxes = Array.from(nodes).filter(n => n.isCube()).length;
+    assert(countBoxes === 8, `expect 8 boxes after dividing, got ${countBoxes}`);
 
     const corners = cube.getCorners();
     assert(corners[0] === initNodes[0], 'ensure corner zero is same');
     assert(corners[1].find(0, cube.size[0]) === initNodes[1], 'ensure corner 1 is same');
-
     assert(corners[6].getCorners()[6] === initNodes[6], 'ensure last corner is same');
+  },
+  "octant divide 2": (assert) => {
+    const cube = createCube();
+    cube.octantDivide();
+    const nodes = cube.getNodes();
+    assert(nodes.size === 27, `expect 27 nodes, got  ${nodes.size}`);
+    cube.find(0, cube.size[0]).octantDivide();
+
+    // 27 + 15 + 4
+    assert(cube.getNodes().size === 46, `expect 46, got ${cube.getNodes().size}`);
+
+    const corners = cube.getCorners();
+    assert(corners[0] === initNodes[0], 'ensure corner zero is same');
+    assert(corners[1].find(0, cube.size[0]) === initNodes[1], 'ensure corner 1 is same');
+    assert(corners[6].getCorners()[6] === initNodes[6], 'ensure last corner is same');
+
+    const smallCube = cube.getCorners()[1];
+    assert(smallCube.size[0] * 2 === cube.size[0], `check size`);
+    assert(smallCube.find(1, smallCube.size[1]) !== corners[2], `small cube 1`);
+    assert(smallCube.find(1, smallCube.size[1] * 2) === corners[2], `small cube 2`);
+    assert(smallCube.getCorners()[7].getCorners()[7] === cube.getCorners()[6]);
+
+  },
+  "recursive divide": (assert) => {
+    const divide = (cube: Node<Props>, n: number) => {
+      if (n > 0) {
+        cube.octantDivide().forEach(c => {
+          divide(c, n - 1);
+        });
+      }
+    }
+    const cube = createCube();
+    divide(cube, 0);
+    cube.show(r => r.map(c => '*').join(' '));
   },
 }
 

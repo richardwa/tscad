@@ -109,6 +109,7 @@ export class SurfaceNets {
     const upper = corners[6];
     const lengths = new Vector(upper).minus(lower).result;
     const maxLen = Math.max(...lengths);
+    console.log(name, maxLen);
 
     // optimization, this cube is far away from an edge relative to its own size
     // we can skip it even when this cube is above the min size
@@ -122,8 +123,8 @@ export class SurfaceNets {
       if (cubeIndex === 0xff || cubeIndex === 0x00) {
         return emptyCube;
       }
-      //const center = new Vector(corners[0]).add(corners[6]).scale(1 / 2).result;
-      const center = findVertex(cubeIndex, corners, results);
+      const center = new Vector(corners[0]).add(corners[6]).scale(1 / 2).result;
+      //const center = findVertex(cubeIndex, corners, results);
       const val = this.fn(center);
       const cube: Cube = {
         name,

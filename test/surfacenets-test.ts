@@ -4,12 +4,12 @@ import { box, sphere } from '../csg/primitives';
 import { processPolygons, writeOBJ } from '../src/render';
 import { SurfaceNets } from '../src/surfacenets2';
 
-// const shape = Box(30);
-const shape = rotate('y', 15, rotate('z', 45,
-  union({ radius: 3 },
-    box(30),
-    translate([10, 10, 10], sphere(15))
-  )));
+const shape = box(30);
+// const shape = rotate('y', 15, rotate('z', 45,
+//   union({ radius: 3 },
+//     box(30),
+//     translate([10, 10, 10], sphere(15))
+//   )));
 
 const s = 32;
 console.time('render');

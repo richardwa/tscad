@@ -36,7 +36,7 @@ class NullSquare<T> implements ScalableSquare<T> {
   }
   forEach() {
   }
-  get() {
+  get(): T {
     return null;
   }
 }
