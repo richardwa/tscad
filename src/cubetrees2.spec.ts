@@ -12,7 +12,7 @@ function createCube(): Node<Props> {
   let counter = 0;
   class TestNode extends Node<Props>{
     constructor() {
-      super();
+      super(counter);
       this.data = {
         id: counter++
       };
@@ -97,17 +97,31 @@ const tests: { [k: string]: Test } = {
     assert(smallCube.getCorners()[7].getCorners()[7] === cube.getCorners()[6]);
 
   },
-  "recursive divide": (assert) => {
+  "_recursive divide": (assert) => {
     const divide = (cube: Node<Props>, n: number) => {
       if (n > 0) {
-        cube.octantDivide().forEach(c => {
+        cube.octantDivide().forEach((c, i) => {
           divide(c, n - 1);
         });
       }
     }
     const cube = createCube();
-    divide(cube, 0);
-    cube.show(r => r.map(c => '*').join(' '));
+    divide(cube, 1);
+    console.log('done');
+    cube.show();
+  },
+  "_recursive divide 2": (assert) => {
+    const divide = (cube: Node<Props>, n: number) => {
+      if (n > 0) {
+        cube.octantDivide().forEach((c, i) => {
+          divide(c, n - 1);
+        });
+      }
+    }
+    const cube = createCube();
+    divide(cube, 2);
+    console.log('done');
+    cube.show();
   },
 }
 
@@ -131,7 +145,7 @@ const TestRunner = () => {
   }
 
   Object.entries(tests).filter(([k, t]) => {
-    return !k.startsWith("_");
+    return k.startsWith("_");
   }).forEach(runTest);
 };
 TestRunner();

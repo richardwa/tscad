@@ -13,7 +13,7 @@ const connectionMatrix = [
  * 'this' will be the first node
  */
 export const connectNodes = <T>(n: Node<T>[]) => {
-  const size = Math.pow(2, 50);
+  const size = Math.pow(2, 8);
   n[0].size = [size, size, size];
   for (let i = 0; i < connectionMatrix.length; i++) {
     const conn = connectionMatrix[i];
@@ -22,20 +22,25 @@ export const connectNodes = <T>(n: Node<T>[]) => {
   return n[0];
 }
 
+let counter = 0;
 export class Node<T> {
+  id: number;
   data?: T;
   next: TriArray<{ len: number, n: Node<T> }> = [null, null, null];
-  size: TriArray<number> = [null, null, null];
+  size: TriArray<number>;
+  constructor(id: number) {
+    this.id = id;
+  }
 
   /**
    * Override this function to set custom node data at init time 
    */
   createNode(direction: Direction, to: Node<T>) {
-    return new Node<T>();
+    return new Node<T>(counter++);
   }
 
   isCube() {
-    return this.size[0] || this.size[1] || this.size[2];
+    return Boolean(this.size);
   }
 
   getCorners() {
@@ -55,8 +60,9 @@ export class Node<T> {
       console.warn(`node: ${this}, nothing in ${axis} direction`);
       return;
     }
-    let { len, n } = this.next[axis];
-    while (len < length) {
+    let len = 0;
+    let n: Node<T> = this;
+    while (len < length && n.next[axis]) {
       const p = n.next[axis];
       n = p.n;
       len += p.len;
@@ -84,6 +90,9 @@ export class Node<T> {
 
   divideEdge(axis: Direction, size: number): Node<T> {
     const next = this.find(axis, size);
+    if (!next){
+      throw 'error';
+    }
     let middle = this.find(axis, size / 2);
     if (!middle) {
       middle = this.createNode(axis, next);
@@ -95,8 +104,11 @@ export class Node<T> {
 
   // divides a cube in 2 along indicated axis
   divideCube(axis: Direction): Pair<Node<T>> {
-    const dir1 = (axis + 1) % 3 as Direction;
-    const dir2 = (axis + 2) % 3 as Direction;
+    console.log(axis, this.size, this.id);
+    this.show();
+    let dir1 = (axis + 1) % 3 as Direction;
+    let dir2 = (axis + 2) % 3 as Direction;
+
     // find all points on this plane
     const points = [this,
       this.find(dir1, this.size[dir1]),
@@ -109,12 +121,16 @@ export class Node<T> {
     middle[0].next[dir2] = { len: this.size[dir2], n: middle[2] };
     middle[1].next[dir2] = { len: this.size[dir2], n: middle[3] };
     middle[2].next[dir1] = { len: this.size[dir1], n: middle[3] };
+    console.log('middle3', middle[3]);
 
-    // middle of 3 doesn't point to anything for now.
+    // middle[3] doesn't point to anything for now.
     this.size[axis] /= 2;
     middle[0].size = [...this.size];
 
     // return the bottom left of each cube
+
+    console.log('after')
+    this.show();
     return [this, middle[0]];
 
   }
@@ -150,7 +166,7 @@ export class Node<T> {
       const y = k.getArray(1);
       for (let j of y) {
         const x = j.getArray(0);
-        console.log(f ? f(x) : x);
+        console.log(f ? f(x) : x.map(c => `${c.id}`.padStart(3, '0')).join('|'));
       }
       console.log('')
     }

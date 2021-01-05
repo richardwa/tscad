@@ -17,7 +17,6 @@ const reduceCorners = (a: number, v: number, i: number) => {
 
 type Data = {
   pos: Vec3;
-  id: number;
   center?: Vec3;
   val?: number;
   name?: string;
@@ -26,8 +25,8 @@ type Data = {
 let id = 0;
 class Cube extends Node<Data> {
   constructor(pos: Vec3) {
-    super();
-    this.data = { pos, id: id++ };
+    super(id++);
+    this.data = { pos };
   }
   createNode(direction: Direction, to: Node<Data>) {
     const from = this.data.pos;
@@ -65,7 +64,7 @@ export class SurfaceNets {
   putFaces(p1: Cube, p2: Cube, face: Cube[]) {
     const intersected = hasIntesection(p1, p2);
     if (intersected) {
-      console.log(p1.size, p1.data.id, p1.next[1].n.data.id, p2.data.id);
+      console.log(p1.size, p1.id, p1.next[1].n.id, p2.id);
       const t = face.map(f => f.data.center).filter(o => o);
       if (t.length === 3) {
         this.triangles.push([t[0], t[1], t[2]]);
