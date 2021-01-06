@@ -1,7 +1,7 @@
 /// <reference path="../types.d.ts" />
 
 import * as fs from 'fs';
-import { MarchingCubes } from './marchingcubes';
+import { SurfaceNets } from './surfacenets';
 
 type Props = {
   name: string;
@@ -13,7 +13,7 @@ type Props = {
 
 export function render(p: Props) {
   console.time("render");
-  const march = new MarchingCubes(p.cubeSize, p.shape);
+  const march = new SurfaceNets(p.cubeSize, p.shape);
   march.doMarch(p.bounds);
   console.timeEnd("render");
 

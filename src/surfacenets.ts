@@ -2,7 +2,7 @@
 
 import { cubeVerts, faceToCorners } from './marchingcubes-tables';
 import { Vector } from './math';
-import { ScalableSquare, createSquare, combine4Squares, Square4, printSquare, getSize, scaleSquare } from './treesquares';
+import { ScalableSquare, createSquare, combine4Squares, Square4, scaleSquare } from './treesquares';
 import { CubeCorners, divideVolume, findVertex } from './util';
 export type Bounds = [Vec3, Vec3];
 export type Triangle = [Vec3, Vec3, Vec3];
@@ -60,8 +60,8 @@ export class SurfaceNets {
   putTriangles = (cube: Cube, neighbors: Cube[]) => {
     let head = neighbors[0];
     for (let i = 1; i < neighbors.length; i++) {
-      this.triangles.push([cube.pos, neighbors[i].pos, head.pos]);
       this.triangles.push([cube.pos, head.pos, neighbors[i].pos]);
+      this.triangles.push([cube.pos, neighbors[i].pos, head.pos]);
       head = neighbors[i];
     }
   }
@@ -91,11 +91,8 @@ export class SurfaceNets {
             //.sort((a, b) => (a.pos[nextAxis2] - b.pos[nextAxis2]));
             const combined = check === -1 ? [...right, ...top] : [...top, ...right];
 
-            if (combined.length >= 3) {
-              console.log(cube.name, axis, combined.map(o => o.name));
-            }
             if (combined.length >= 2) {
-              this.putTriangles(cube, combined.filter(p => cube.name !== "05" || p.name !== "107"));
+              this.putTriangles(cube, combined);
             }
           }
         }
@@ -109,7 +106,6 @@ export class SurfaceNets {
     const upper = corners[6];
     const lengths = new Vector(upper).minus(lower).result;
     const maxLen = Math.max(...lengths);
-    console.log(name, maxLen);
 
     // optimization, this cube is far away from an edge relative to its own size
     // we can skip it even when this cube is above the min size
@@ -123,8 +119,8 @@ export class SurfaceNets {
       if (cubeIndex === 0xff || cubeIndex === 0x00) {
         return emptyCube;
       }
-      const center = new Vector(corners[0]).add(corners[6]).scale(1 / 2).result;
-      //const center = findVertex(cubeIndex, corners, results);
+      //const center = new Vector(corners[0]).add(corners[6]).scale(1 / 2).result;
+      const center = findVertex(cubeIndex, corners, results);
       const val = this.fn(center);
       const cube: Cube = {
         name,
