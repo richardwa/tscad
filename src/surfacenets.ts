@@ -60,7 +60,7 @@ export class SurfaceNets {
   putTriangles = (cube: Cube, neighbors: Cube[]) => {
     let head = neighbors[0];
     for (let i = 1; i < neighbors.length; i++) {
-      this.triangles.push([cube.pos, head.pos, neighbors[i].pos]);
+      //this.triangles.push([cube.pos, head.pos, neighbors[i].pos]);
       this.triangles.push([cube.pos, neighbors[i].pos, head.pos]);
       head = neighbors[i];
     }
