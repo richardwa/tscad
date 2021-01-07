@@ -48,7 +48,7 @@ const checkCube = (cube: Cube, axis: number, corner: number): number => {
 
 export class SurfaceNets {
   triangles: Triangle[] = [];
-  vecticies: Cube[] = [];
+  vertices: Cube[] = [];
   cubeSize: number;
   fn: Shape3;
 
@@ -75,7 +75,7 @@ export class SurfaceNets {
 
     this.findVertices(vertexPositions as CubeCorners, "");
 
-    this.vecticies.forEach(cube => {
+    this.vertices.forEach(cube => {
       for (let axis = 0; axis < 3; axis++) {
         const nextAxis = (axis + 1) % 3;
         const nextAxis2 = (nextAxis + 1) % 3;
@@ -130,7 +130,7 @@ export class SurfaceNets {
         pos: center,
         neightbors: [[new Set(), new Set(), new Set()], [new Set(), new Set(), new Set()]]
       };
-      this.vecticies.push(cube);
+      this.vertices.push(cube);
       const cubeFace: CubeFace = createSquare(cube);
       // terminate recursion
       return [cubeFace, cubeFace, cubeFace, cubeFace, cubeFace, cubeFace];

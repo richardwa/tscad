@@ -1,8 +1,8 @@
 import { union } from '../csg/boolean';
 import { rotate, translate } from '../csg/manipulate';
 import { box, sphere } from '../csg/primitives';
-import { processPolygons, writeOBJ } from '../src/render';
-import { SurfaceNets } from '../src/surfacenets';
+import { processPolygons, writeOBJ } from './render';
+import { SurfaceNets } from './surfacenets';
 
 const shape = rotate('y', 0, rotate('z', 0,
   union({ radius: 3 },

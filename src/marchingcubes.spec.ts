@@ -1,9 +1,9 @@
 import { sphere, box, circle, rect } from '../csg/primitives';
 import { union } from '../csg/boolean';
-import { processPolygons, render, writeOBJ } from '../src/render';
+import { processPolygons, render, writeOBJ } from './render';
 import { revolve, tile } from '../csg/extrude';
 import { rotate, translate } from '../csg/manipulate';
-import { MarchingCubes } from '../src/marchingcubes';
+import { MarchingCubes } from './marchingcubes';
 
 const shape = rotate('y', 0, rotate('z', 0,
   union({ radius: 3 },
