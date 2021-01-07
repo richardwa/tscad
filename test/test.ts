@@ -1,16 +1,14 @@
-import { poly } from '../csg/primitives';
-import { union } from '../csg/boolean';
+import { extrude } from '../csg/extrude';
+import { rect } from '../csg/primitives';
 import { render } from '../src/render';
-import { extrude, tile } from '../csg/extrude';
-import { rotate, translate } from '../csg/manipulate';
 
-const shape: Shape3 = extrude(10, poly(6, 5));
+const shape: Shape3 = extrude(10, rect(10, 20));
 
-const s = 10;
+const s = 32;
 render({
-  name: "test-shapes",
+  name: "test",
   shape,
-  cubeSize: 10,
+  cubeSize: 1,
   bounds: [[-s, -s, -s], [s, s, s]]
 });
 

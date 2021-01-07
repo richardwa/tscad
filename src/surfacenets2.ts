@@ -48,20 +48,28 @@ export class SurfaceNets {
     const cube = new Cube<Data>([], null);
     cube.data = { corners: boundsToCorners(bounds) }
     this.findVertices(cube);
+    let error = 0;
     this.vertices.forEach(cube => {
       for (let axis = 0; axis < 3; axis++) {
         const corner0 = cube.data.results[pushBits[axis * 2](7)];
         const corner1 = cube.data.results[7];
         if (hasIntersections([corner0, corner1])) {
-          const normals = normalDirections[axis * 2 + 1];
-          const c1 = cube.getNeighbor(normals[0]);
-          const c2 = cube.getNeighbor(normals[1]);
-          const c3 = c2.getNeighbor(normals[0]);
-          const quad = [cube.data.center, c1.data.center, c3.data.center, c2.data.center];
-          this.faces.push(corner0 < corner1 ? quad : quad.reverse());
+          try {
+            const normals = normalDirections[axis * 2 + 1];
+            const c1 = cube.getNeighbor(normals[0]);
+            const c2 = cube.getNeighbor(normals[1]);
+            const c3 = c2.getNeighbor(normals[0]);
+            const quad = [cube.data.center, c1.data.center, c3.data.center, c2.data.center];
+            this.faces.push(corner0 < corner1 ? quad : quad.reverse());
+          } catch (e) {
+            error++;
+          }
         }
       }
     });
+    if (error > 0) {
+      console.warn(`encountered missing neighbors on ${error} cubes`);
+    }
   };
 
   findVertices = (cube: Cube<Data>) => {

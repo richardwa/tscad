@@ -18,11 +18,11 @@ export const pushBits = [0, 1, 2].flatMap(i => {
 }) as HexArray<(n: number) => number>;
 
 export const edgePairs = [0, 1, 2].flatMap(i => {
-  const all = [...new Array(8)].map((c, i) => i);
+  const all = [...new Array(8)].map((_, i) => i);
   const low = Array.from(new Set(all.map(pushBits[i * 2])))
   const high = low.map(pushBits[i * 2 + 1]);
   return low.map((e, i) => [e, high[i]] as Pair<number>);
-});
+}) as Array12<Pair<Position>>;
 
 export const normalDirections = [...new Array(6)].map((_, j) => {
   return [2, 4].map(i => ((j + i) % 6));
@@ -46,7 +46,7 @@ export class Cube<T> {
   }
 
   split(init: (c: Cube<T>) => Cube<T> = identity) {
-    this.children = [...new Array(8)].map((c, i) =>
+    this.children = [...new Array(8)].map((_, i) =>
       init(new Cube([...this.path, i as Position], this))) as OctArray<Cube<T>>;
     return this.children;
   }

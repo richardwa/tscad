@@ -1,7 +1,7 @@
 /// <reference path="../types.d.ts" />
 
 import * as fs from 'fs';
-import { SurfaceNets } from './surfacenets';
+import { SurfaceNets } from './surfacenets2';
 
 type Props = {
   name: string;
@@ -17,7 +17,7 @@ export function render(p: Props) {
   march.doMarch(p.bounds);
   console.timeEnd("render");
 
-  const { faces, vertices } = processPolygons(march.triangles);
+  const { faces, vertices } = processPolygons(march.faces);
   const outDir = p.outDir || "./target";
   writeOBJ({ faces, vertices, outDir, name: p.name });
 }
