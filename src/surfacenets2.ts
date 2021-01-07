@@ -34,6 +34,29 @@ const hasIntersections = (n: number[]) => {
   return false;
 }
 
+const findCenter = (corners: OctArray<Vec3>, results: OctArray<number>, fn: Shape3): Vec3 => {
+  const intersections: Vec3[] = [];
+  edgePairs.forEach(([i, j]) => {
+    if (hasIntersections([results[i], results[j]])) {
+      const v1 = corners[i];
+      const v2 = corners[j];
+      const diff = new Vector(v2).minus(v1);
+      const total = Math.abs(results[i]) + Math.abs(results[j]);
+      intersections.push(diff.scale(Math.abs(results[i]) / total).add(v1).result);
+    }
+  });
+  const avg = new Vector(intersections[0]);
+  for (let i = 1; i < intersections.length; i++) {
+    avg.add(intersections[i]);
+  }
+  return avg.scale(1 / intersections.length).result;
+  // const normal = new Vector(intersections[0]).minus(intersections[1]);
+  // const e2 = new Vector(intersections[0]).minus(intersections[2]);
+  // normal.cross(e2.result).toUnitVector();
+  // const val = fn(avg.result);
+  // return normal.scale(-val).add(avg.result).result;
+}
+
 type Props = {
   cubeSize: number;
   shape: Shape3;
@@ -66,7 +89,7 @@ export function SurfaceNets(p: Props) {
         return;
       }
       // const center = new Vector(corners[0]).add(corners[7]).scale(1 / 2).result;
-      const center = findCenter(corners, results);
+      const center = findCenter(corners, results, shape);
       // const val = this.fn(center);
       cube.data.center = center;
       vertices.push(cube);
@@ -119,22 +142,4 @@ export function SurfaceNets(p: Props) {
   }
 
   return faces;
-}
-
-const findCenter = (corners: OctArray<Vec3>, results: OctArray<number>) => {
-  const intersections: Vec3[] = [];
-  edgePairs.forEach(([i, j]) => {
-    if (hasIntersections([results[i], results[j]])) {
-      const v1 = corners[i];
-      const v2 = corners[j];
-      const diff = new Vector(v2).minus(v1);
-      const total = Math.abs(results[i]) + Math.abs(results[j]);
-      intersections.push(diff.scale(Math.abs(results[i]) / total).add(v1).result);
-    }
-  });
-  const result = new Vector(intersections[0]);
-  for (let i = 1; i < intersections.length; i++) {
-    result.add(intersections[i]);
-  }
-  return result.scale(1 / intersections.length).result;
 }
