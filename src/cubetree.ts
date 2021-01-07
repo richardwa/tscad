@@ -24,6 +24,9 @@ export const edgePairs = [0, 1, 2].flatMap(i => {
   return low.map((e, i) => [e, high[i]] as Pair<number>);
 });
 
+export const normalDirections = [0, 1, 2].map(axis =>
+  [1, 2].map(i => ((axis + i) % 3) * 2 + 1)) as [Direction, Direction][];
+
 export class Cube<T> {
   parent: Cube<T>;
   data: T;

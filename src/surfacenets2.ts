@@ -1,6 +1,6 @@
 /// <reference path="../types.d.ts" />
 
-import { Cube, edgePairs } from './cubetree';
+import { Cube, edgePairs, normalDirections } from './cubetree';
 import { Vector } from './math';
 
 export type Bounds = [Vec3, Vec3];
@@ -33,7 +33,6 @@ const hasIntersections = (n: number[]) => {
   }
   return true;
 }
-const normalDirections = [0, 1, 2].map(axis => [1, 2].map(i => ((axis + i) % 3) * 2 + 1));
 
 export class SurfaceNets {
   triangles: Triangle[] = [];
@@ -59,12 +58,12 @@ export class SurfaceNets {
           const c1 = cube.getNeighbor(dir[0]);
           const c2 = cube.getNeighbor(dir[1]);
           const c3 = c2.getNeighbor(dir[0]);
-          if (corner0 < corner1) {
+          if (corner0 > corner1) {
             this.triangles.push([cube.data.center, c1.data.center, c2.data.center]);
             this.triangles.push([c3.data.center, c2.data.center, c1.data.center]);
           } else {
             this.triangles.push([cube.data.center, c2.data.center, c1.data.center]);
-            this.triangles.push([c3.data.center, c1.data.center, c2.data.center]);
+            this.triangles.push([c3.data.center, c2.data.center, c2.data.center]);
           }
         }
       }
