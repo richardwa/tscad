@@ -1,17 +1,14 @@
 /// <reference path="../types.d.ts" />
 
+const identity = <T>(t: T) => t;
+const fnTrue = () => true;
+
 //type Direction = 0 | 1 | 2 | 4 | 5;
 export enum Direction { left, right, front, back, bottom, top };
 //type Position = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 export enum Position {
-  botfrontleft,
-  botfrontright,
-  botbackleft,
-  botbackright,
-  topfrontleft,
-  topfrontright,
-  topbackleft,
-  topbackright,
+  botfrontleft, botfrontright, botbackleft, botbackright,
+  topfrontleft, topfrontright, topbackleft, topbackright,
 }
 
 const pushBits = [0, 1, 2].flatMap(i => {
@@ -19,8 +16,13 @@ const pushBits = [0, 1, 2].flatMap(i => {
   const b = ~a; // brings number to the low side
   return [(n) => n & b, (n) => n | a];
 }) as HexArray<(n: number) => number>;
-const identity = <T>(t: T) => t;
-const fnTrue = () => true;
+
+export const edgePairs = [0, 1, 2].flatMap(i => {
+  const all = [...new Array(8)].map((c, i) => i);
+  const low = Array.from(new Set(all.map(pushBits[i * 2])))
+  const high = low.map(pushBits[i * 2 + 1]);
+  return low.map((e, i) => [e, high[i]] as Pair<number>);
+});
 
 export class Cube<T> {
   parent: Cube<T>;
