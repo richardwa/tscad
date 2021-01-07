@@ -11,7 +11,7 @@ export enum Position {
   topfrontleft, topfrontright, topbackleft, topbackright,
 }
 
-const pushBits = [0, 1, 2].flatMap(i => {
+export const pushBits = [0, 1, 2].flatMap(i => {
   const a = 1 << i; // pushes number to the high side
   const b = ~a; // brings number to the low side
   return [(n) => n & b, (n) => n | a];
@@ -24,8 +24,9 @@ export const edgePairs = [0, 1, 2].flatMap(i => {
   return low.map((e, i) => [e, high[i]] as Pair<number>);
 });
 
-export const normalDirections = [0, 1, 2].map(axis =>
-  [1, 2].map(i => ((axis + i) % 3) * 2 + 1)) as [Direction, Direction][];
+export const normalDirections = [...new Array(6)].map((_, j) => {
+  return [2, 4].map(i => ((j + i) % 6));
+}) as HexArray<[Direction, Direction]>;
 
 export class Cube<T> {
   parent: Cube<T>;

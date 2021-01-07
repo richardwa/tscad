@@ -1,10 +1,9 @@
 /// <reference path="../types.d.ts" />
 
-import { Cube, edgePairs, normalDirections } from './cubetree';
+import { Cube, edgePairs, normalDirections, pushBits } from './cubetree';
 import { Vector } from './math';
 
 export type Bounds = [Vec3, Vec3];
-export type Triangle = [Vec3, Vec3, Vec3];
 
 type Data = {
   corners: OctArray<Vec3>;
@@ -35,7 +34,7 @@ const hasIntersections = (n: number[]) => {
 }
 
 export class SurfaceNets {
-  triangles: Triangle[] = [];
+  faces: Vec3[][] = [];
   vertices: Cube<Data>[] = [];
   cubeSize: number;
   fn: Shape3;
@@ -51,20 +50,15 @@ export class SurfaceNets {
     this.findVertices(cube);
     this.vertices.forEach(cube => {
       for (let axis = 0; axis < 3; axis++) {
-        const corner0 = cube.data.results[7 & ~(1 << axis)];
+        const corner0 = cube.data.results[pushBits[axis * 2](7)];
         const corner1 = cube.data.results[7];
         if (hasIntersections([corner0, corner1])) {
-          const dir = normalDirections[axis];
-          const c1 = cube.getNeighbor(dir[0]);
-          const c2 = cube.getNeighbor(dir[1]);
-          const c3 = c2.getNeighbor(dir[0]);
-          if (corner0 < corner1) {
-            this.triangles.push([cube.data.center, c1.data.center, c2.data.center]);
-            this.triangles.push([c3.data.center, c2.data.center, c1.data.center]);
-          } else {
-            this.triangles.push([cube.data.center, c2.data.center, c1.data.center]);
-            this.triangles.push([c3.data.center, c1.data.center, c2.data.center]);
-          }
+          const normals = normalDirections[axis * 2 + 1];
+          const c1 = cube.getNeighbor(normals[0]);
+          const c2 = cube.getNeighbor(normals[1]);
+          const c3 = c2.getNeighbor(normals[0]);
+          const quad = [cube.data.center, c1.data.center, c3.data.center, c2.data.center];
+          this.faces.push(corner0 < corner1 ? quad : quad.reverse());
         }
       }
     });
@@ -118,10 +112,9 @@ export class SurfaceNets {
 const findCenter = (corners: OctArray<Vec3>, results: OctArray<number>) => {
   const intersections: Vec3[] = [];
   edgePairs.forEach(([i, j]) => {
-    if (Math.sign(results[i]) !== Math.sign(results[j])) {
+    if (hasIntersections([results[i], results[j]])) {
       const v1 = corners[i];
       const v2 = corners[j];
-
       const diff = new Vector(v2).minus(v1);
       const total = Math.abs(results[i]) + Math.abs(results[j]);
       intersections.push(diff.scale(Math.abs(results[i]) / total).add(v1).result);

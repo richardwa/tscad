@@ -15,5 +15,5 @@ const surfacenets = new SurfaceNets(1, shape);
 surfacenets.doMarch([[-s, -s, -s], [s, s, s]]);
 console.timeEnd('render');
 
-const mesh = processPolygons(surfacenets.triangles);
+const mesh = processPolygons(surfacenets.faces);
 writeOBJ({ faces: mesh.faces, vertices: mesh.vertices, name: 'surfacenets2' });
