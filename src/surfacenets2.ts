@@ -63,7 +63,7 @@ export class SurfaceNets {
             this.triangles.push([c3.data.center, c2.data.center, c1.data.center]);
           } else {
             this.triangles.push([cube.data.center, c2.data.center, c1.data.center]);
-            this.triangles.push([c3.data.center, c2.data.center, c2.data.center]);
+            this.triangles.push([c3.data.center, c1.data.center, c2.data.center]);
           }
         }
       }
