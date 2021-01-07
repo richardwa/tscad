@@ -25,13 +25,13 @@ const boundsToCorners = (b: Bounds) => {
 }
 
 const hasIntersections = (n: number[]) => {
-  const sign = Math.sign(n[0]);
+  const sign = n[0] > 0;
   for (let i = 1; i < n.length; i++) {
-    if (Math.sign(n[i]) !== sign) {
+    if ((n[i] > 0) !== sign) {
       return true;
     }
   }
-  return true;
+  return false;
 }
 
 export class SurfaceNets {
@@ -53,12 +53,12 @@ export class SurfaceNets {
       for (let axis = 0; axis < 3; axis++) {
         const corner0 = cube.data.results[7 & ~(1 << axis)];
         const corner1 = cube.data.results[7];
-        if (Math.sign(corner0) !== Math.sign(corner1)) {
+        if (hasIntersections([corner0, corner1])) {
           const dir = normalDirections[axis];
           const c1 = cube.getNeighbor(dir[0]);
           const c2 = cube.getNeighbor(dir[1]);
           const c3 = c2.getNeighbor(dir[0]);
-          if (corner0 > corner1) {
+          if (corner0 < corner1) {
             this.triangles.push([cube.data.center, c1.data.center, c2.data.center]);
             this.triangles.push([c3.data.center, c2.data.center, c1.data.center]);
           } else {
@@ -83,7 +83,10 @@ export class SurfaceNets {
     }
 
     // base case, we are small enought to find a vertex
-    if (maxLen <= this.cubeSize && hasIntersections(results)) {
+    if (maxLen <= this.cubeSize) {
+      if (!hasIntersections(results)) {
+        return;
+      }
       // const center = new Vector(corners[0]).add(corners[7]).scale(1 / 2).result;
       const center = findCenter(corners, results);
       // const val = this.fn(center);
