@@ -1,5 +1,6 @@
 /// <reference path="../types.d.ts" />
 
+import { ServerStreamFileResponseOptionsWithError } from 'http2';
 import { Cube, edgePairs, normalDirections, pushBits } from './cubetree';
 import { Vector } from './math';
 
@@ -33,48 +34,23 @@ const hasIntersections = (n: number[]) => {
   return false;
 }
 
-export class SurfaceNets {
-  faces: Vec3[][] = [];
-  vertices: Cube<Data>[] = [];
+type Props = {
   cubeSize: number;
-  fn: Shape3;
+  shape: Shape3;
+  bounds?: Bounds;
+}
 
-  constructor(cubeSize: number, shape: Shape3) {
-    this.cubeSize = cubeSize;
-    this.fn = shape;
-  }
+export function SurfaceNets(p: Props) {
+  const faces: Vec3[][] = [];
+  const vertices: Cube<Data>[] = [];
+  const cubeSize: number = p.cubeSize;
+  const shape: Shape3 = p.shape;
+  const bounds = p.bounds || [[-500, -500, -500], [500, 500, 500]];
 
-  doMarch = (bounds: Bounds) => {
-    const cube = new Cube<Data>([], null);
-    cube.data = { corners: boundsToCorners(bounds) }
-    this.findVertices(cube);
-    let error = 0;
-    this.vertices.forEach(cube => {
-      for (let axis = 0; axis < 3; axis++) {
-        const corner0 = cube.data.results[pushBits[axis * 2](7)];
-        const corner1 = cube.data.results[7];
-        if (hasIntersections([corner0, corner1])) {
-          try {
-            const normals = normalDirections[axis * 2 + 1];
-            const c1 = cube.getNeighbor(normals[0]);
-            const c2 = cube.getNeighbor(normals[1]);
-            const c3 = c2.getNeighbor(normals[0]);
-            const quad = [cube.data.center, c1.data.center, c3.data.center, c2.data.center];
-            this.faces.push(corner0 < corner1 ? quad : quad.reverse());
-          } catch (e) {
-            error++;
-          }
-        }
-      }
-    });
-    if (error > 0) {
-      console.warn(`encountered missing neighbors on ${error} cubes`);
-    }
-  };
 
-  findVertices = (cube: Cube<Data>) => {
+  const findVertices = (cube: Cube<Data>) => {
     const corners = cube.data.corners;
-    const results = corners.map(this.fn) as OctArray<number>;
+    const results = corners.map(shape) as OctArray<number>;
     cube.data.results = results;
     const maxLen = Math.max(...new Vector(corners[7]).minus(corners[0]).result);
 
@@ -85,7 +61,7 @@ export class SurfaceNets {
     }
 
     // base case, we are small enought to find a vertex
-    if (maxLen <= this.cubeSize) {
+    if (maxLen <= cubeSize) {
       if (!hasIntersections(results)) {
         return;
       }
@@ -93,7 +69,7 @@ export class SurfaceNets {
       const center = findCenter(corners, results);
       // const val = this.fn(center);
       cube.data.center = center;
-      this.vertices.push(cube);
+      vertices.push(cube);
       return;
     }
 
@@ -113,8 +89,36 @@ export class SurfaceNets {
         ])
       }
       return ch;
-    }).forEach(this.findVertices);
+    }).forEach(findVertices);
+  };
+
+  const cube = new Cube<Data>([], null);
+  cube.data = { corners: boundsToCorners(bounds) }
+  findVertices(cube);
+  let error = 0;
+  vertices.forEach(cube => {
+    for (let axis = 0; axis < 3; axis++) {
+      const corner0 = cube.data.results[pushBits[axis * 2](7)];
+      const corner1 = cube.data.results[7];
+      if (hasIntersections([corner0, corner1])) {
+        try {
+          const normals = normalDirections[axis * 2 + 1];
+          const c1 = cube.getNeighbor(normals[0]);
+          const c2 = cube.getNeighbor(normals[1]);
+          const c3 = c2.getNeighbor(normals[0]);
+          const quad = [cube.data.center, c1.data.center, c3.data.center, c2.data.center];
+          faces.push(corner0 < corner1 ? quad : quad.reverse());
+        } catch (e) {
+          error++;
+        }
+      }
+    }
+  });
+  if (error > 0) {
+    console.warn(`encountered missing neighbors on ${error} cubes`);
   }
+
+  return faces;
 }
 
 const findCenter = (corners: OctArray<Vec3>, results: OctArray<number>) => {

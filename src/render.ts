@@ -7,17 +7,20 @@ type Props = {
   name: string;
   shape: Shape3;
   cubeSize: number;
-  bounds: [Vec3, Vec3];
+  bounds?: [Vec3, Vec3];
   outDir?: string;
 }
 
 export function render(p: Props) {
   console.time("render");
-  const march = new SurfaceNets(p.cubeSize, p.shape);
-  march.doMarch(p.bounds);
+  const polygons = SurfaceNets({
+    cubeSize: 1,
+    shape: p.shape,
+    bounds: p.bounds
+  });
   console.timeEnd("render");
 
-  const { faces, vertices } = processPolygons(march.faces);
+  const { faces, vertices } = processPolygons(polygons);
   const outDir = p.outDir || "./target";
   writeOBJ({ faces, vertices, outDir, name: p.name });
 }

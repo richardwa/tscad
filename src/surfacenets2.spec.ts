@@ -11,9 +11,12 @@ const shape = rotate('y', 0, rotate('z', 0,
 
 const s = 32;
 console.time('render');
-const surfacenets = new SurfaceNets(1, shape);
-surfacenets.doMarch([[-s, -s, -s], [s, s, s]]);
+const faces = SurfaceNets({
+  cubeSize: 1,
+  shape,
+  bounds: [[-s, -s, -s], [s, s, s]]
+});
 console.timeEnd('render');
 
-const mesh = processPolygons(surfacenets.faces);
+const mesh = processPolygons(faces);
 writeOBJ({ faces: mesh.faces, vertices: mesh.vertices, name: 'surfacenets2' });

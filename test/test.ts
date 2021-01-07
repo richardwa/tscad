@@ -4,7 +4,7 @@ import { render } from '../src/render';
 
 const shape: Shape3 = extrude(10, rect(10, 20));
 
-const s = 32;
+const s = 256;
 render({
   name: "test",
   shape,
