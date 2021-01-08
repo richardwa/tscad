@@ -1,3 +1,4 @@
+import { assert } from "console";
 import { TestRunner, Tests, Converter } from "../test/testrunner.spec";
 import { Cube, Direction, Position } from "./cubetree";
 
@@ -45,6 +46,16 @@ const tests: Tests<Cube<any>> = {
       ch0[Position.topfrontright],
       ch1[Position.topfrontleft].getNeighbor(Direction.left),
       'cousin');
+
+  },
+  "getLeaf": ({ assertEquals }) => {
+    const cube = new Cube([], null);
+    const leafs = cube.split().flatMap(c => c.split()).flatMap(c => c.split());
+
+    const a = cube.getLeafs(c => c.getIndex() === 7 || c.getIndex() === 5);
+    assertEquals(a.length, 8, '8 leaves along one edge')
+
+
 
   }
 };

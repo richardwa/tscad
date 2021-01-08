@@ -83,7 +83,7 @@ export class Cube<T> {
     //absolute parent has no neighbors
   }
 
-  makeFilter<T>(a: Position[]) {
+  static makeFilter<T>(a: Position[]) {
     const set = new Set<Position>(a);
     return (n: Cube<T>) => set.has(n.getIndex());
   }

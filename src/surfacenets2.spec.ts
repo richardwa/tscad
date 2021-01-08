@@ -9,12 +9,10 @@ const shape = rotate('y', 15, rotate('z', 45,
     box(20.2),
     translate([10, 10, 10], sphere(10)))));
 
-const s = 32;
 console.time('render');
 const faces = SurfaceNets({
   cubeSize: 1,
   shape,
-  bounds: [[-s, -s, -s], [s, s, s]]
 });
 console.timeEnd('render');
 

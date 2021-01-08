@@ -1,7 +1,7 @@
 /// <reference path="../types.d.ts" />
 
 import { ServerStreamFileResponseOptionsWithError } from 'http2';
-import { Cube, edgePairs, normalDirections, pushBits } from './cubetree';
+import { Cube, Direction, edgePairs, normalDirections, Position, pushBits } from './cubetree';
 import { Vector } from './math';
 
 export type Bounds = [Vec3, Vec3];
@@ -57,6 +57,17 @@ const findCenter = (corners: OctArray<Vec3>, results: OctArray<number>, fn: Shap
   // return normal.scale(-val).add(avg.result).result;
 }
 
+const findNeighbors = (cube: Cube<Data>, direction: Direction, opposedEdge: [Position, Position]): Cube<Data> => {
+  const a = cube.getNeighbor(direction);
+  if (a.children) {
+    const b = a.getLeafs(Cube.makeFilter(opposedEdge));
+    const c = b.filter(c => hasIntersections(opposedEdge.map(e => c.data.results[e])))[0];
+    return c;
+  } else {
+    return a;
+  }
+}
+
 type Props = {
   cubeSize: number;
   shape: Shape3;
@@ -90,10 +101,14 @@ export function SurfaceNets(p: Props) {
       }
       // const center = new Vector(corners[0]).add(corners[7]).scale(1 / 2).result;
       const center = findCenter(corners, results, shape);
-      // const val = this.fn(center);
+      const val = shape(center);
+
+      // quality check, continue dividing if not good
+      // if (Math.abs(val) < cubeSize / 4) {
       cube.data.center = center;
       vertices.push(cube);
       return;
+      //}
     }
 
     // recursion
@@ -121,20 +136,35 @@ export function SurfaceNets(p: Props) {
   let error = 0;
   vertices.forEach(cube => {
     for (let axis = 0; axis < 3; axis++) {
-      const corner0 = cube.data.results[pushBits[axis * 2](7)];
-      const corner1 = cube.data.results[7];
-      if (hasIntersections([corner0, corner1])) {
-        try {
-          const normals = normalDirections[axis * 2 + 1];
-          const c1 = cube.getNeighbor(normals[0]);
-          const c2 = cube.getNeighbor(normals[1]);
-          const c3 = c2.getNeighbor(normals[0]);
-          const quad = [cube.data.center, c1.data.center, c3.data.center, c2.data.center];
-          faces.push(corner0 < corner1 ? quad : quad.reverse());
-        } catch (e) {
-          error++;
+      [7, 0].forEach((c0, j) => {
+        const c1 = pushBits[axis * 2 + j](c0);
+        const corner0 = cube.data.results[c0];
+        const corner1 = cube.data.results[c1];
+        if (hasIntersections([corner0, corner1])) {
+          let reversed = j === 0 ? corner0 > corner1 : corner0 < corner1;
+          try {
+            const normals = normalDirections[axis * 2 + 1 - j];
+            const opposedNorms = normalDirections[axis * 2 + j];
+
+            const d0 = pushBits[opposedNorms[0]](c0);
+            const d1 = pushBits[opposedNorms[0]](c1);
+            const cu1 = findNeighbors(cube, normals[0], [d0, d1]);
+
+            const e0 = pushBits[opposedNorms[1]](c0);
+            const e1 = pushBits[opposedNorms[1]](c1);
+            const cu2 = findNeighbors(cube, normals[1], [e0, e1]);
+            if (cu1.data.center === undefined || cu2.data.center === undefined) {
+              console.log([cube, cu1, cu2].map(c => [c.path.join(''), Boolean(c.children), c.data.results]));
+            }
+
+            const poly = [cube.data.center, cu1.data.center, cu2.data.center];
+            faces.push(reversed ? poly : poly.reverse());
+          } catch (e) {
+            console.log(e);
+            error++;
+          }
         }
-      }
+      });
     }
   });
   if (error > 0) {
