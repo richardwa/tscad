@@ -39,15 +39,19 @@ export class Cube<T> {
     this.parent = parent;
   }
 
+  newInstance(p: Position[], parent: Cube<T>) {
+    return new Cube<T>(p, parent);
+  }
+
   getIndex() {
     if (this.parent) {
       return this.path[this.path.length - 1];
     }
   }
 
-  split(init: (c: Cube<T>) => Cube<T> = identity) {
+  split() {
     this.children = [...new Array(8)].map((_, i) =>
-      init(new Cube([...this.path, i as Position], this))) as OctArray<Cube<T>>;
+      this.newInstance([...this.path, i as Position], this)) as OctArray<Cube<T>>;
     return this.children;
   }
 
