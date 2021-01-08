@@ -135,6 +135,7 @@ export function SurfaceNets(p: Props) {
   const faces: Vec3[][] = [];
   const vertices = new Queue<Cube<Data>>();
   const cubeSize: number = p.cubeSize;
+  console.log('cube size', cubeSize);
   const shape: Shape3 = p.shape;
   const bounds = p.bounds || [[-500, -500, -500], [500, 500, 500]];
 
@@ -156,7 +157,7 @@ export function SurfaceNets(p: Props) {
         return;
       }
       const center = findCenter(corners, results, shape);
-      const val = shape(center);
+      //const val = shape(center);
       //if (Math.abs(val) < 0.1) {
       cube.data.center = center;
       vertices.enqueue(cube);

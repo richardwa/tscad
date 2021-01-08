@@ -75,3 +75,9 @@ export function clamp(x: number, a: number, b: number) {
     return x;
   }
 }
+
+// s between 0 and 1, 
+// returns the linear interpolation between a and b
+export function mix(a: number, b: number, s: number) {
+  return a * (1 - s) + b * s;
+}

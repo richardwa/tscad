@@ -14,7 +14,7 @@ type Props = {
 export function render(p: Props) {
   console.time("render");
   const polygons = SurfaceNets({
-    cubeSize: 1,
+    cubeSize: p.cubeSize,
     shape: p.shape,
     bounds: p.bounds
   });
