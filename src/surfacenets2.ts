@@ -86,9 +86,6 @@ const processCube = (cube: Cube<Data>) => {
   let error = 0;
   const faces: Vec3[][] = [];
   const basePositions = [7, 0];
-  // there are cubes that did not have intersections on corners
-  // but when refined would show intersections within its volume
-  const nullNeighbors: Cube<Data>[] = [];
 
   for (let axis = 0; axis < 3; axis++) {
     for (let j = 0; j < 2; j++) {
@@ -105,9 +102,6 @@ const processCube = (cube: Cube<Data>) => {
             const d0 = pushBits[opposedNorms[i]](c0);
             const d1 = pushBits[opposedNorms[i]](c1);
             const cu = findNeighbors(cube, normals[i], [d0, d1]);
-            if (cu.data.center === undefined) {
-              nullNeighbors.push(cu);
-            }
             return cu;
           });
           const poly = [cube, ...neighbor].map(c => c.data.center);
@@ -122,7 +116,7 @@ const processCube = (cube: Cube<Data>) => {
   if (error > 0) {
     console.warn(`encountered missing neighbors on ${error} cubes`);
   }
-  return { nullNeighbors, faces };
+  return faces;
 }
 
 type Props = {
@@ -175,13 +169,7 @@ export function SurfaceNets(p: Props) {
   while (vertices.length > 0) {
     const cube = vertices.dequeue();
     const p = processCube(cube);
-    if (p.nullNeighbors.length > 0) {
-      // redo this cube
-      vertices.enqueue(cube);
-      p.nullNeighbors.flatMap(splitCube).forEach(findVertices);
-    } else {
-      faces.push(...p.faces);
-    }
+    faces.push(...p);
   }
 
   return faces;
