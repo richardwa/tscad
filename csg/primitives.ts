@@ -1,3 +1,4 @@
+import { sign } from 'crypto';
 import { clamp, Vector } from '../src/math';
 import { extrude } from './extrude';
 
@@ -24,8 +25,8 @@ export function rect(x: number = 2, y: number = x): Shape2 {
   }
 }
 
-export const poly2 = (points: Vec2[]) => (p: Vec2) => {
-
+// from iq - https://www.shadertoy.com/view/WdSGRd
+const poly2 = (points: Vec2[]) => (p: Vec2) => {
   const a = new Vector(p).minus(points[0]);
   let distance = a.dot(a.result);
   let sign = 1;
@@ -73,19 +74,7 @@ export function poly(points: number | Vec2[], radius?: number): Shape2 {
   if (verts.length < 3) {
     throw 'error: polygon requires at least 3 points';
   }
-
-  const es = verts.map((e, i) => new Vector(verts[(i + 1) / verts.length]).minus(e).result);
-  const esdot = es.map(e => new Vector(e).dot(e));
-
-  return (p) => {
-    const vs = verts.map(e => new Vector(p).minus(e).result);
-    const pq = vs.map((v, i) => {
-      const factor = clamp(new Vector(v).dot(es[i]) / esdot[i], 0, 1);
-      return new Vector(es[i]).scale(factor).add(v).magnitude();
-    });
-
-    return Math.min(...pq);
-  }
+  return poly2(verts);
 }
 
 export function box(x: number = 2, y: number = x, z: number = y): Shape3 {
