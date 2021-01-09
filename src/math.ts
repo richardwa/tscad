@@ -39,6 +39,10 @@ export class Vector<T extends number[]>{
     return this;
   }
 
+  cross2d(v: Vec2) {
+    return this.result[0] * v[1] - this.result[1] * v[0];
+  }
+
   cross(v: Vec3) {
     const a = [0, 0, 0] as T;
     a[0] = this.result[1] * v[2] - this.result[2] * v[1];

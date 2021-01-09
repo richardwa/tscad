@@ -23,6 +23,32 @@ export function rect(x: number = 2, y: number = x): Shape2 {
     return outside + inside;
   }
 }
+
+export const poly2 = (points: Vec2[]) => (p: Vec2) => {
+
+  const a = new Vector(p).minus(points[0]);
+  let distance = a.dot(a.result);
+  let sign = 1;
+  const len = points.length
+  for (let i = 0; i < len; i++) {
+    const i2 = (i + 1) % len;
+    const e = new Vector(points[i2]).minus(points[i]).result;
+    const v = new Vector(p).minus(points[i]).result;
+    const pq = new Vector(v).minus(new Vector(e).scale(clamp(
+      new Vector(v).dot(e) / new Vector(e).dot(e), 0, 1)).result);
+    distance = Math.min(distance, pq.dot(pq.result));
+
+    //winding number
+    const v2 = new Vector(p).minus(points[i2]).result;
+    const val3 = new Vector(e).cross2d(v);
+    const cond = [v[1] >= 0 ? 1 : 0, v2[1] < 0 ? 1 : 0, val3 > 0 ? 1 : 0];
+    if (Math.max(...cond) === Math.min(...cond)) {
+      sign *= -1;
+    }
+  }
+  return Math.sqrt(distance) * sign;
+}
+
 /**
  * @param points specify number of corners for a regular polygon.  Can also use an abitrary array of points
  * @param radius not required when using list of points
