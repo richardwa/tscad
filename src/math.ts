@@ -64,10 +64,18 @@ export class Vector<T extends number[]>{
     }
     return Math.sqrt(sum);
   }
-
-
 }
 
+export function getSurfaceNormal(p: Vec3, fn: Shape3): Vector<Vec3> {
+  const h = 0.001
+  const val = fn(p);
+  const [x, y, z] = p;
+  return new Vector([
+    fn([x + h, y, z]) - val,
+    fn([x, y + h, z]) - val,
+    fn([x, y, z + h]) - val
+  ] as Vec3).toUnitVector();
+}
 
 // return x between a and b
 export function clamp(x: number, a: number, b: number) {
@@ -85,3 +93,14 @@ export function clamp(x: number, a: number, b: number) {
 export function mix(a: number, b: number, s: number) {
   return a * (1 - s) + b * s;
 }
+
+export const getHex: (n: number) => string = (() => {
+  const buffer = new ArrayBuffer(4);
+  const intView = new Int32Array(buffer);
+  const floatView = new Float32Array(buffer);
+
+  return (n: number) => {
+    floatView[0] = n;
+    return intView[0].toString(16);
+  }
+})();

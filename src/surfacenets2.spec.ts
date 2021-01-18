@@ -11,7 +11,7 @@ const shape = rotate('y', 15, rotate('z', 45,
 
 console.time('render');
 const faces = SurfaceNets({
-  cubeSize: 1,
+  cubeSize: 2,
   shape,
 });
 console.timeEnd('render');

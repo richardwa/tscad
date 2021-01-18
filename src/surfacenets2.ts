@@ -1,7 +1,7 @@
 /// <reference path="../types.d.ts" />
 import { Queue } from 'queue-typescript';
 import { Cube, Direction, edgePairs, normalDirections, Position, pushBits } from './cubetree';
-import { Vector } from './math';
+import { getSurfaceNormal, Vector } from './math';
 
 export type Bounds = [Vec3, Vec3];
 
@@ -10,6 +10,11 @@ type Data = {
   results?: OctArray<number>;
   center?: Vec3;
 };
+type Props = {
+  cubeSize: number;
+  shape: Shape3;
+  bounds?: Bounds;
+}
 
 const boundsToCorners = (b: Bounds) => {
   const corners = new Array<Vec3>(8);
@@ -33,7 +38,7 @@ const hasIntersections = (n: number[]) => {
   return false;
 }
 
-const findCenter = (corners: OctArray<Vec3>, results: OctArray<number>, fn: Shape3): Vec3 => {
+const findIntersections = (corners: OctArray<Vec3>, results: OctArray<number>, fn: Shape3) => {
   const intersections: Vec3[] = [];
   edgePairs.forEach(([i, j]) => {
     if (hasIntersections([results[i], results[j]])) {
@@ -44,11 +49,7 @@ const findCenter = (corners: OctArray<Vec3>, results: OctArray<number>, fn: Shap
       intersections.push(diff.scale(Math.abs(results[i]) / total).add(v1).result);
     }
   });
-  const avg = new Vector(intersections[0]);
-  for (let i = 1; i < intersections.length; i++) {
-    avg.add(intersections[i]);
-  }
-  return avg.scale(1 / intersections.length).result;
+  return intersections;
 }
 
 const findNeighbors = (cube: Cube<Data>, direction: Direction, opposedEdge: [Position, Position]): Cube<Data> => {
@@ -119,11 +120,6 @@ const processCube = (cube: Cube<Data>) => {
   return faces;
 }
 
-type Props = {
-  cubeSize: number;
-  shape: Shape3;
-  bounds?: Bounds;
-}
 
 export function SurfaceNets(p: Props) {
   const faces: Vec3[][] = [];
@@ -138,28 +134,28 @@ export function SurfaceNets(p: Props) {
     const results = corners.map(shape) as OctArray<number>;
     cube.data.results = results;
     const maxLen = Math.max(...new Vector(corners[7]).minus(corners[0]).result);
+    const hasCrossing = hasIntersections(results);
 
-    if (Math.min(...results.map(Math.abs)) > maxLen) {
-      // optimization, this cube is far away from an edge relative to its own size
-      // we can skip it even when this cube is above the min size
-      return;
-    }
 
-    // base case, we are small enought to find a vertex
-    if (maxLen <= cubeSize) {
-      if (!hasIntersections(results)) {
-        return;
+    if (hasCrossing && maxLen <= cubeSize) {
+      // base case, we are small enought to find a vertex
+      const center = new Vector(corners[0]).add(corners[7]).scale(1 / 2).result;
+      const intersections = findIntersections(corners, results, shape);
+      const avg = new Vector(intersections[0]);
+      for (let i = 1; i < intersections.length; i++) {
+        avg.add(intersections[i]);
       }
-      const center = findCenter(corners, results, shape);
-      //const val = shape(center);
-      //if (Math.abs(val) < 0.1) {
-      cube.data.center = center;
+      cube.data.center = center; //avg.scale(1 / intersections.length).result;
       vertices.enqueue(cube);
       return;
-      //}
+    } else if (!hasCrossing && Math.min(...results.map(Math.abs)) > maxLen) {
+      // this condition ensures there are no surfaces inside the cube
+      return;
     }
     // recursion
-    splitCube(cube).forEach(findVertices);
+    if (maxLen > cubeSize) {
+      splitCube(cube).forEach(findVertices);
+    }
   };
 
   // start process
