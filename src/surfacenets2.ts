@@ -1,5 +1,4 @@
 /// <reference path="../types.d.ts" />
-import { Queue } from 'queue-typescript';
 import { Cube, Direction, edgePairs, normalDirections, Position, pushBits } from './cubetree';
 import { getSurfaceNormal, Vector } from './math';
 
@@ -122,8 +121,7 @@ const processCube = (cube: Cube<Data>) => {
 
 
 export function SurfaceNets(p: Props) {
-  const faces: Vec3[][] = [];
-  const vertices = new Queue<Cube<Data>>();
+  const vertices: Cube<Data>[] = [];
   const cubeSize: number = p.cubeSize;
   console.log('cube size', cubeSize);
   const shape: Shape3 = p.shape;
@@ -139,14 +137,13 @@ export function SurfaceNets(p: Props) {
 
     if (hasCrossing && maxLen <= cubeSize) {
       // base case, we are small enought to find a vertex
-      const center = new Vector(corners[0]).add(corners[7]).scale(1 / 2).result;
       const intersections = findIntersections(corners, results, shape);
       const avg = new Vector(intersections[0]);
       for (let i = 1; i < intersections.length; i++) {
         avg.add(intersections[i]);
       }
-      cube.data.center = center; //avg.scale(1 / intersections.length).result;
-      vertices.enqueue(cube);
+      cube.data.center = avg.scale(1 / intersections.length).result;
+      vertices.push(cube);
       return;
     } else if (!hasCrossing && Math.min(...results.map(Math.abs)) > maxLen) {
       // this condition ensures there are no surfaces inside the cube
@@ -162,11 +159,6 @@ export function SurfaceNets(p: Props) {
   const cube = new Cube<Data>([], null);
   cube.data = { corners: boundsToCorners(bounds) }
   findVertices(cube);
-  while (vertices.length > 0) {
-    const cube = vertices.dequeue();
-    const p = processCube(cube);
-    faces.push(...p);
-  }
+  return vertices.flatMap(processCube);
 
-  return faces;
 }
