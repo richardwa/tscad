@@ -1,5 +1,6 @@
 /// <reference path="../types.d.ts" />
 import { Cube, Direction, edgePairs, normalDirections, Position, pushBits } from './cubetree';
+import { edgeTable, triTable } from './marching-cubes-tables';
 import { getSurfaceNormal, Vector } from './math';
 import { SpatialIndex } from './spatial-index';
 
@@ -14,48 +15,16 @@ type Props = {
   shape: Shape3;
   bounds?: Bounds;
 }
-const edges: Vec2[] = [
+const edges: Array12<Vec2> = [
   [0, 1], [1, 3], [3, 2], [2, 0],
   [4, 5], [5, 7], [7, 6], [6, 4],
   [0, 4], [1, 5], [3, 7], [2, 6]
 ];
 
-const boundsToCorners = (b: Bounds) => {
-  const corners = new Array<Vec3>(8);
-  for (let i = 0; i < 8; i++) {
-    corners[i] = [
-      b[i & 1][0],
-      b[(i & 2) >> 1][1],
-      b[(i & 4) >> 2][2]
-    ];
-  }
-  return corners as OctArray<Vec3>;
-}
-
-
-const hasIntersections = (n: number[]) => {
-  const sign = n[0] > 0;
-  for (let i = 1; i < n.length; i++) {
-    if ((n[i] > 0) !== sign) {
-      return true;
-    }
-  }
-  return false;
-}
-
-const findIntersections = (corners: OctArray<Vec3>, results: OctArray<number>, fn: Shape3) => {
-  const intersections: Vec3[] = [];
-  edges.forEach(([i, j]) => {
-    if (hasIntersections([results[i], results[j]])) {
-      const v1 = corners[i];
-      const v2 = corners[j];
-      const diff = new Vector(v2).minus(v1);
-      const total = Math.abs(results[i]) + Math.abs(results[j]);
-      intersections.push(diff.scale(Math.abs(results[i]) / total).add(v1).result);
-    }
-  });
-  return intersections;
-}
+const boundsToCorners = ([[a, b, c], [x, y, z]]: Bounds) => [
+  [a, b, c], [x, b, c], [a, y, c], [x, y, c],
+  [a, b, z], [x, b, z], [a, y, z], [x, y, z]
+] as OctArray<Vec3>;
 
 const splitCube = (cube: Cube<Data>): Cube<Data>[] => {
   const corners = cube.data.corners;
@@ -78,20 +47,52 @@ const splitCube = (cube: Cube<Data>): Cube<Data>[] => {
 }
 
 const validSignatures = new Set([0b01010101, 0b001100110011, 0b00001111]);
-const getSignature = (dual: OctArray<Vec3>) => dual.reduce((a, v, i) => {
+const getSignature = (a: number, v: any, i: number) => {
   if (v) {
-    a |= 1 << i
+    a |= 1 << i;
   }
   return a;
-}, 0);
+}
+const getResultIndex = (a: number, v: number, i: number) => {
+  if (v > 0) {
+    a |= 1 << i;
+  }
+  return a;
+}
 
 const processDual = (dual: OctArray<Vec3>, fn: Shape3) => {
   const results = dual.map(fn) as OctArray<number>;
-  return findIntersections(dual, results, fn);
+  const cube_index = results.reduce(getResultIndex, 0);
+  const edge_mask = edgeTable[cube_index];
+  if (edge_mask === 0) {
+    return;
+  }
+  const fnZeros: Array12<Vec3> = [] as any;
+  edges.forEach(([n, m], i) => {
+    if ((edge_mask & 1 << i) > 0) {
+      const v1 = dual[n];
+      const v2 = dual[m];
+      const diff = new Vector(v2).minus(v1);
+      const total = Math.abs(results[n]) + Math.abs(results[m]);
+      fnZeros[i] = diff.scale(Math.abs(results[n]) / total).add(v1).result;
+    }
+  });
+
+  //Add faces
+  const triCorners = triTable[cube_index];
+  const triangles: Vec3[][] = []
+  for (let i = 0; i < triCorners.length; i += 3) {
+    triangles.push([
+      fnZeros[triCorners[i]],
+      fnZeros[triCorners[i + 1]],
+      fnZeros[triCorners[i + 2]]
+    ]);
+  }
+  return triangles;
 }
+
 const resFn = (n: number) => Math.floor(n / 0.0001);
 const keyFn = (n: Vec3) => n.map(resFn).join();
-
 
 export function dualMarch(p: Props): Vec3[][] {
   const cubeSize: number = p.cubeSize;
@@ -151,11 +152,11 @@ export function dualMarch(p: Props): Vec3[][] {
 
   const faces: Vec3[][] = [];
   dualMap.forEach((dual) => {
-    const signature = getSignature(dual);
+    const signature = dual.reduce(getSignature, 0);
     if (signature === 0xFF) {
-      const face = processDual(dual, shape);
-      if (face.length > 2) {
-        faces.push(face);
+      const triangles = processDual(dual, shape);
+      if (triangles) {
+        faces.push(...triangles);
       }
     } else if (validSignatures.has(signature)) {
       //faces.push(processDual(dual.map(c => c ||), p.shape));
