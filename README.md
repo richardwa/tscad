@@ -3,21 +3,14 @@ Constructive Solid Geometry (CSG) using Signed Distance Functions (SDF) and Type
 
 # Features
 * Language support / coder friendly - I want a 3D modeling tool similar to openscad, but with a full language tools, IDE, etc for easy coding.  This is why typescript is my first choice.
-
 * Implicit Functions - The other aspect that peaked my interest is ImplicitCAD.  I was impressed with the elegance in the maths. Haskell is an awesome language and i would recommend anyone learn it, however IDE support was still missing at the time of this writing.
-
 * Rounded Union - I always felt this was missing in Openscad, and was a major driver for me to find my own solution.  With SDF this is very easy to implement.
-
 * Version Control - using code has other major advantages like version control and diff's.
-
-* exports to OBJ file format.  I was able to export STL (ascii) initially, but it turns out that OBJ was even easy and gave smaller file sizes.
+* exports to OBJ file format.  I was able to export STL (ascii) initially, but it turns out that OBJ was even easier and gave smaller file sizes.
 
 # Cons
-* Rendering a solid needs the resolution and bounding box to be specified.
-
-* while the maths are exact, the final rendering using maching cubes is approximate.  Often there are artifacts along hard edges.  I wrote this tool with 3D printing in mind, even though the artifacts show up in the rendering, it should not have any impact on the final print.
-
 * no live view for now, will come in the future. I had a browser based viewer initially, but decided to drop it and focus on other aspects. Having the obj export is handy enough for now.
+  - TODO - i have an idea to embed an IDE into the browser along with auto WebGL/GLSL generated code for live view. Just like shadertoy except with typescript IDE
 
 # Setup
 * clone this repo
@@ -25,12 +18,13 @@ Constructive Solid Geometry (CSG) using Signed Distance Functions (SDF) and Type
 * npm run test
   - this will generate and obj file in target folder
 
-# Marching Cubes
-* Getting the rendering right is a big part of this library.  Marching cubes is considered a fast for a GPU, but we are working on CPU here and single threaded with node no less.  Original code is pulled from https://github.com/mikolalysenko/isosurface.  However I did make significant optimizations on this.
-  - Biggest optimization is implementing a skip mechanism.  When the SDF returns a large value, we can skip the next cubes proprtional to the distance returned.  This reduces our time complexity from R^3 (volumne) to R^2 (surface).
-  - A sparse circular 'layer' buffer is also used.  This had a big improvement before implementing 'skip cubes', but still gives a small benefit now.  Memory usage was improved by limiting size to 2 layers and leveraging a 'sparse' array implemenation.
-  - I am trying to figure out how to figure out the bounds implicitly, specifiying the bounds is not too troublesome, may not be worth my time.
-  - Other thoughts on volume traversal, right now it is a standard one layer at a time traversal, but I am thinking about traversing using Hilbert/Peano curves.  The thinking is that a linear skip translates into a volume skip. Another way may to do variable block size traversal, don't have a good way to do this either. 
+# Implicit Surface Extraction
+* I spent alot of time working on this to get all the features I was looking for in an extraction algorithm.
+ - bounds can be arbitarily large without incurring much cost.
+ - variable sized cubes when extracting surface to get a good shape and not spend too much cycles/file size on the flat parts
+ - somewhat easy to understand implemetation.  At first my implemenations had alot of conditionals (up, down , left, right etc) when working on cubes.  There were symetries to be exploited for shorter code, but took a while to find the best way.
+ - no cracks on the rendered object
+
 
 # References
 * https://github.com/mikolalysenko/isosurface
