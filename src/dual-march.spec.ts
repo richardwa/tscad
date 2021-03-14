@@ -3,8 +3,7 @@ import { rotate, translate } from '../csg/manipulate';
 import { box, sphere } from '../csg/primitives';
 import { Cube, dualMarch, getDualCubes } from './dual-march';
 import { processPolygons, writeOBJ } from './render';
-const shape = box(20);
-rotate('y', 0, rotate('z', 0,
+const shape = rotate('y', 15, rotate('z', 45,
   union({ radius: 3 },
     box(20.2),
     translate([10, 10, 10], sphere(10)))));

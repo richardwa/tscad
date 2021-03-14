@@ -43,12 +43,12 @@ const getResultIndex = (a: number, v: number, i: number) => {
   }
   return a;
 }
-const getIntersections = (dual: OctArray<Vec3>, results: OctArray<number>, edge_mask: number) => {
+const getIntersections = (cube: OctArray<Vec3>, results: OctArray<number>, edge_mask: number) => {
   const fnZeros: Array12<Vec3> = [] as any;
   edges.forEach(([n, m], i) => {
-    if ((edge_mask & 1 << i) > 0) {
-      const v1 = dual[n];
-      const v2 = dual[m];
+    if ((edge_mask & (1 << i)) > 0) {
+      const v1 = cube[n];
+      const v2 = cube[m];
       const diff = new Vector(v2).minus(v1);
       const total = Math.abs(results[n]) + Math.abs(results[m]);
       fnZeros[i] = diff.scale(Math.abs(results[n]) / total).add(v1).result;
@@ -87,22 +87,34 @@ const getCubes = (bounds: Bounds, size: number, fn: Shape3): Cube[] => {
   const _process = (cube: Cube): Cube[] => {
     const results = cube.map(fn) as OctArray<number>;
     const maxLen = Math.max(...new Vector(cube[7]).minus(cube[0]).result);
-    const center = getCenter(cube);
-    if (maxLen <= size) {
-      // adaptive cubes - continue split if normals are not similar enough
-      if (maxLen > size / 2) {
-        const edge_mask = results.reduce(getResultIndex, 0);
-        const normals = getIntersections(cube, results, edge_mask).filter(f => f).map(v => getSurfaceNormal(v, fn).result);
+
+    // Optimization check, if we are far away (wrt cube size) from the surface, no need to divide further
+    if (Math.min(...results.map(Math.abs)) > maxLen) {
+      return [cube];
+    }
+
+    // split until we are small enough
+    if (maxLen > size) {
+      return splitCube(cube).flatMap(_process);
+    }
+
+    // adaptive cubes - continue split if too much error
+    if (maxLen > (size / 10)) {
+      const edge_mask = results.reduce(getResultIndex, 0);
+      if (edgeTable[edge_mask] !== 0) {
+        const normals = getIntersections(cube, results, edge_mask)
+          .filter(i => i !== undefined)
+          .map(p => getSurfaceNormal(p, fn).result);
         const [first, ...rest] = normals;
-        const avgdiff = rest.reduce((a, v, i) => a + new Vector(first).minus(v).magnitude(), 0) / normals.length;
-        if (avgdiff > 0.2) {
+        const diffs = rest.map(n => new Vector(n).minus(first).magnitude());
+        const avg = diffs.reduce((a, v) => a + v, 0) / normals.length;
+        if (avg > 0.01) {
           return splitCube(cube).flatMap(_process);
         }
       }
-      return [cube];
     }
-    // recursion
-    return splitCube(cube).flatMap(_process);
+
+    return [cube];
   }
   return _process(boundsToCorners(bounds));
 };
@@ -113,7 +125,6 @@ const match = (v1: Vec3, v2: Vec3) =>
   Number(v1[0] === v2[0]) + Number(v1[1] === v2[1]) + Number(v1[2] === v2[2]);
 
 export const getDualCubes = (cubes: Cube[]): Cube[] => {
-  const spatialIndex = new SpatialIndex(keyFn);
   const dualMap: Map<string, OctArray<Vec3>> = new Map();
   const setDual = (corner: Vec3, i: number, center: Vec3) => {
     const key = keyFn(corner);
@@ -125,32 +136,29 @@ export const getDualCubes = (cubes: Cube[]): Cube[] => {
     dual[7 - i] = center;
   }
 
-  cubes.forEach(cube =>
-    cube.forEach(corner =>
-      spatialIndex.set(corner)));
+  const points = cubes.flatMap(cube => cube).reduce((a, v, i) => {
+    a.set(keyFn(v), v);
+    return a;
+  }, new Map<String, Vec3>());
+  const spatialIndex = new SpatialIndex(Array.from(points.values()));
 
   cubes.forEach(cube => {
     const center = getCenter(cube);
     const size = Math.abs(cube[0][0] - cube[1][0]);
-    cube.forEach((c, i) => setDual(c, i, center));
-    const set = new Set(cube.map(keyFn));
     spatialIndex.queryCube(center, size).forEach(p => {
-      if (!set.has(keyFn(p))) {
-        let matched = false;
-        for (let i = 0; i < 8; ++i) {
-          if (match(p, cube[i]) === 2) {
-            setDual(p, i, center);
-            matched = true;
-          }
+      const matches = cube.map(c => match(c, p));
+      const groupMatches = matches.reduce((a, v, i) => {
+        if (!a.get(v)) {
+          a.set(v, [i]);
+        } else {
+          a.get(v).push(i);
         }
-        if (!matched) {
-          for (let i = 0; i < 8; ++i) {
-            if (match(p, cube[i]) === 1) {
-              setDual(p, i, center);
-            }
-          }
-        }
-      }
+        return a;
+      }, new Map<number, number[]>());
+      const pType = Math.max(...Array.from(groupMatches.keys()));
+      groupMatches.get(pType).forEach(i => {
+        setDual(p, i, center);
+      });
     });
   });
 
@@ -170,7 +178,7 @@ export function dualMarch(p: Props): Triangle[] {
 
   const duals = getDualCubes(cubes);
   console.log('duals', duals.length);
-  const triangles = duals.flatMap(c => march(c, p.shape));
+  const triangles = cubes.flatMap(c => march(c, p.shape));
 
   return triangles;
 }
