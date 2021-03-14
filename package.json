@@ -20,7 +20,6 @@
     "typescript": "^4.1.3"
   },
   "dependencies": {
-    "kd-tree-javascript": "^1.0.3",
-    "queue-typescript": "^1.0.1"
+    "kd-tree-javascript": "^1.0.3"
   }
 }
