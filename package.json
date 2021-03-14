@@ -7,7 +7,7 @@
   "scripts": {
     "prebuild": "rimraf ./dist",
     "build": "tsc --project tsconfig.build.json",
-    "test": "ts-node ./test/test.ts",
+    "test": "ts-node ./index.spec.ts",
     "ts": "ts-node"
   },
   "author": "",

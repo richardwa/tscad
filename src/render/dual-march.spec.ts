@@ -1,3 +1,5 @@
+/// <reference path="../../types.d.ts" />
+
 import { union } from '../csg/boolean';
 import { rotate, translate } from '../csg/manipulate';
 import { box, sphere } from '../csg/primitives';
