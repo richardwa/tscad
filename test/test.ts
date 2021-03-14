@@ -12,7 +12,7 @@ intersect({ radius: 5 },
 
 render({
   name: "test",
-  cubeSize: 4,
+  size: 4,
   shape,
 });
 

@@ -1,13 +1,14 @@
 /// <reference path="../types.d.ts" />
 import { edgeTable, triTable } from './marching-cubes-tables';
-import { getSurfaceNormal, Vector } from './math';
+import { Vector } from './math';
 import { SpatialIndex } from './spatial-index';
 
 export type Bounds = [Vec3, Vec3];
 export type Cube = OctArray<Vec3>;
 type Triangle = TriArray<Vec3>;
 type Props = {
-  cubeSize: number;
+  size: number;
+  minSize?: number;
   shape: Shape3;
   bounds?: Bounds;
 }
@@ -80,10 +81,15 @@ const march = (cube: Cube, fn: Shape3): Triangle[] => {
   return triangles;
 }
 
+const getCentroid = (t: Triangle) => {
+  const sum = t.reduce((a, v) => [a[0] + v[0], a[1] + v[1], a[2] + v[2]], [0, 0, 0]);
+  return sum.map(p => p / 3) as Vec3;
+}
+
 /**
  * divides parent cube into list of correctly sized cubes
  */
-const getCubes = (bounds: Bounds, size: number, fn: Shape3): Cube[] => {
+const getCubes = (bounds: Bounds, size: number, minSize: number, fn: Shape3): Cube[] => {
   const _process = (cube: Cube): Cube[] => {
     const results = cube.map(fn) as OctArray<number>;
     const maxLen = Math.max(...new Vector(cube[7]).minus(cube[0]).result);
@@ -99,16 +105,12 @@ const getCubes = (bounds: Bounds, size: number, fn: Shape3): Cube[] => {
     }
 
     // adaptive cubes - continue split if too much error
-    if (maxLen > (size / 10)) {
+    if (maxLen > minSize) {
       const edge_mask = results.reduce(getResultIndex, 0);
       if (edgeTable[edge_mask] !== 0) {
-        const normals = getIntersections(cube, results, edge_mask)
-          .filter(i => i !== undefined)
-          .map(p => getSurfaceNormal(p, fn).result);
-        const [first, ...rest] = normals;
-        const diffs = rest.map(n => new Vector(n).minus(first).magnitude());
-        const avg = diffs.reduce((a, v) => a + v, 0) / normals.length;
-        if (avg > 0.01) {
+        const centroids = march(cube, fn).map(getCentroid);
+        const error = Math.max(...centroids.map(fn).map(Math.abs));
+        if (error > minSize) {
           return splitCube(cube).flatMap(_process);
         }
       }
@@ -169,16 +171,17 @@ export const getDualCubes = (cubes: Cube[]): Cube[] => {
 }
 
 export function dualMarch(p: Props): Triangle[] {
-  const cubeSize: number = p.cubeSize;
-  console.log('cube size', cubeSize);
+  const size = p.size;
+  const minSize = p.minSize || (p.size / 200);
+  console.log('cube size', size);
   const s = 44;
   const bounds = p.bounds || [[-s, -s, -s], [s, s, s]];
-  const cubes = getCubes(bounds, cubeSize, p.shape);
+  const cubes = getCubes(bounds, size, minSize, p.shape);
   console.log('cubes', cubes.length);
 
   const duals = getDualCubes(cubes);
   console.log('duals', duals.length);
-  const triangles = cubes.flatMap(c => march(c, p.shape));
+  const triangles = duals.flatMap(c => march(c, p.shape));
 
   return triangles;
 }
