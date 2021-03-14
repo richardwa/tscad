@@ -18,11 +18,21 @@ Constructive Solid Geometry (CSG) using Signed Distance Functions (SDF) and Type
 * npm run test
   - this will generate and obj file in target folder
 
-## Implicit Surface Extraction
+## CSG Functions
+ - These were mostly implemented using Inigo's site and examples. It is a joy at how wonderful and simple these functions are.
+ - boolean operations: union, diff, intersect
+ - extrusions: extrude, revolve, mirror, tile
+ - manipulations: translate, rotate, scale
+ - 3D primitives: cube, sphere, cylinder
+ - 2D primitives: square, circle, regular polygons, arbitary polygons
+ 
+
+## Implicit Surface Extraction - Dual Marching Cubes
  - I spent alot of time working on this to get all the features I was looking for in an extraction algorithm.
  - bounds can be arbitarily large without incurring much cost.
  - variable sized cubes when extracting surface to get a good shape and not spend too much cycles/file size on the flat parts
  - somewhat easy to understand implemetation.  At first my implemenations had alot of conditionals (up, down , left, right etc) when working on cubes.  There were symetries to be exploited for shorter code, but took a while to find the best way.
+ - while i may still look into mesh simplification, I don't want to solely rely on post processing.  Didn't want to waste cycles on creating then removing small triangles.
  - no cracks on the rendered object
  - example: rounded union of cube and sphere with variable sized mesh
 
