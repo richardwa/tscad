@@ -1,4 +1,4 @@
-import { clamp, mix, Vector } from "../src/math";
+import { clamp, mix, Vector } from "../util/math";
 
 type Ops = 'union' | 'diff' | 'intersect';
 const ops: { [key in Ops]: (s1: Shape3, s2: Shape3) => Shape3 } = {

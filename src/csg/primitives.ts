@@ -1,5 +1,4 @@
-import { sign } from 'crypto';
-import { clamp, Vector } from '../src/math';
+import { clamp, Vector } from '../util/math';
 import { extrude } from './extrude';
 
 export function circle(r: number = 1): Shape2 {

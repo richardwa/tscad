@@ -1,6 +1,5 @@
-/// <reference path="../types.d.ts" />
 import { off } from "process";
-import { clamp, Vector } from "../src/math";
+import { clamp, Vector } from "../util/math";
 
 export function extrude(height: number, s: Shape2): Shape3 {
   const h = height / 2;

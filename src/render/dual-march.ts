@@ -1,7 +1,6 @@
-/// <reference path="../types.d.ts" />
 import { edges, edgeTable, triTable } from './marching-cubes-tables';
-import { boundsToCorners, getCenter, getCentroid, splitCube, Vector } from './math';
-import { SpatialIndex } from './spatial-index';
+import { boundsToCorners, getCenter, getCentroid, splitCube, Vector } from '../util/math';
+import { SpatialIndex } from '../util/spatial-index';
 
 
 const getResultIndex = (a: number, v: number, i: number) => {

@@ -1,5 +1,3 @@
-/// <reference path="../types.d.ts" />
-
 import * as fs from 'fs';
 import { dualMarch } from './dual-march';
 

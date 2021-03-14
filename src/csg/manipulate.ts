@@ -1,5 +1,3 @@
-import { Vector } from "../src/math";
-
 export function translate(translation: Vec3, s: Shape3): Shape3 {
   const fn = (v: number, i: number) => v - translation[i];
   return (p) => {
