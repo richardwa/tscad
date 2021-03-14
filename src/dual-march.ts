@@ -1,43 +1,9 @@
 /// <reference path="../types.d.ts" />
-import { edgeTable, triTable } from './marching-cubes-tables';
-import { Vector } from './math';
+import { edges, edgeTable, triTable } from './marching-cubes-tables';
+import { boundsToCorners, getCenter, getCentroid, splitCube, Vector } from './math';
 import { SpatialIndex } from './spatial-index';
 
-export type Bounds = [Vec3, Vec3];
-export type Cube = OctArray<Vec3>;
-type Triangle = TriArray<Vec3>;
-type Props = {
-  size: number;
-  minSize?: number;
-  shape: Shape3;
-  bounds?: Bounds;
-}
 
-const edges: Array12<Vec2> = [
-  [0, 1], [1, 3], [3, 2], [2, 0],
-  [4, 5], [5, 7], [7, 6], [6, 4],
-  [0, 4], [1, 5], [3, 7], [2, 6]
-];
-
-const boundsToCorners = ([[a, b, c], [x, y, z]]: Bounds) => [
-  [a, b, c], [x, b, c], [a, y, c], [x, y, c],
-  [a, b, z], [x, b, z], [a, y, z], [x, y, z]
-] as OctArray<Vec3>;
-
-const getCenter = (cube: Cube) => new Vector(cube[0]).add(cube[7]).scale(1 / 2).result;
-
-const splitCube = (cube: Cube): Cube[] => {
-  const center = getCenter(cube);
-  const c0 = boundsToCorners([cube[0], center]);
-  const c7 = boundsToCorners([center, cube[7]]);
-  const c1 = boundsToCorners([c0[1], c7[1]]);
-  const c2 = boundsToCorners([c0[2], c7[2]]);
-  const c3 = boundsToCorners([c0[3], c7[3]]);
-  const c4 = boundsToCorners([c0[4], c7[4]]);
-  const c5 = boundsToCorners([c0[5], c7[5]]);
-  const c6 = boundsToCorners([c0[6], c7[6]]);
-  return [c0, c1, c2, c3, c4, c5, c6, c7];
-}
 const getResultIndex = (a: number, v: number, i: number) => {
   if (v > 0) {
     a |= 1 << i;
@@ -79,11 +45,6 @@ const march = (cube: Cube, fn: Shape3): Triangle[] => {
   }
 
   return triangles;
-}
-
-const getCentroid = (t: Triangle) => {
-  const sum = t.reduce((a, v) => [a[0] + v[0], a[1] + v[1], a[2] + v[2]], [0, 0, 0]);
-  return sum.map(p => p / 3) as Vec3;
 }
 
 /**
@@ -170,6 +131,12 @@ export const getDualCubes = (cubes: Cube[]): Cube[] => {
 
 }
 
+type Props = {
+  size: number;
+  minSize?: number;
+  shape: Shape3;
+  bounds?: Bounds;
+}
 export function dualMarch(p: Props): Triangle[] {
   const size = p.size;
   const minSize = p.minSize || (p.size / 200);

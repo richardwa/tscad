@@ -104,3 +104,29 @@ export const getHex: (n: number) => string = (() => {
     return intView[0].toString(16);
   }
 })();
+
+
+export const boundsToCorners = ([[a, b, c], [x, y, z]]: Bounds) => [
+  [a, b, c], [x, b, c], [a, y, c], [x, y, c],
+  [a, b, z], [x, b, z], [a, y, z], [x, y, z]
+] as OctArray<Vec3>;
+
+export const getCentroid = (t: Vec3[]) => {
+  const sum = t.reduce((a, v) => [a[0] + v[0], a[1] + v[1], a[2] + v[2]], [0, 0, 0]);
+  return sum.map(p => p / 3) as Vec3;
+}
+
+export const getCenter = (cube: Cube) => new Vector(cube[0]).add(cube[7]).scale(1 / 2).result;
+
+export const splitCube = (cube: Cube): Cube[] => {
+  const center = getCenter(cube);
+  const c0 = boundsToCorners([cube[0], center]);
+  const c7 = boundsToCorners([center, cube[7]]);
+  const c1 = boundsToCorners([c0[1], c7[1]]);
+  const c2 = boundsToCorners([c0[2], c7[2]]);
+  const c3 = boundsToCorners([c0[3], c7[3]]);
+  const c4 = boundsToCorners([c0[4], c7[4]]);
+  const c5 = boundsToCorners([c0[5], c7[5]]);
+  const c6 = boundsToCorners([c0[6], c7[6]]);
+  return [c0, c1, c2, c3, c4, c5, c6, c7];
+}

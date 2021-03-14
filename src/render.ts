@@ -2,7 +2,6 @@
 
 import * as fs from 'fs';
 import { dualMarch } from './dual-march';
-import { SurfaceNets } from './surfacenets2';
 
 type Props = {
   name: string;
