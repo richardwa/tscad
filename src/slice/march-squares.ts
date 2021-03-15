@@ -15,6 +15,7 @@ const marchSquare = (s: Square, fn: Shape2): Line => {
   ];
 }
 
+
 const getSquares = (bounds: Bounds2, size: number, minSize: number, fn: Shape2): Square[] => {
   const _process = (square: Square): Square[] => {
     const results = square.map(fn) as OctArray<number>;
