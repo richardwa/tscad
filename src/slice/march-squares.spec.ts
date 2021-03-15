@@ -13,7 +13,7 @@ const shape = rotate('y', 0, rotate('z', 0,
 
 console.time('render');
 const faces = slice({
-  layerHeight: 4,
+  layerHeight: .2,
   height: 30,
   size: 4,
   shape,

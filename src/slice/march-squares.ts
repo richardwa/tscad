@@ -1,4 +1,4 @@
-import { boundsToCorners2, getCenter, positiveNumReducer, interpolate, splitSquare } from '../util/math';
+import { boundsToCorners2, getCenter, positiveNumReducer, interpolate, splitSquare, findZeroRecursive } from '../util/math';
 import { edgeTable } from './marching-squares-tables';
 
 const marchSquare = (s: Square, fn: Shape2): Line => {
@@ -10,8 +10,8 @@ const marchSquare = (s: Square, fn: Shape2): Line => {
   }
   const [[a, b], [c, d]] = edges;
   return [
-    interpolate(s[a], s[b], results[a], results[b]),
-    interpolate(s[c], s[d], results[c], results[d]),
+    findZeroRecursive(s[a], s[b], results[a], results[b], 0.001, fn),
+    findZeroRecursive(s[c], s[d], results[c], results[d], 0.001, fn),
   ];
 }
 

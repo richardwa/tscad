@@ -156,3 +156,15 @@ export const interpolate = <T extends Vec2 | Vec3>(p1: T, p2: T, e1: number, e2:
   const abs_e2 = Math.abs(e2);
   return diff.scale(abs_e1 / (abs_e1 + abs_e2)).add(p1).result;
 }
+
+export const findZeroRecursive = <T extends Vec2 | Vec3>(p1: T, p2: T, e1: number, e2: number, threshold: number, fn: (t: T) => number): T => {
+  const center = getCenter(p1, p2);
+  const val = fn(center);
+  if (Math.abs(val) < threshold) {
+    return center;
+  } else if (Math.sign(e1) !== Math.sign(val)) {
+    return findZeroRecursive(p1, center, e1, val, threshold, fn);
+  } else {
+    return findZeroRecursive(center, p2, val, e2, threshold, fn);
+  }
+}
