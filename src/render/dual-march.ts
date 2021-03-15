@@ -1,23 +1,12 @@
 import { edges, edgeTable, triTable } from './marching-cubes-tables';
-import { boundsToCorners, getCenter, getCentroid, splitCube, Vector } from '../util/math';
+import { boundsToCorners, getCenter, getCentroid, getResultIndex, interpolate, splitCube, Vector } from '../util/math';
 import { SpatialIndex } from '../util/spatial-index';
 
-
-const getResultIndex = (a: number, v: number, i: number) => {
-  if (v > 0) {
-    a |= 1 << i;
-  }
-  return a;
-}
 const getIntersections = (cube: OctArray<Vec3>, results: OctArray<number>, edge_mask: number) => {
   const fnZeros: Array12<Vec3> = [] as any;
   edges.forEach(([n, m], i) => {
     if ((edge_mask & (1 << i)) > 0) {
-      const v1 = cube[n];
-      const v2 = cube[m];
-      const diff = new Vector(v2).minus(v1);
-      const total = Math.abs(results[n]) + Math.abs(results[m]);
-      fnZeros[i] = diff.scale(Math.abs(results[n]) / total).add(v1).result;
+      fnZeros[i] = interpolate(cube[n], cube[m], results[n], results[m]);
     }
   });
   return fnZeros;
@@ -105,7 +94,7 @@ export const getDualCubes = (cubes: Cube[]): Cube[] => {
   const spatialIndex = new SpatialIndex(Array.from(points.values()));
 
   cubes.forEach(cube => {
-    const center = getCenter(cube);
+    const center = getCenter(cube[0], cube[7]);
     const size = Math.abs(cube[0][0] - cube[1][0]);
     spatialIndex.queryCube(center, size).forEach(p => {
       const matches = cube.map(c => match(c, p));
@@ -138,7 +127,7 @@ type Props = {
 }
 export function dualMarch(p: Props): Triangle[] {
   const size = p.size;
-  const minSize = p.minSize || (p.size / 200);
+  const minSize = p.minSize || (p.size / 100);
   console.log('cube size', size);
   const s = 44;
   const bounds = p.bounds || [[-s, -s, -s], [s, s, s]];

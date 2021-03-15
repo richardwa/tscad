@@ -105,21 +105,32 @@ export const getHex: (n: number) => string = (() => {
   }
 })();
 
+export const getResultIndex = (a: number, v: number, i: number) => {
+  if (v > 0) {
+    a |= 1 << i;
+  }
+  return a;
+}
 
 export const boundsToCorners = ([[a, b, c], [x, y, z]]: Bounds) => [
   [a, b, c], [x, b, c], [a, y, c], [x, y, c],
   [a, b, z], [x, b, z], [a, y, z], [x, y, z]
-] as OctArray<Vec3>;
+] as Cube;
+
+export const boundsToCorners2 = ([[a, b], [x, y]]: Bounds2) => [
+  [a, b], [x, b], [a, y], [x, y],
+] as Square;
 
 export const getCentroid = (t: Vec3[]) => {
   const sum = t.reduce((a, v) => [a[0] + v[0], a[1] + v[1], a[2] + v[2]], [0, 0, 0]);
   return sum.map(p => p / 3) as Vec3;
 }
 
-export const getCenter = (cube: Cube) => new Vector(cube[0]).add(cube[7]).scale(1 / 2).result;
+export const getCenter = <T extends Vec2 | Vec3>(p1: T, p2: T) =>
+  new Vector(p1).add(p2).scale(1 / 2).result as T;
 
 export const splitCube = (cube: Cube): Cube[] => {
-  const center = getCenter(cube);
+  const center = getCenter(cube[0], cube[7]) as Vec3;
   const c0 = boundsToCorners([cube[0], center]);
   const c7 = boundsToCorners([center, cube[7]]);
   const c1 = boundsToCorners([c0[1], c7[1]]);
@@ -129,4 +140,19 @@ export const splitCube = (cube: Cube): Cube[] => {
   const c5 = boundsToCorners([c0[5], c7[5]]);
   const c6 = boundsToCorners([c0[6], c7[6]]);
   return [c0, c1, c2, c3, c4, c5, c6, c7];
+}
+export const splitSquare = (square: Square): Square[] => {
+  const center = getCenter(square[0], square[3]) as Vec2;
+  const c0 = boundsToCorners2([square[0], center]);
+  const c3 = boundsToCorners2([center, square[3]]);
+  const c1 = boundsToCorners2([c0[1], c3[1]]);
+  const c2 = boundsToCorners2([c0[2], c3[2]]);
+  return [c0, c1, c2, c3];
+}
+
+export const interpolate = <T extends Vec2 | Vec3>(p1: T, p2: T, e1: number, e2: number): T => {
+  const diff = new Vector(p2).minus(p1);
+  const abs_e1 = Math.abs(e1);
+  const abs_e2 = Math.abs(e2);
+  return diff.scale(abs_e1 / (abs_e1 + abs_e2)).add(p1).result;
 }

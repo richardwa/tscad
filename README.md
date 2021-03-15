@@ -38,6 +38,9 @@ Constructive Solid Geometry (CSG) using Signed Distance Functions (SDF) and Type
 
 ![sphere cube](./pics/sphere-cube.jpg?raw=true "sphere cube")
 
+## 3D Printing / Slicing
+ - while Dual Marching Cubes can produce reasonable high quality models, there are can still be rendering artifacts. To overcome these, we can use the 'slicing' render which gives
+
 ## References
 * https://github.com/mikolalysenko/isosurface
 * https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm

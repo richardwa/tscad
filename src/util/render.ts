@@ -1,23 +1,4 @@
 import * as fs from 'fs';
-import { dualMarch } from './dual-march';
-
-type Props = {
-  name: string;
-  shape: Shape3;
-  size: number;
-  minSize?: number;
-  bounds?: [Vec3, Vec3];
-  outDir?: string;
-}
-
-export function render(p: Props) {
-  console.time("render");
-  const polygons = dualMarch(p);
-  console.timeEnd("render");
-  const { faces, vertices } = processPolygons(polygons);
-  const outDir = p.outDir || "./target";
-  writeOBJ({ faces, vertices, outDir, name: p.name });
-}
 
 type WriteObjProps = {
   faces: number[][];
