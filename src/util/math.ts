@@ -105,7 +105,7 @@ export const getHex: (n: number) => string = (() => {
   }
 })();
 
-export const getResultIndex = (a: number, v: number, i: number) => {
+export const positiveNumReducer = (a: number, v: number, i: number) => {
   if (v > 0) {
     a |= 1 << i;
   }

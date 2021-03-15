@@ -1,5 +1,5 @@
 import { edges, edgeTable, triTable } from './marching-cubes-tables';
-import { boundsToCorners, getCenter, getCentroid, getResultIndex, interpolate, splitCube, Vector } from '../util/math';
+import { boundsToCorners, getCenter, getCentroid, positiveNumReducer, interpolate, splitCube, Vector } from '../util/math';
 import { SpatialIndex } from '../util/spatial-index';
 
 const getIntersections = (cube: OctArray<Vec3>, results: OctArray<number>, edge_mask: number) => {
@@ -14,7 +14,7 @@ const getIntersections = (cube: OctArray<Vec3>, results: OctArray<number>, edge_
 
 const march = (cube: Cube, fn: Shape3): Triangle[] => {
   const results = cube.map(fn) as OctArray<number>;
-  const cube_index = results.reduce(getResultIndex, 0);
+  const cube_index = results.reduce(positiveNumReducer, 0);
   const edge_mask = edgeTable[cube_index];
   if (edge_mask === 0) {
     return [];
@@ -55,7 +55,7 @@ const getCubes = (bounds: Bounds, size: number, minSize: number, fn: Shape3): Cu
 
     // adaptive cubes - continue split if too much error
     if (maxLen > minSize) {
-      const edge_mask = results.reduce(getResultIndex, 0);
+      const edge_mask = results.reduce(positiveNumReducer, 0);
       if (edgeTable[edge_mask] !== 0) {
         const centroids = march(cube, fn).map(getCentroid);
         const error = Math.max(...centroids.map(fn).map(Math.abs));
