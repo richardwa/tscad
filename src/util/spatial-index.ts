@@ -22,7 +22,7 @@ export class SpatialIndex<T extends Vec2 | Vec3> {
     if (points[0].length === 2) {
       this.kdtree = new ubilabs.kdTree<T>(points, distanceFn2 as any, [0, 1]);
     } else {
-      this.kdtree = new ubilabs.kdTree<T>(points, distanceFn3 as any, [0, 1, 3]);
+      this.kdtree = new ubilabs.kdTree<T>(points, distanceFn3 as any, [0, 1, 2]);
     }
 
   }
