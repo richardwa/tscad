@@ -1,5 +1,5 @@
 /// <reference path="../../types.d.ts" />
-//
+
 import { SpatialIndex } from "./spatial-index";
 
 const cache = new SpatialIndex([

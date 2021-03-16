@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
-  "types": "dist/index.d.js",
+  "types": "dist/index.t.ds",
   "scripts": {
     "prebuild": "rimraf ./dist",
-    "build": "tsc --project tsconfig.build.json",
+    "build": "tsc",
     "test": "ts-node ./index.spec.ts",
     "ts": "ts-node"
   },
