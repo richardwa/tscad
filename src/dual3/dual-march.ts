@@ -126,17 +126,28 @@ type Props = {
   bounds?: Bounds;
 }
 export function dualMarch(p: Props): Triangle[] {
+  const cache = new Map<string, number>();
+  const cachefn = (v: Vec3) => {
+    const key = keyFn(v);
+    if (cache.has(key)) {
+      return cache.get(key);
+    } else {
+      const val = p.shape(v);
+      cache.set(key, val);
+      return val;
+    }
+  }
   const size = p.size;
   const minSize = p.minSize || (p.size / 100);
   console.log('cube size', size);
-  const s = 500;
+  const s = 100;
   const bounds = p.bounds || [[-s, -s, -s], [s, s, s]];
-  const cubes = getCubes(bounds, size, minSize, p.shape);
+  const cubes = getCubes(bounds, size, minSize, cachefn);
   console.log('cubes', cubes.length);
 
   const duals = getDualCubes(cubes);
   console.log('duals', duals.length);
-  const triangles = duals.flatMap(c => march(c, p.shape));
+  const triangles = duals.flatMap(c => march(c, cachefn));
 
   return triangles;
 }
