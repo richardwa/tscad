@@ -1,7 +1,13 @@
 {
-  "name": "jscad",
+  "name": "tscad",
   "version": "1.0.0",
-  "description": "",
+  "description": "constructive solid geometry using signed distance functions and typescript",
+  "keywords": [
+    "marching-cubes",
+    "dual-marching-cubes",
+    "implicitcad",
+    "jscad"
+  ],
   "main": "dist/index.js",
   "types": "dist/index.t.ds",
   "scripts": {
@@ -10,8 +16,8 @@
     "test": "ts-node ./index.spec.ts",
     "ts": "ts-node"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Richard Wa",
+  "license": "GPL-3.0",
   "devDependencies": {
     "@types/kd-tree-javascript": "^1.0.0",
     "@types/node": "^14.14.14",
