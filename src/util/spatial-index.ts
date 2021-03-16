@@ -1,6 +1,7 @@
 import * as ubilabs from 'kd-tree-javascript';
 
-const distanceFn = (a: Vec3, b: Vec3): number => {
+
+const distanceFn3 = (a: Vec3, b: Vec3): number => {
   // distance formula for 'cube' space
   return Math.max(
     Math.abs(a[0] - b[0]),
@@ -8,15 +9,26 @@ const distanceFn = (a: Vec3, b: Vec3): number => {
     Math.abs(a[2] - b[2])
   );
 };
+const distanceFn2 = (a: Vec2, b: Vec2): number => {
+  // distance formula for 'cube' space
+  return Math.max(
+    Math.abs(a[0] - b[0]),
+    Math.abs(a[1] - b[1])
+  );
+};
+export class SpatialIndex<T extends Vec2 | Vec3> {
+  kdtree: ubilabs.kdTree<T>;
+  constructor(points: T[]) {
+    if (points[0].length === 2) {
+      this.kdtree = new ubilabs.kdTree<T>(points, distanceFn2 as any, [0, 1]);
+    } else {
+      this.kdtree = new ubilabs.kdTree<T>(points, distanceFn3 as any, [0, 1, 3]);
+    }
 
-export class SpatialIndex {
-  kdtree: ubilabs.kdTree<Vec3>;
-  constructor(points: Vec3[]) {
-    this.kdtree = new ubilabs.kdTree<Vec3>(points, distanceFn, [0, 1, 2]);
   }
 
 
-  queryCube(center: Vec3, size: number): Vec3[] {
+  queryCube(center: T, size: number): T[] {
     return this.kdtree
       .nearest(center, 1000, (size * 1.01) / 2)
       .map(([c, i]) => c);

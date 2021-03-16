@@ -129,7 +129,7 @@ export function dualMarch(p: Props): Triangle[] {
   const size = p.size;
   const minSize = p.minSize || (p.size / 100);
   console.log('cube size', size);
-  const s = 44;
+  const s = 500;
   const bounds = p.bounds || [[-s, -s, -s], [s, s, s]];
   const cubes = getCubes(bounds, size, minSize, p.shape);
   console.log('cubes', cubes.length);
