@@ -2,13 +2,15 @@
 <script>
   const state = {
     iResolution: [600, 400, 1],
-    camera: [0, 1, -10],
+    cameraPos: [0, 1, -10],
+    cameraDir: [0, 0, 1],
     zoom: 1
   };
 </script>
 <script id="fragmentShader" type="x-shader/x-fragment">
 precision highp float;
-uniform vec3 camera;
+uniform vec3 cameraPos;
+uniform vec3 cameraDir;
 uniform vec3 iResolution;
 uniform float zoom;
 
@@ -56,9 +58,11 @@ float GetLight(vec3 p) {
   return dif;
 }
 
-void mainImage( out vec4 fragColor, in vec2 uv ){
+void mainImage( out vec4 fragColor, in vec2 fragCoord ){
+  vec2 uv = fragCoord/iResolution.xy;
+  uv = uv * 2. - 1.;
   vec3 col = vec3(0);
-  vec3 ro = camera;
+  vec3 ro = cameraPos;
   vec3 rd = normalize(vec3(uv.x, uv.y, 1));
 
   float d = RayMarch(ro, rd);
@@ -74,9 +78,7 @@ void mainImage( out vec4 fragColor, in vec2 uv ){
 }
 
 void main() {
-  vec2 uv = vec2(gl_FragCoord.x/iResolution.x,gl_FragCoord.y/iResolution.y);
-  uv = uv * 2. - 1.;
-  mainImage(gl_FragColor, uv);
+  mainImage(gl_FragColor, gl_FragCoord.xy);
 }
 </script>
 <html>
