@@ -6,11 +6,16 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as open from 'open';
 
-const homePage = fs.readFileSync(path.join(__dirname, '../src/viewer/viewer.html'));
 const cwd = process.cwd();
 
 const requestListener: http.RequestListener = (req, res) => {
   console.log(req.method, req.url);
+  const homePage = fs.readFileSync(path.join(__dirname, '../src/viewer/viewer.html'));
+  if (req.url === '/') {
+    res.writeHead(200);
+    res.end(homePage);
+    return;
+  }
   const file = path.join(cwd, req.url);
   console.log(file);
   if (fs.existsSync(file)) {
@@ -31,11 +36,12 @@ const requestListener: http.RequestListener = (req, res) => {
 const server = http.createServer(requestListener);
 const port = 1234;
 server.listen(port);
-console.log("listening on", port);
+const serverUrl = `http://localhost:${port}`;
+console.log("open", serverUrl);
 
 process.argv.slice(2)
   .forEach(f => {
-    const url = `http://localhost:${port}/${f}`;
+    const url = `${serverUrl}/${f}`;
     console.log('open', url);
     open(url);
   });
