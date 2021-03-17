@@ -9,7 +9,7 @@ import * as open from 'open';
 const cwd = process.cwd();
 
 const requestListener: http.RequestListener = (req, res) => {
-  console.log(req.method, req.url);
+  console.log(new Date().toISOString(), req.method, req.url);
   const homePage = fs.readFileSync(path.join(__dirname, '../src/viewer/viewer.html'));
   if (req.url === '/') {
     res.writeHead(200);

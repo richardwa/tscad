@@ -1,7 +1,16 @@
 <!doctype html>
+<script>
+  const state = {
+    iResolution: [600, 400, 1],
+    camera: [0, 1, -10],
+    zoom: 1
+  };
+</script>
 <script id="fragmentShader" type="x-shader/x-fragment">
 precision highp float;
 uniform vec3 camera;
+uniform vec3 iResolution;
+uniform float zoom;
 
 #define MAX_STEPS 100
 #define MAX_DIST 100.
@@ -65,7 +74,7 @@ void mainImage( out vec4 fragColor, in vec2 uv ){
 }
 
 void main() {
-  vec2 uv = vec2(gl_FragCoord.x/640.,gl_FragCoord.y/640.);
+  vec2 uv = vec2(gl_FragCoord.x/iResolution.x,gl_FragCoord.y/iResolution.y);
   uv = uv * 2. - 1.;
   mainImage(gl_FragColor, uv);
 }
@@ -80,7 +89,6 @@ void main() {
 </head>
 
 <body>
-  <canvas width="640" height="640"></canvas>
 </body>
 
 </html>
@@ -92,7 +100,10 @@ void main() {
   }
 </script>
 <script>
-  const canvas = document.querySelector("canvas");
+  const canvas = document.createElement("canvas");
+  canvas.width = state.iResolution[0];
+  canvas.height = state.iResolution[1];
+  document.body.append(canvas);
   const gl = canvas.getContext("webgl");
   gl.clearColor(0, 0, 0, 1);
   gl.clear(gl.COLOR_BUFFER_BIT);
@@ -122,20 +133,32 @@ void main() {
   gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
   gl.useProgram(program);
-  program.camera = gl.getUniformLocation(program, 'camera');
+  const glVars = {};
+  Object.keys(state).forEach(key => {
+    console.log('locating', key);
+    glVars[key] = gl.getUniformLocation(program, key);
+  });
 
-  program.position = gl.getAttribLocation(program, 'position');
-  gl.enableVertexAttribArray(program.position);
-  gl.vertexAttribPointer(program.position, 2, gl.FLOAT, false, 0, 0);
+
+  const position = gl.getAttribLocation(program, 'position');
+  gl.enableVertexAttribArray(position);
+  gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
 
 
-  function setCamera(x, y, z) {
-    gl.uniform3fv(program.camera, [x, y, z]);
+  function setState(state) {
+    // set bindings
+    Object.keys(state).forEach(key => {
+      const val = state[key];
+      const type = val instanceof Array ?
+        `uniform${val.length}fv` :
+        "uniform1f";
+
+      gl[type](glVars[key], val);
+      console.log('setting', type, key, val);
+    });
+
+    // draw
     gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 2);
   }
-  setCamera(0, 5, -10);
-
-
-
-
+  setState(state);
 </script>
