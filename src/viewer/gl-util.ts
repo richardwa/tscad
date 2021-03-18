@@ -1,16 +1,12 @@
-
-export type State = {
-  iResolution: number[];
-  cameraPos: number[];
-  cameraDir: number[];
-  zoom: number;
-}
-export const initialState: State = {
-  iResolution: [600, 400, 1],
-  cameraPos: [0, 1, -10],
-  cameraDir: [0, 0, 1],
+export const initialState = {
+  iResolution: [600, 600, 1],
+  cameraPos: [0, 8, 0],
+  cameraDir: [0, -1, 0],
+  cameraTop: [0, 0, 1],
   zoom: 1
 };
+
+export type State = typeof initialState;
 
 export const fragmentShaderSrc = `
 precision highp float;
@@ -18,6 +14,7 @@ precision highp float;
 uniform vec3 iResolution;
 uniform vec3 cameraPos;
 uniform vec3 cameraDir;
+uniform vec3 cameraTop;
 uniform float zoom;
 
 #define MAX_STEPS 100
@@ -56,7 +53,7 @@ vec3 GetNormal(vec3 p) {
 }
 
 float GetLight(vec3 p) {
-  vec3 lightPos = vec3(20, 20, -20);
+  vec3 lightPos = cameraPos;
   lightPos.xz += vec2(0,1)*2.;
   vec3 l = normalize(lightPos-p);
   vec3 n = GetNormal(p);
@@ -69,7 +66,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ){
   uv = uv * 2. - 1.;
   vec3 col = vec3(0);
   vec3 ro = cameraPos;
-  vec3 rd = normalize(vec3(uv.x, uv.y, 1));
+  vec3 r = cross(cameraDir,cameraTop);
+  vec3 rd = normalize(cameraDir+ uv.x*r + uv.y*cameraTop);
 
   float d = RayMarch(ro, rd);
   if (d >= MAX_DIST){
