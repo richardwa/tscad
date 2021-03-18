@@ -12,7 +12,8 @@
   "types": "dist/index.t.ds",
   "scripts": {
     "prebuild": "rimraf ./dist",
-    "build": "tsc",
+    "test-viewer": "parcel ./src/viewer/viewer.html",
+    "build": "tsc && parcel build ./src/viewer/viewer.html --out-dir ./dist/viewer",
     "viewer": "ts-node ./bin/viewer.ts",
     "test": "ts-node ./index.spec.ts",
     "ts": "ts-node"
@@ -20,6 +21,7 @@
   "author": "Richard Wa",
   "license": "GPL-3.0",
   "devDependencies": {
+    "parcel-bundler": "^1.12.5",
     "rimraf": "^3.0.2"
   },
   "dependencies": {

@@ -10,7 +10,7 @@ const cwd = process.cwd();
 
 const requestListener: http.RequestListener = (req, res) => {
   console.log(new Date().toISOString(), req.method, req.url);
-  const homePage = fs.readFileSync(path.join(__dirname, '../src/viewer/viewer.html'));
+  const homePage = fs.readFileSync(path.join(__dirname, '../dist/viewer/viewer.html'));
   if (req.url === '/') {
     res.writeHead(200);
     res.end(homePage);
