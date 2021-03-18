@@ -1,9 +1,9 @@
 export const initialState = {
-  iResolution: [600, 600, 1],
-  cameraPos: [0, 8, 0],
-  cameraDir: [0, -1, 0],
-  cameraTop: [0, 0, 1],
-  zoom: 1
+  iResolution: [600, 600, 1] as Vec3,
+  cameraPos: [0, 0, -40] as Vec3,
+  cameraDir: [0, 0, 1] as Vec3,
+  cameraTop: [0, 1, 0] as Vec3,
+  zoom: 4
 };
 
 export type State = typeof initialState;
@@ -67,7 +67,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ){
   vec3 col = vec3(0);
   vec3 ro = cameraPos;
   vec3 r = cross(cameraDir,cameraTop);
-  vec3 rd = normalize(cameraDir+ uv.x*r + uv.y*cameraTop);
+
+  vec3 rd = normalize(cameraDir*zoom+ uv.x*r + uv.y*cameraTop);
 
   float d = RayMarch(ro, rd);
   if (d >= MAX_DIST){
@@ -75,7 +76,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ){
     return;
   }
     
-  vec3 p = ro + rd * d;
+  vec3 p = ro + rd * d; 
   float dif = GetLight(p);
   col = vec3(dif);
   fragColor = vec4(col,1.0);
@@ -91,7 +92,7 @@ export const vertexShaderSrc = `
 	// vertex shader's code goes here
   attribute vec2 position;
   void main() {
-    gl_Position = vec4(position, 0.0, 1.0);
+    gl_Position = vec4(position, 0.0, 1.0);  
   } 
 `;
 
@@ -143,25 +144,25 @@ export const setupWebGL = (canvas: HTMLCanvasElement) => {
     Object.entries(state).forEach(([key, val]) => {
       if (val instanceof Array) {
         switch (val.length) {
-          case 1:
-            gl.uniform1fv(glVars[key], val);
-            break;
-          case 2:
-            gl.uniform2fv(glVars[key], val);
-            break;
+          // case 1:
+          //   gl.uniform1fv(glVars[key], val);
+          //   break;
+          // case 2:
+          //   gl.uniform2fv(glVars[key], val);
+          //   break;
           case 3:
             gl.uniform3fv(glVars[key], val);
             break;
-          case 4:
-            gl.uniform4fv(glVars[key], val);
-            break;
+          // case 4:
+          //   gl.uniform4fv(glVars[key], val);
+          //   break;
           default:
             throw 'unable to accomodate larger than 4 entries';
         }
       } else {
         gl.uniform1f(glVars[key], val);
       }
-      // console.log('setting', key, val);
+      //console.log('setting', key, val);
     });
 
     // draw

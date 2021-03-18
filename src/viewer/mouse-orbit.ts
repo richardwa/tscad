@@ -1,4 +1,5 @@
-import { Vector } from "../util/math";
+import { clamp, Vector } from "../util/math";
+import * as _ from 'lodash';
 
 export type ClickAndDragCB = {
   current: Vec2;
@@ -17,10 +18,12 @@ export const registerClickAndDrag = (el: HTMLElement, cb: (p: ClickAndDragCB) =>
     leftClick = e.button === 0;
   }
   const stop = (e: MouseEvent) => {
-    mouseListen = false
-    const current: Vec2 = [e.clientX, e.clientY];
-    cb({ current, startPos, end: true, leftClick });
-    leftClick = null
+    if (mouseListen) {
+      mouseListen = false
+      const current: Vec2 = [e.clientX, e.clientY];
+      cb({ current, startPos, end: true, leftClick });
+      leftClick = null
+    }
   }
   const moving = (e: MouseEvent) => {
     if (mouseListen) {
@@ -40,3 +43,40 @@ export const registerScrollWheel = (el: HTMLElement, cb: (zoom: number) => void)
     cb(e.deltaY);
   }));
 }
+
+export type SphericalSystem = {
+  pos: Vec3, //[r,theta,phi]
+  origin: Vec3,  //
+}
+export type CartesianSystem = {
+  cameraPos: Vec3,
+  cameraDir?: Vec3, // undefined when camera is at origin
+  cameraTop?: Vec3 // undefined when camera is facing up/down exacltly
+}
+export const sphericalToCartesion = ({ pos: [radius, theta, _phi], origin }: SphericalSystem): CartesianSystem => {
+  if (Math.abs(radius) < 0.01) {
+    return {
+      cameraPos: origin
+    }
+  }
+  const phi = clamp(_phi, -Math.PI + .01, Math.PI - .01);
+
+  const xzRadius = radius * Math.cos(phi);
+
+  const cameraPos: Vec3 = [
+    xzRadius * Math.sin(theta) + origin[0],
+    radius * Math.sin(phi) + origin[2],
+    -xzRadius * Math.cos(theta) + origin[1],
+  ];
+  const cameraDir = new Vector(origin).minus(cameraPos).toUnitVector().result as Vec3;
+
+  const up: Vec3 = [0, 1, 0];
+
+  const cameraTop = new Vector(cameraDir).cross(up).cross(cameraDir).toUnitVector().result;
+
+  return {
+    cameraPos,
+    cameraDir,
+    cameraTop
+  };
+};
