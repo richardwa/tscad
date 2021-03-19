@@ -1,12 +1,17 @@
 import { clamp, Vector } from '../util/math';
 import { extrude } from './extrude';
+import { addFunc, f } from './glsl-util';
 
 export function circle(r: number = 1): Shape2 {
-  return (p) => new Vector(p).magnitude() - r;
+  const sp = (p: Vec2) => new Vector(p).magnitude() - r;
+  sp.gl = addFunc('float', 'vec2 p', `return length(p)-${f(r)};`);
+  return sp;
 }
 
 export function sphere(r: number = 1): Shape3 {
-  return (p) => new Vector(p).magnitude() - r;
+  const sp = (p: Vec3) => new Vector(p).magnitude() - r;
+  sp.gl = addFunc('float', 'vec3 p', `return length(p)-${f(r)};`);
+  return sp;
 }
 
 export function cylinder(radius: number = 1, height = 2): Shape3 {
@@ -15,38 +20,78 @@ export function cylinder(radius: number = 1, height = 2): Shape3 {
 
 export function rect(x: number = 2, y: number = x): Shape2 {
   const x1 = x / 2, y1 = y / 2;
-  return ([x, y]) => {
+  const sp = ([x, y]: Vec2) => {
     const i = Math.max(Math.abs(x) - x1, 0);
     const j = Math.max(Math.abs(y) - y1, 0);
     const outside = new Vector([Math.max(i, 0), Math.max(j, 0)]).magnitude();
     const inside = Math.min(Math.max(i, j), 0);
     return outside + inside;
   }
+  sp.gl = addFunc('float', 'vec2 p', [
+    `vec2 d = abs(p)-vec2(${f(x), f(y)});`,
+    `return length(max(d,0.0))+min(max(d.x,d.y),0.0); `
+  ].join('\n'));
+  return sp;
 }
 
-// from iq - https://www.shadertoy.com/view/WdSGRd
-const poly2 = (points: Vec2[]) => (p: Vec2) => {
-  const a = new Vector(p).minus(points[0]);
-  let distance = a.dot(a.result);
-  let sign = 1;
-  const len = points.length
-  for (let i = 0; i < len; i++) {
-    const i2 = (i + 1) % len;
-    const e = new Vector(points[i2]).minus(points[i]).result;
-    const v = new Vector(p).minus(points[i]).result;
-    const pq = new Vector(v).minus(new Vector(e).scale(clamp(
-      new Vector(v).dot(e) / new Vector(e).dot(e), 0, 1)).result);
-    distance = Math.min(distance, pq.dot(pq.result));
+const poly2 = (points: Vec2[]): Shape2 => {
+  const sp = (p: Vec2) => {
+    const a = new Vector(p).minus(points[0]);
+    let distance = a.dot(a.result);
+    let sign = 1;
+    const len = points.length
+    for (let i = 0; i < len; i++) {
+      const i2 = (i + 1) % len;
+      const e = new Vector(points[i2]).minus(points[i]).result;
+      const v = new Vector(p).minus(points[i]).result;
+      const pq = new Vector(v).minus(new Vector(e).scale(clamp(
+        new Vector(v).dot(e) / new Vector(e).dot(e), 0, 1)).result);
+      distance = Math.min(distance, pq.dot(pq.result));
 
-    //winding number
-    const v2 = new Vector(p).minus(points[i2]).result;
-    const val3 = new Vector(e).cross2d(v);
-    const cond = [v[1] >= 0 ? 1 : 0, v2[1] < 0 ? 1 : 0, val3 > 0 ? 1 : 0];
-    if (Math.max(...cond) === Math.min(...cond)) {
-      sign *= -1;
+      //winding number
+      const v2 = new Vector(p).minus(points[i2]).result;
+      const val3 = new Vector(e).cross2d(v);
+      const cond = [v[1] >= 0 ? 1 : 0, v2[1] < 0 ? 1 : 0, val3 > 0 ? 1 : 0];
+      if (Math.max(...cond) === Math.min(...cond)) {
+        sign *= -1;
+      }
     }
+    return Math.sqrt(distance) * sign;
   }
-  return Math.sqrt(distance) * sign;
+  // from iq - https://www.shadertoy.com/view/WdSGRd
+  const poly = points.map(p => `vec2(${f(p[0]), f(p[1])})`).join(',');
+  sp.gl = addFunc('float', 'vec2 p', [
+    `vec2[N] poly = vec2[N](${poly})`,
+    `vec2[N] e;`,
+    `vec2[N] v;`,
+    `vec2[N] pq;`,
+    // data
+    `for( int i=0; i<N; i++) {`,
+    `    int i2= int(mod(float(i+1),float(N)));`, //i+1
+    `e[i] = poly[i2] - poly[i];`,
+    `    v[i] = p - poly[i];`,
+    `    pq[i] = v[i] - e[i]*clamp( dot(v[i],e[i])/dot(e[i],e[i]), 0.0, 1.0 );`,
+    `}`,
+    //distance
+    `float d = dot(pq[0], pq[0]); `,
+    `for( int i=1; i<N; i++) {`,
+    `  d = min( d, dot(pq[i], pq[i]));`,
+    `}`,
+    //winding number
+    // from http://geomalgorithms.com/a03-_inclusion.html
+    `int wn =0; `,
+    `for( int i=0; i<N; i++) {`,
+    `    int i2= int(mod(float(i+1),float(N)));`,
+    `    bool cond1= 0. <= v[i].y;`,
+    `    bool cond2= 0. > v[i2].y;`,
+    `    float val3= cross2d(e[i],v[i]);`, //isLeft
+    `    wn+= cond1 && cond2 && val3>0. ? 1 : 0;`, // have  a valid up intersect
+    `    wn-= !cond1 && !cond2 && val3<0. ? 1 : 0; // have  a valid down intersect`,
+    `}`,
+    `float s= wn == 0 ? 1. : -1.;`,
+    `return sqrt(d) * s;`,
+  ].join('\n'));
+  return sp;
 }
 
 /**
@@ -78,7 +123,7 @@ export function poly(points: number | Vec2[], radius?: number): Shape2 {
 
 export function box(x: number = 2, y: number = x, z: number = y): Shape3 {
   const x1 = x / 2, y1 = y / 2, z1 = z / 2;
-  return ([x, y, z]) => {
+  const sp = ([x, y, z]: Vec3) => {
     const i = Math.abs(x) - x1;
     const j = Math.abs(y) - y1;
     const k = Math.abs(z) - z1;
@@ -86,5 +131,11 @@ export function box(x: number = 2, y: number = x, z: number = y): Shape3 {
     const inside = Math.min(Math.max(i, j, k), 0);
     return outside + inside;
   }
+
+  sp.gl = addFunc('float', 'vec3 p', [
+    `vec3 q = abs(p) - vec3(${f(x)}, ${f(y)}, ${f(z)}); `,
+    `return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0); `
+  ].join('\n'));
+  return sp;
 }
 

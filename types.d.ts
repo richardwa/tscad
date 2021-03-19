@@ -15,8 +15,9 @@ type Square3 = QuadArray<Vec3>;
 type Triangle = TriArray<Vec3>;
 type Line = Pair<Vec2>;
 
-type Shape2 = (p: Vec2) => number;
-type Shape3 = (p: Vec3) => number;
+type GLShape<T> = T & { gl: string }
+type Shape2 = GLShape<(p: Vec2) => number>;
+type Shape3 = GLShape<(p: Vec3) => number>;
 
 type Axis = 'x' | 'y' | 'z';
 type Plane = 'xy' | 'xz' | 'yz';
