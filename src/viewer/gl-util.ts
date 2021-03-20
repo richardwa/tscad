@@ -1,14 +1,18 @@
 export const initialState = {
   iResolution: [600, 600, 1] as Vec3,
-  cameraPos: [0, 0, -40] as Vec3,
+  cameraPos: [0, 0, -80] as Vec3,
   cameraDir: [0, 0, 1] as Vec3,
   cameraTop: [0, 1, 0] as Vec3,
   zoom: 4
 };
 
 export type State = typeof initialState;
+export type ShaderSrc = {
+  entry: string,
+  funcs: string[]
+}
 
-export const fragmentShaderSrc = `
+export const fragmentShaderSrc = ({ entry, funcs }: ShaderSrc) => `
 precision highp float;
 
 uniform vec3 iResolution;
@@ -18,13 +22,13 @@ uniform vec3 cameraTop;
 uniform float zoom;
 
 #define MAX_STEPS 100
-#define MAX_DIST 100.
+#define MAX_DIST 1000.
 #define SURF_DIST .01
 
+${funcs.join('\n')}
+
 float GetDist(vec3 p) {
-  vec2 t = vec2(2.,1.);
-  vec2 q = vec2(length(p.xz)-t.x,p.y);
-  return length(q)-t.y;
+  return ${entry}(p);
 }
 
 float RayMarch(vec3 ro, vec3 rd) {
@@ -96,7 +100,7 @@ export const vertexShaderSrc = `
   } 
 `;
 
-export const setupWebGL = (canvas: HTMLCanvasElement) => {
+export const setupWebGL = (canvas: HTMLCanvasElement, src: ShaderSrc) => {
 
   const gl = canvas.getContext("webgl");
   gl.clearColor(0, 0, 0, 1);
@@ -108,7 +112,9 @@ export const setupWebGL = (canvas: HTMLCanvasElement) => {
   console.log(gl.getShaderInfoLog(vertexShader));
 
   var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-  gl.shaderSource(fragmentShader, fragmentShaderSrc);
+  const fragmentSrc = fragmentShaderSrc(src);
+  console.log(fragmentSrc);
+  gl.shaderSource(fragmentShader, fragmentSrc);
   gl.compileShader(fragmentShader);
   console.log(gl.getShaderInfoLog(fragmentShader));
 

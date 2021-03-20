@@ -23,11 +23,11 @@ export function extrude(height: number, s: Shape2): Shape3 {
 export function revolve(axis: Axis, offset: number, s: Shape2): Shape3 {
   switch (axis) {
     case 'x': return wrap((p) => s([new Vector([p[1], p[2]]).magnitude() - offset, p[0]]),
-      addFunc('float', 'vec3 p', `return ${s.gl}(length(p.yz)-${f(offset)},p.x)`));
+      'float', 'vec3 p', `return ${s.gl}(length(p.yz)-${f(offset)},p.x)`);
     case 'y': return wrap((p) => s([new Vector([p[0], p[2]]).magnitude() - offset, p[1]]),
-      addFunc('float', 'vec3 p', `return ${s.gl}(length(p.xz)-${f(offset)},p.y)`));
+      'float', 'vec3 p', `return ${s.gl}(length(p.xz)-${f(offset)},p.y)`);
     case 'z': return wrap((p) => s([new Vector([p[0], p[1]]).magnitude() - offset, p[2]]),
-      addFunc('float', 'vec3 p', `return ${s.gl}(length(p.xy)-${f(offset)},p.z)`));
+      'float', 'vec3 p', `return ${s.gl}(length(p.xy)-${f(offset)},p.z)`);
   }
 }
 
@@ -35,16 +35,13 @@ export function mirror(plane: Plane, s: Shape3): Shape3 {
   switch (plane) {
     case 'yz': return wrap(
       (p) => s([Math.abs(p[0]), p[1], p[2]]),
-      addFunc('float', 'vec3 p', `return ${s.gl}(vec3(abs(p.x),p.y,p.z));`)
-    );
+      'float', 'vec3 p', `return ${s.gl}(vec3(abs(p.x),p.y,p.z));`);
     case 'xy': return wrap(
       (p) => s([p[0], p[1], Math.abs(p[2])]),
-      addFunc('float', 'vec3 p', `return ${s.gl}(vec3(p.x,p.y,abs(p.z)));`)
-    );
+      'float', 'vec3 p', `return ${s.gl}(vec3(p.x,p.y,abs(p.z)));`);
     case 'xz': return wrap(
       (p) => s([p[0], Math.abs(p[1]), p[2]]),
-      addFunc('float', 'vec3 p', `return ${s.gl}(vec3(p.x,abs(p.y),p.z));`)
-    );
+      'float', 'vec3 p', `return ${s.gl}(vec3(p.x,abs(p.y),p.z));`);
   }
 }
 
@@ -68,10 +65,10 @@ export function tile(o: TileParams, s: Shape3): Shape3 {
   const tileY = o.y ? tile1D(o.y) : identity;
   const tileZ = o.z ? tile1D(o.z) : identity;
   return wrap((p) => s([tileX(p[0]), tileY(p[1]), tileZ(p[2])]),
-    addFunc('float', 'vec3 p', [
+    'float', 'vec3 p', [
       `vec3 c = vec3(${f(o.x ? o.x[0] : 0)},${f(o.y ? o.y[0] : 0)},${f(o.z ? o.z[0] : 0)});`,
       `vec3 m = vec3(${f(o.x ? o.x[1] : 0)},${f(o.y ? o.y[1] : 0)},${f(o.z ? o.z[1] : 0)});`,
       `vec3 q = p-c*clamp(round(p/c),-m,m);`,
       `return ${s.gl}( q );`
-    ].join('\n')));
+    ].join('\n'));
 }

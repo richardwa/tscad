@@ -35,8 +35,8 @@ const roundOps: { [key in Ops]: (r: number, s1: Shape3, s2: Shape3) => Shape3 } 
     };
     sp.gl = addFunc('float', 'vec3 p', [
       `float k = ${f(radius)};`,
-      `float d1 = ${s1}(p);`,
-      `float d2 = ${s2}(p);`,
+      `float d1 = ${s1.gl}(p);`,
+      `float d2 = ${s2.gl}(p);`,
       `float h = clamp( 0.5 + 0.5*(d2-d1)/k, 0.0, 1.0 );`,
       `return mix( d2, d1, h ) - k*h*(1.0-h);`
     ].join('\n'));
@@ -51,8 +51,8 @@ const roundOps: { [key in Ops]: (r: number, s1: Shape3, s2: Shape3) => Shape3 } 
     };
     sp.gl = addFunc('float', 'vec3 p', [
       `float k = ${f(radius)};`,
-      `float d1 = ${s1}(p);`,
-      `float d2 = ${s2}(p);`,
+      `float d1 = ${s1.gl}(p);`,
+      `float d2 = ${s2.gl}(p);`,
       `float h = clamp( 0.5 - 0.5*(d2+d1)/k, 0.0, 1.0 );`,
       `return mix( d2, -d1, h ) + k*h*(1.0-h);`
     ].join('\n'));
@@ -67,8 +67,8 @@ const roundOps: { [key in Ops]: (r: number, s1: Shape3, s2: Shape3) => Shape3 } 
     };
     sp.gl = addFunc('float', 'vec3 p', [
       `float k = ${f(radius)};`,
-      `float d1 = ${s1}(p);`,
-      `float d2 = ${s2}(p);`,
+      `float d1 = ${s1.gl}(p);`,
+      `float d2 = ${s2.gl}(p);`,
       `float h = clamp( 0.5 - 0.5*(d2-d1)/k, 0.0, 1.0 );`,
       `return mix( d2, d1, h ) + k*h*(1.0-h);`
     ].join('\n'));
