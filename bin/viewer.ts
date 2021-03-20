@@ -32,7 +32,6 @@ const requestListener: http.RequestListener = (req, res) => {
   if (fs.existsSync(cwdFile)) {
     import(cwdFile)
       .then(({ main }) => {
-        console.log(main);
         const shaderSrc = getShaderSrc(main.gl);
         const script = `<script>window.shaderSrc = ${JSON.stringify(shaderSrc)};</script>`;
         res.writeHead(200);
