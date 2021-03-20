@@ -68,5 +68,10 @@ export function tile(o: TileParams, s: Shape3): Shape3 {
   const tileY = o.y ? tile1D(o.y) : identity;
   const tileZ = o.z ? tile1D(o.z) : identity;
   return wrap((p) => s([tileX(p[0]), tileY(p[1]), tileZ(p[2])]),
-    addFunc());
+    addFunc('float', 'vec3 p', [
+      `vec3 c = vec3(${f(o.x ? o.x[0] : 0)},${f(o.y ? o.y[0] : 0)},${f(o.z ? o.z[0] : 0)});`,
+      `vec3 m = vec3(${f(o.x ? o.x[1] : 0)},${f(o.y ? o.y[1] : 0)},${f(o.z ? o.z[1] : 0)});`,
+      `vec3 q = p-c*clamp(round(p/c),-m,m);`,
+      `return ${s.gl}( q );`
+    ].join('\n')));
 }
