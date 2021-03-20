@@ -1,14 +1,16 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env ts-node --transpile-only
 /// <reference path="../types.d.ts" />
 
 import * as http from 'http';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as open from 'open';
+import { glFunctions } from '../src/csg/glsl-util';
+import { ShaderSrc } from '../src/viewer/gl-util';
 
-const cwd = process.cwd();
+const cwd = process.argv.length > 2 ? process.argv[2] : process.cwd();
 const dir = path.join(__dirname, '../dist/viewer');
-const homePage = fs.readFileSync(path.join(dir, 'viewer.html'));
+const homePage = fs.readFileSync(path.join(dir, 'viewer.html'), 'utf8');
 
 const requestListener: http.RequestListener = (req, res) => {
   console.log(new Date().toISOString(), req.method, req.url);
@@ -17,7 +19,8 @@ const requestListener: http.RequestListener = (req, res) => {
     res.end(homePage);
     return;
   }
-  // local file wrt this file
+
+  // local file server -- to serve js bundle
   const dirFile = path.join(dir, req.url);
   if (fs.existsSync(dirFile)) {
     res.writeHead(200);
@@ -25,13 +28,21 @@ const requestListener: http.RequestListener = (req, res) => {
     return;
   }
 
+  // serve shader src and homepage together
   const cwdFile = path.join(cwd, req.url);
   console.log(cwdFile);
   if (fs.existsSync(cwdFile)) {
     import(cwdFile)
       .then(({ main }) => {
+        glFunctions.clear();
+        const sp = main() as Shape3;
+        const shaderSrc: ShaderSrc = {
+          entry: sp.gl,
+          funcs: Array.from(glFunctions).map(([key, { name, src }]) => src)
+        }
+        const script = `<script>window.shaderSrc = ${JSON.stringify(shaderSrc)};</script>`;
         res.writeHead(200);
-        res.end(homePage + main);
+        res.end(homePage + script);
       }).catch((err) => {
         res.writeHead(500);
         res.end([cwdFile, err].join('\n'));

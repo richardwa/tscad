@@ -1,22 +1,19 @@
 import { Vector } from '../util/math';
-import { initialState, setupWebGL, State } from './gl-util';
+import { initialState, setupWebGL, ShaderSrc, State } from './gl-util';
 import { registerClickAndDrag, registerScrollWheel, SphericalSystem, sphericalToCartesion } from './mouse-orbit';
 import { main } from './sample';
-import { glFunctions } from '../csg/glsl-util';
-
+import { getShaderSrc } from '../csg/glsl-util';
+declare global {
+  interface Window { shaderSrc?: ShaderSrc; }
+}
 const canvas = document.createElement("canvas");
 canvas.width = initialState.iResolution[0];
 canvas.height = initialState.iResolution[1];
 document.body.append(canvas);
 canvas.oncontextmenu = function (e) { e.preventDefault(); e.stopPropagation(); }
 
-glFunctions.clear();
-const sp = main();
-
-let setState = setupWebGL(canvas, {
-  entry: sp.gl,
-  funcs: Array.from(glFunctions).map(([key, { name, src }]) => src)
-});
+const shaderSrc: ShaderSrc = window.shaderSrc || getShaderSrc(main.gl);
+const setState = setupWebGL(canvas, shaderSrc);
 
 let orbitalState: SphericalSystem = {
   pos: [300, Math.PI / 4, Math.PI / 4],

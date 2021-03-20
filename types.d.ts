@@ -15,7 +15,12 @@ type Square3 = QuadArray<Vec3>;
 type Triangle = TriArray<Vec3>;
 type Line = Pair<Vec2>;
 
-type GLShape<T> = T & { gl: string & {dummy: boolean} }
+type GLNode = {
+  name: string,
+  src: string,
+  deps: GLNode[]
+}
+type GLShape<T> = T & { gl: GLNode }
 type Shape2 = GLShape<(p: Vec2) => number>;
 type Shape3 = GLShape<(p: Vec3) => number>;
 

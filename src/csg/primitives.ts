@@ -1,16 +1,16 @@
 import { clamp, Vector } from '../util/math';
 import { extrude } from './extrude';
-import { addFunc, f } from './glsl-util';
+import { addFunc, f, v3 } from './glsl-util';
 
 export function circle(r: number = 1): Shape2 {
   const sp = (p: Vec2) => new Vector(p).magnitude() - r;
-  sp.gl = addFunc('float', 'vec2 p', `return length(p)-${f(r)};`);
+  sp.gl = addFunc('float', 'vec2 p', `return length(p)-${f(r)};`, []);
   return sp;
 }
 
 export function sphere(r: number = 1): Shape3 {
   const sp = (p: Vec3) => new Vector(p).magnitude() - r;
-  sp.gl = addFunc('float', 'vec3 p', `return length(p)-${f(r)};`);
+  sp.gl = addFunc('float', 'vec3 p', `return length(p)-${f(r)};`, []);
   return sp;
 }
 
@@ -30,7 +30,7 @@ export function rect(x: number = 2, y: number = x): Shape2 {
   sp.gl = addFunc('float', 'vec2 p', [
     `vec2 d = abs(p)-vec2(${f(x), f(y)});`,
     `return length(max(d,0.0))+min(max(d.x,d.y),0.0); `
-  ].join('\n'));
+  ].join('\n'), []);
   return sp;
 }
 
@@ -90,7 +90,7 @@ const poly2 = (points: Vec2[]): Shape2 => {
     `}`,
     `float s= wn == 0 ? 1. : -1.;`,
     `return sqrt(d) * s;`,
-  ].join('\n'));
+  ].join('\n'), []);
   return sp;
 }
 
@@ -133,9 +133,9 @@ export function box(x: number = 2, y: number = x, z: number = y): Shape3 {
   }
 
   sp.gl = addFunc('float', 'vec3 p', [
-    `vec3 q = abs(p) - vec3(${f(x)}, ${f(y)}, ${f(z)}); `,
+    `vec3 q = abs(p) - ${v3([x, y, x])}; `,
     `return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0); `
-  ].join('\n'));
+  ].join('\n'), []);
   return sp;
 }
 
