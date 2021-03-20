@@ -1,12 +1,10 @@
-#!/usr/bin/env ts-node --transpile-only
+#!/usr/bin/env ts-node
 /// <reference path="../types.d.ts" />
 
 import * as http from 'http';
 import * as path from 'path';
 import * as fs from 'fs';
-import * as open from 'open';
-import { glFunctions } from '../src/csg/glsl-util';
-import { ShaderSrc } from '../src/viewer/gl-util';
+import { getShaderSrc } from '../src/csg/glsl-util';
 
 const cwd = process.argv.length > 2 ? process.argv[2] : process.cwd();
 const dir = path.join(__dirname, '../dist/viewer');
@@ -34,12 +32,8 @@ const requestListener: http.RequestListener = (req, res) => {
   if (fs.existsSync(cwdFile)) {
     import(cwdFile)
       .then(({ main }) => {
-        glFunctions.clear();
-        const sp = main() as Shape3;
-        const shaderSrc: ShaderSrc = {
-          entry: sp.gl,
-          funcs: Array.from(glFunctions).map(([key, { name, src }]) => src)
-        }
+        console.log(main);
+        const shaderSrc = getShaderSrc(main.gl);
         const script = `<script>window.shaderSrc = ${JSON.stringify(shaderSrc)};</script>`;
         res.writeHead(200);
         res.end(homePage + script);
@@ -58,11 +52,4 @@ const port = 1234;
 server.listen(port);
 const serverUrl = `http://localhost:${port}`;
 console.log("open", serverUrl);
-
-process.argv.slice(2)
-  .forEach(f => {
-    const url = `${serverUrl}/${f}`;
-    console.log('open', url);
-    open(url);
-  });
 
