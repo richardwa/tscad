@@ -136,7 +136,9 @@ export function dualMarch(p: Props): Triangle[] {
       cache.set(key, val);
       return val;
     }
-  }
+  };
+  cachefn.gl = p.shape.gl;
+
   const size = p.size;
   const minSize = p.minSize || (p.size / 100);
   console.log('cube size', size);

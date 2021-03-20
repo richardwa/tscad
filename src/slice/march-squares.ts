@@ -139,6 +139,7 @@ export function slice(p: Props): Square3[] {
   let count = [0, 0];
   for (let h = bottom + halfHeight; h < top; h += layerHeight) {
     const shape2 = (v: Vec2) => p.shape([...v, h]);
+    shape2.gl = p.shape.gl;
     const squares = getSquares(bounds, size, minSize, shape2);
     count[0] += squares.length;
     const duals = getDualSquares(squares);
