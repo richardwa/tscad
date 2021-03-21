@@ -13,7 +13,7 @@
   "scripts": {
     "prebuild": "rimraf ./dist",
     "test-viewer": "parcel ./src/viewer/viewer.html",
-    "build": "tsc && parcel build ./src/viewer/viewer.html --out-dir ./dist/viewer",
+    "build": "tsc && parcel build ./src/viewer/viewer.html --out-dir ./dist/viewer --public-url ./",
     "viewer": "ts-node ./bin/viewer.ts",
     "test": "ts-node ./index.spec.ts",
     "ts": "ts-node"
