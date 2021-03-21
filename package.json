@@ -12,7 +12,7 @@
   "types": "dist/index.t.ds",
   "scripts": {
     "prebuild": "rimraf ./dist",
-    "build": "tsc && parcel build ./src/viewer/viewer.html --out-dir ./dist/src/viewer --public-url ./",
+    "build": "tsc && parcel build ./src/viewer/viewer.html --out-dir ./dist/src/viewer",
     "test-viewer": "parcel ./src/bin/viewer/viewer.html",
     "viewer": "ts-node ./src/bin/viewer.ts",
     "test": "ts-node ./index.spec.ts",
