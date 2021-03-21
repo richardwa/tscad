@@ -10,6 +10,7 @@ Constructive Solid Geometry (CSG) using Signed Distance Functions (SDF) and Type
 
 
 ## Setup
+* see starter project https://github.com/richardwa/tscad-starter for usage, this setup is for developement of the library itself.
 * clone this repo
 * npm install
 
@@ -25,6 +26,7 @@ Constructive Solid Geometry (CSG) using Signed Distance Functions (SDF) and Type
  - manipulations: translate, rotate, scale
  - 3D primitives: cube, sphere, cylinder
  - 2D primitives: square, circle, regular polygons, arbitary polygons
+ - core CSG library is implemented in typescript and webgl (glsl)
  
 
 ## Implicit Surface Extraction - Dual Marching Cubes
