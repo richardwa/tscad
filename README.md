@@ -8,13 +8,16 @@ Constructive Solid Geometry (CSG) using Signed Distance Functions (SDF) and Type
 * Version Control - using code has other major advantages like version control and diff's.
 * exports to OBJ file format.  I was able to export STL (ascii) initially, but it turns out that OBJ was even easier and gave smaller file sizes.
 
-## Cons
-* no live view for now, will come in the future. I had a browser based viewer initially, but decided to drop it and focus on other aspects. Having the obj export is handy enough for now.
-  - TODO - i have an idea to embed an IDE into the browser along with auto WebGL/GLSL generated code for live view. Just like shadertoy except with typescript IDE
+# POC - https://richardwa.github.io/tscad/dist/viewer/viewer.html
+this is the 'viewer', on a desktop the server script will compile and send webgl code to browser to render your project.
+
 
 ## Setup
 * clone this repo
 * npm install
+
+- npm run test-viewer
+  - starts a parcel server that will serve webgl code for the example shape
 * npm run test
   - this will generate and obj file in target folder
 

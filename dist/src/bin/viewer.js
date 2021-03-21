@@ -1,13 +1,13 @@
 #!/usr/bin/env ts-node
 "use strict";
-/// <reference path="../types.d.ts" />
+/// <reference path="../../types.d.ts" />
 exports.__esModule = true;
 var http = require("http");
 var path = require("path");
 var fs = require("fs");
-var glsl_util_1 = require("../src/csg/glsl-util");
+var glsl_util_1 = require("../csg/glsl-util");
 var cwd = process.argv.length > 2 ? process.argv[2] : process.cwd();
-var dir = path.join(__dirname, '../dist/viewer');
+var dir = path.join(__dirname, '../viewer');
 var homePage = fs.readFileSync(path.join(dir, 'viewer.html'), 'utf8');
 var requestListener = function (req, res) {
     console.log(new Date().toISOString(), req.method, req.url);

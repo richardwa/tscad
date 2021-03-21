@@ -1,9 +1,9 @@
 #!/usr/bin/env ts-node
 "use strict";
-/// <reference path="../types.d.ts" />
+/// <reference path="../../types.d.ts" />
 exports.__esModule = true;
-var process_mesh_1 = require("../src/util/process-mesh");
-var dual_march_1 = require("../src/dual3/dual-march");
+var process_mesh_1 = require("../util/process-mesh");
+var dual_march_1 = require("../dual3/dual-march");
 var path = require("path");
 var file = path.join(process.cwd(), process.argv.slice(2)[0]);
 console.log(file);

@@ -1,13 +1,13 @@
 #!/usr/bin/env ts-node
-/// <reference path="../types.d.ts" />
+/// <reference path="../../types.d.ts" />
 
 import * as http from 'http';
 import * as path from 'path';
 import * as fs from 'fs';
-import { getShaderSrc } from '../src/csg/glsl-util';
+import { getShaderSrc } from '../csg/glsl-util';
 
 const cwd = process.argv.length > 2 ? process.argv[2] : process.cwd();
-const dir = path.join(__dirname, '../dist/viewer');
+const dir = path.join(__dirname, '../viewer');
 const homePage = fs.readFileSync(path.join(dir, 'viewer.html'), 'utf8');
 
 const requestListener: http.RequestListener = (req, res) => {

@@ -1,8 +1,8 @@
 #!/usr/bin/env ts-node
-/// <reference path="../types.d.ts" />
+/// <reference path="../../types.d.ts" />
 
-import { processPolygons, writeOBJ } from "../src/util/process-mesh";
-import { dualMarch } from "../src/dual3/dual-march";
+import { processPolygons, writeOBJ } from "../util/process-mesh";
+import { dualMarch } from "../dual3/dual-march";
 import * as path from 'path'
 
 const file = path.join(process.cwd(), process.argv.slice(2)[0]);

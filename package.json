@@ -1,6 +1,6 @@
 {
   "name": "tscad",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "constructive solid geometry using signed distance functions and typescript",
   "keywords": [
     "marching-cubes",
@@ -12,9 +12,9 @@
   "types": "dist/index.t.ds",
   "scripts": {
     "prebuild": "rimraf ./dist",
-    "test-viewer": "parcel ./src/viewer/viewer.html",
-    "build": "tsc && parcel build ./src/viewer/viewer.html --out-dir ./dist/viewer --public-url ./",
-    "viewer": "ts-node ./bin/viewer.ts",
+    "build": "tsc && parcel build ./src/viewer/viewer.html --out-dir ./dist/src/viewer --public-url ./",
+    "test-viewer": "parcel ./src/bin/viewer/viewer.html",
+    "viewer": "ts-node ./src/bin/viewer.ts",
     "test": "ts-node ./index.spec.ts",
     "ts": "ts-node"
   },
@@ -33,7 +33,7 @@
     "typescript": "^4.1.3"
   },
   "bin": {
-    "tscad": "./bin/render.ts",
-    "tscad-viewer": "./bin/viewer.ts"
+    "tscad-render": "./dist/src/bin/render.js",
+    "tscad-viewer": "./dist/src/bin/viewer.js"
   }
 }
