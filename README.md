@@ -8,9 +8,6 @@ Constructive Solid Geometry (CSG) using Signed Distance Functions (SDF) and Type
 * Version Control - using code has other major advantages like version control and diff's.
 * exports to OBJ file format.  I was able to export STL (ascii) initially, but it turns out that OBJ was even easier and gave smaller file sizes.
 
-# POC - https://richardwa.github.io/tscad/dist/viewer/viewer.html
-this is the 'viewer', on a desktop the server script will compile and send webgl code to browser to render your project.
-
 
 ## Setup
 * clone this repo
@@ -38,8 +35,6 @@ this is the 'viewer', on a desktop the server script will compile and send webgl
  - while i may still look into mesh simplification, I don't want to solely rely on post processing.  Didn't want to waste cycles on creating then removing small triangles.
  - no cracks on the rendered object
  - example: rounded union of cube and sphere with variable sized mesh
-
-![sphere cube](./pics/sphere-cube.jpg?raw=true "sphere cube")
 
 ## 3D Printing / Slicing
  - while Dual Marching Cubes can produce reasonable high quality models, there are can still be rendering artifacts. To overcome these, we can use the 'slicing' render which gives
