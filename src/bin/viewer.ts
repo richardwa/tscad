@@ -34,6 +34,7 @@ const requestListener: http.RequestListener = (req, res) => {
       .then(({ main }) => {
         const shaderSrc = getShaderSrc(main.gl);
         const script = `<script>window.shaderSrc = ${JSON.stringify(shaderSrc)};</script>`;
+        delete require.cache[require.resolve(cwdFile)];
         res.writeHead(200);
         res.end(homePage + script);
       }).catch((err) => {
