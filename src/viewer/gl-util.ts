@@ -67,6 +67,33 @@ float GetLight(vec3 p) {
   return dif;
 }
 
+vec4 getAxisPixel(vec3 rd, vec3 ro){
+  float threshold = 0.002*length(cameraPos)/zoom;
+
+  vec3 u = vec3(1.,0.,0.);
+  vec3 c = cross(u, rd);
+  float d = abs(dot(ro,c))/length(c);
+  if (d < threshold){
+    return vec4(u,length(cross(ro,u)));
+  }
+
+  u = vec3(0.,1.,0.);
+  c = cross(u, rd);
+  d = abs(dot(ro,c))/length(c);
+  if (d < threshold){
+    return vec4(u,length(cross(ro,u)));
+  }
+
+  u = vec3(0.,0.,1.);
+  c = cross(u, rd);
+  d = abs(dot(ro,c))/length(c);
+  if (d < threshold){
+    return vec4(u,length(cross(ro,u)));
+  }
+  return  vec4(0.,0.,0.,-1.);
+}
+
+
 void mainImage( out vec4 fragColor, in vec2 fragCoord ){
   vec2 uv = fragCoord/iResolution.xy;
   uv = uv * 2. - 1.;
@@ -75,17 +102,24 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ){
   vec3 right = cross(cameraDir,cameraTop);
 
   vec3 rd = normalize(cameraDir*zoom+ uv.x*right + uv.y*cameraTop);
-
+  vec4 axisPixel = getAxisPixel(rd,ro);
+  
   float d = RayMarch(ro, rd);
   if (d >= MAX_DIST){
-    fragColor = vec4(.5,.5,1,1);
+    if (axisPixel[3] > 0.){
+      fragColor= vec4(axisPixel.xyz,1.);
+    }else{
+      fragColor= vec4(.25,.25,.50,1.);
+    }
     return;
   }
-    
+  
   vec3 p = ro + rd * d; 
   float dif = GetLight(p);
-  col = vec3(dif);
+  col += vec3(dif);
+  col += axisPixel.xyz;
   fragColor = vec4(col,1.0);
+  
 }
 
 void main() {

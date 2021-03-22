@@ -16,8 +16,9 @@ const torus = revolve('z', 5, c);
 const buntCake = revolve('z', 15, p);
 
 // axis check
-const right = translate([10,0,0], box(10));
-const up = translate([0,0,10], cylinder(10));
-const front = translate([0,10,0], torus);
+const xCheck = translate([10,0,0], box(10));
+const yCheck = translate([0,10,0], torus);
+const zCheck = translate([0,0,10], cylinder(10));
+const axisCheck = union( xCheck, yCheck, zCheck); 
 
-export const main =  union( right, up, front); //translate([0, 0, 15], buntCake);
+export const main =  tile({x:[1,50]}, mirror('xy', translate([0, 0, 15], buntCake)));
