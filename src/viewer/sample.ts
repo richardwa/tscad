@@ -1,5 +1,5 @@
 
-import { union } from '../csg/boolean';
+import { diff, union } from '../csg/boolean';
 import { extrude, tile } from '../csg/extrude';
 import { rotate, translate } from '../csg/manipulate';
 import { box, poly, sphere } from '../csg/primitives';
@@ -19,17 +19,17 @@ export const hexTile = ({ hexSize, spacing, thickness, minWidth, minHeight }: He
   const rows = minHeight / (2 * r * Math.sqrt(3));
   const cols = minWidth / (2 * r);
   const tileHex = tile({
-    x: [Math.floor(cols / 2), 2 * r],
-    y: [Math.floor(rows / 2), 2 * r * Math.sqrt(3)]
+    x: [Math.ceil(cols / 2), 2 * r],
+    y: [Math.ceil(rows / 2), 2 * r * Math.sqrt(3)]
   }, hexPlate);
   return union(tileHex,
     translate([r, r * Math.sqrt(3), 0], tileHex));
 }
 
-export const main = hexTile({
-  hexSize: 10,
-  spacing: 2,
+export const main = diff(box(100, 100, 2), hexTile({
+  hexSize: 8,
+  spacing: 3,
   minHeight: 100,
   minWidth: 200,
-  thickness: 2
-});
+  thickness: 3
+}));

@@ -17,7 +17,6 @@ export function sphere(r: number = 1): Shape3 {
 export function cylinder(radius: number = 1, height = 2): Shape3 {
   return extrude(height, circle(radius));
 }
-const cross2d: GLNode = addFunc('float', 'vec2 v0, vec2 v1', 'return v0.x*v1.y - v0.y*v1.x;', []);
 
 export function rect(x: number = 2, y: number = x): Shape2 {
   const x1 = x / 2, y1 = y / 2;
@@ -35,6 +34,7 @@ export function rect(x: number = 2, y: number = x): Shape2 {
   return sp;
 }
 
+const cross2d: GLNode = addFunc('float', 'vec2 v0, vec2 v1', 'return v0.x*v1.y - v0.y*v1.x;', []);
 const poly2 = (points: Vec2[]): Shape2 => {
   const sp = (p: Vec2) => {
     const a = new Vector(p).minus(points[0]);
@@ -135,7 +135,7 @@ export function box(x: number = 2, y: number = x, z: number = y): Shape3 {
   }
 
   sp.gl = addFunc('float', 'vec3 p', [
-    `vec3 q = abs(p) - ${v3([x, y, x])}; `,
+    `vec3 q = abs(p) - ${v3([x1, y1, z1])}; `,
     `return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0); `
   ].join('\n'), []);
   return sp;
