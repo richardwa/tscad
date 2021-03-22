@@ -13,7 +13,8 @@
   "scripts": {
     "prebuild": "rimraf ./dist",
     "build": "tsc && parcel build ./src/viewer/viewer.html --out-dir ./dist/src/viewer",
-    "test-viewer": "parcel ./src/bin/viewer/viewer.html",
+    "postbuild": "cd .. && npm pack ./tscad && cd tscad",
+    "test-viewer": "parcel ./src/viewer/viewer.html",
     "viewer": "ts-node ./src/bin/viewer.ts",
     "test": "ts-node ./index.spec.ts",
     "ts": "ts-node"

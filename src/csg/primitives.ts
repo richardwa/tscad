@@ -17,6 +17,7 @@ export function sphere(r: number = 1): Shape3 {
 export function cylinder(radius: number = 1, height = 2): Shape3 {
   return extrude(height, circle(radius));
 }
+const cross2d: GLNode = addFunc('float', 'vec2 v0, vec2 v1', 'return v0.x*v1.y - v0.y*v1.x;', []);
 
 export function rect(x: number = 2, y: number = x): Shape2 {
   const x1 = x / 2, y1 = y / 2;
@@ -59,38 +60,39 @@ const poly2 = (points: Vec2[]): Shape2 => {
     return Math.sqrt(distance) * sign;
   }
   // from iq - https://www.shadertoy.com/view/WdSGRd
-  const poly = points.map(p => `vec2(${f(p[0]), f(p[1])})`).join(',');
+  const poly = points.map(p => `vec2(${f(p[0])}, ${f(p[1])})`).join(',');
+  const n = points.length;
   sp.gl = addFunc('float', 'vec2 p', [
-    `vec2[N] poly = vec2[N](${poly})`,
-    `vec2[N] e;`,
-    `vec2[N] v;`,
-    `vec2[N] pq;`,
+    `vec2[${n}] poly = vec2[${n}](${poly});`,
+    `vec2[${n}] e;`,
+    `vec2[${n}] v;`,
+    `vec2[${n}] pq;`,
     // data
-    `for( int i=0; i<N; i++) {`,
-    `    int i2= int(mod(float(i+1),float(N)));`, //i+1
+    `for( int i=0; i<${n}; i++) {`,
+    `    int i2= int(mod(float(i+1),float(${n})));`, //i+1
     `e[i] = poly[i2] - poly[i];`,
     `    v[i] = p - poly[i];`,
     `    pq[i] = v[i] - e[i]*clamp( dot(v[i],e[i])/dot(e[i],e[i]), 0.0, 1.0 );`,
     `}`,
     //distance
     `float d = dot(pq[0], pq[0]); `,
-    `for( int i=1; i<N; i++) {`,
+    `for( int i=1; i<${n}; i++) {`,
     `  d = min( d, dot(pq[i], pq[i]));`,
     `}`,
     //winding number
     // from http://geomalgorithms.com/a03-_inclusion.html
     `int wn =0; `,
-    `for( int i=0; i<N; i++) {`,
-    `    int i2= int(mod(float(i+1),float(N)));`,
+    `for( int i=0; i<${n}; i++) {`,
+    `    int i2= int(mod(float(i+1),float(${n})));`,
     `    bool cond1= 0. <= v[i].y;`,
     `    bool cond2= 0. > v[i2].y;`,
-    `    float val3= cross2d(e[i],v[i]);`, //isLeft
+    `    float val3= $1(e[i],v[i]);`, //isLeft
     `    wn+= cond1 && cond2 && val3>0. ? 1 : 0;`, // have  a valid up intersect
-    `    wn-= !cond1 && !cond2 && val3<0. ? 1 : 0; // have  a valid down intersect`,
+    `    wn-= !cond1 && !cond2 && val3<0. ? 1 : 0;`, // have  a valid down intersect
     `}`,
     `float s= wn == 0 ? 1. : -1.;`,
     `return sqrt(d) * s;`,
-  ].join('\n'), []);
+  ].join('\n'), [cross2d]);
   return sp;
 }
 

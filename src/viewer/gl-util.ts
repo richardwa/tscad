@@ -12,7 +12,7 @@ export type ShaderSrc = {
   funcs: string[]
 }
 
-export const fragmentShaderSrc = ({ entry, funcs }: ShaderSrc) => `
+export const fragmentShaderSrc = ({ entry, funcs }: ShaderSrc) => `#version 300 es
 precision highp float;
 
 uniform vec3 iResolution;
@@ -20,6 +20,8 @@ uniform vec3 cameraPos;
 uniform vec3 cameraDir;
 uniform vec3 cameraTop;
 uniform float zoom;
+
+out vec4 FragColor;
 
 #define MAX_STEPS 100
 #define MAX_DIST 1000.
@@ -87,14 +89,12 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ){
 }
 
 void main() {
-  mainImage(gl_FragColor, gl_FragCoord.xy);
+  mainImage(FragColor, gl_FragCoord.xy);
 }
-
 `;
 
-export const vertexShaderSrc = `
-	// vertex shader's code goes here
-  attribute vec2 position;
+export const vertexShaderSrc = `#version 300 es
+  in vec2 position;
   void main() {
     gl_Position = vec4(position, 0.0, 1.0);  
   } 
@@ -102,7 +102,7 @@ export const vertexShaderSrc = `
 
 export const setupWebGL = (canvas: HTMLCanvasElement, src: ShaderSrc) => {
 
-  const gl = canvas.getContext("webgl");
+  const gl = canvas.getContext("webgl2");
   gl.clearColor(0, 0, 0, 1);
   gl.clear(gl.COLOR_BUFFER_BIT);
 
@@ -113,7 +113,8 @@ export const setupWebGL = (canvas: HTMLCanvasElement, src: ShaderSrc) => {
 
   var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
   const fragmentSrc = fragmentShaderSrc(src);
-  console.log(fragmentSrc);
+  const fragmentSrcLines = fragmentSrc.split('\n').map((l, i) => `${i+1}| ${l}`).join('\n');
+  console.log(fragmentSrcLines);
   gl.shaderSource(fragmentShader, fragmentSrc);
   gl.compileShader(fragmentShader);
   console.log(gl.getShaderInfoLog(fragmentShader));
