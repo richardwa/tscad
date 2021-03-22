@@ -7,21 +7,21 @@ const ops: { [key in Ops]: (s1: Shape3, s2: Shape3) => Shape3 } = {
     const sp = (p: Vec3) => {
       return Math.min(s1(p), s2(p));
     };
-    sp.gl = addFunc('float', 'vec3 p', `return min($1(p),$2(p))`, [s1.gl, s2.gl]);
+    sp.gl = addFunc('float', 'vec3 p', `return min($1(p),$2(p));`, [s1.gl, s2.gl]);
     return sp;
   },
   diff: (s1: Shape3, s2: Shape3): Shape3 => {
     const sp = (p: Vec3) => {
       return Math.min(s1(p), -s2(p));
     };
-    sp.gl = addFunc('float', 'vec3 p', `return max($1(p),-$2(p))`, [s1.gl, s2.gl]);
+    sp.gl = addFunc('float', 'vec3 p', `return max($1(p),-$2(p));`, [s1.gl, s2.gl]);
     return sp;
   },
   intersect: (s1: Shape3, s2: Shape3): Shape3 => {
     const sp = (p: Vec3) => {
       return Math.max(s1(p), s2(p));
     };
-    sp.gl = addFunc('float', 'vec3 p', `return max($1(p),$2(p))`, [s1.gl, s2.gl]);
+    sp.gl = addFunc('float', 'vec3 p', `return max($1(p),$2(p));`, [s1.gl, s2.gl]);
     return sp;
   }
 };

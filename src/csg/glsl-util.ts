@@ -24,7 +24,7 @@ export const wrap = (fn: (p: Vec3) => number, type: string, args: string, def: s
 
 const walkSrc = (n: GLNode): string[] => [...n.deps.flatMap(walkSrc), n.src];
 export const getShaderSrc = (n: GLNode): ShaderSrc => {
-  const funcs = walkSrc(n);
+  const funcs = Array.from(new Set(walkSrc(n)));
   return {
     entry: n.name,
     funcs

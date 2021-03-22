@@ -97,8 +97,8 @@ const poly2 = (points: Vec2[]): Shape2 => {
 }
 
 /**
- * @param points specify number of corners for a regular polygon.  Can also use an abitrary array of points
- * @param radius not required when using list of points
+ * @param points number of corners for a regular polygon.  Can also use an abitrary array of points
+ * @param radius circle radius used to inscribe regular polygon, not required when using list of points
  */
 export function poly(points: number | Vec2[], radius?: number): Shape2 {
   const verts: Vec2[] = [];
