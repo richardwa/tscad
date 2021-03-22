@@ -66,11 +66,11 @@ export const sphericalToCartesion = ({ pos: [radius, theta, _phi], origin }: Sph
   const cameraPos: Vec3 = [
     xzRadius * Math.sin(theta) + origin[0],
     radius * Math.sin(phi) + origin[2],
-    -xzRadius * Math.cos(theta) + origin[1],
+    xzRadius * Math.cos(theta) + origin[1],
   ];
   const cameraDir = new Vector(origin).minus(cameraPos).toUnitVector().result as Vec3;
 
-  const up: Vec3 = [0, 1, 0];
+  const up: Vec3 = [0, 0, 1];
 
   const cameraTop = new Vector(cameraDir).cross(up).cross(cameraDir).toUnitVector().result;
 

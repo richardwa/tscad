@@ -23,11 +23,11 @@ export function extrude(height: number, s: Shape2): Shape3 {
 export function revolve(axis: Axis, offset: number, s: Shape2): Shape3 {
   switch (axis) {
     case 'x': return wrap((p) => s([new Vector([p[1], p[2]]).magnitude() - offset, p[0]]),
-      'float', 'vec3 p', `return $1(length(p.yz)-${f(offset)},p.x)`, [s.gl]);
+      'float', 'vec3 p', `return $1(vec2(length(p.yz)-${f(offset)},p.x));`, [s.gl]);
     case 'y': return wrap((p) => s([new Vector([p[0], p[2]]).magnitude() - offset, p[1]]),
-      'float', 'vec3 p', `return $1(length(p.xz)-${f(offset)},p.y)`, [s.gl]);
+      'float', 'vec3 p', `return $1(vec2(length(p.xz)-${f(offset)},p.y));`, [s.gl]);
     case 'z': return wrap((p) => s([new Vector([p[0], p[1]]).magnitude() - offset, p[2]]),
-      'float', 'vec3 p', `return $1(length(p.xy)-${f(offset)},p.z)`, [s.gl]);
+      'float', 'vec3 p', `return $1(vec2(length(p.xy)-${f(offset)},p.z));`, [s.gl]);
   }
 }
 

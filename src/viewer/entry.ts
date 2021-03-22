@@ -34,8 +34,8 @@ registerClickAndDrag(canvas, ({ current, startPos, end, leftClick }) => {
     const pos = orbitalState.pos;
     tmp.pos = [
       pos[0],
-      pos[1] + screenX * 5,
-      pos[2] + screenY * 5
+      pos[1] - screenY * 5,
+      pos[2] - screenX * 5
     ];
   } else {
     // pan

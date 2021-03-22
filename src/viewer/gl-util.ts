@@ -2,7 +2,7 @@ export const initialState = {
   iResolution: [600, 600, 1] as Vec3,
   cameraPos: [0, 0, -80] as Vec3,
   cameraDir: [0, 0, 1] as Vec3,
-  cameraTop: [0, 1, 0] as Vec3,
+  cameraTop: [1, 0, 0] as Vec3,
   zoom: 4
 };
 
@@ -72,9 +72,9 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ){
   uv = uv * 2. - 1.;
   vec3 col = vec3(0);
   vec3 ro = cameraPos;
-  vec3 r = cross(cameraDir,cameraTop);
+  vec3 right = cross(cameraDir,cameraTop);
 
-  vec3 rd = normalize(cameraDir*zoom+ uv.x*r + uv.y*cameraTop);
+  vec3 rd = normalize(cameraDir*zoom+ uv.x*right + uv.y*cameraTop);
 
   float d = RayMarch(ro, rd);
   if (d >= MAX_DIST){
