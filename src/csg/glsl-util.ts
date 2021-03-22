@@ -1,3 +1,4 @@
+import { getOriginalNode } from "typescript";
 import { ShaderSrc } from "../viewer/gl-util";
 
 // used for format floats suchs that 1 will show as 1.0
@@ -11,7 +12,8 @@ let count = 0;
 export const addFunc = (type: string, args: string, def: string, deps: GLNode[]): GLNode => {
   const name = `fn${count++}`;
   const body = deps.reduce((a, v, i) => a.replace(new RegExp('\\$' + (i + 1), 'g'), v.name), def);
-  const src = `${type} ${name}(${args}){\n${body}\n}`;
+  const formated = body.split('\n').map(s => '  ' + s).join('\n');
+  const src = `${type} ${name}(${args}){\n${formated}\n}`;
   return { name, src, deps };
 }
 

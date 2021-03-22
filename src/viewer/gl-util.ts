@@ -27,7 +27,7 @@ out vec4 FragColor;
 #define MAX_DIST 1000.
 #define SURF_DIST .01
 
-${funcs.join('\n')}
+${funcs.join('\n\n')}
 
 float GetDist(vec3 p) {
   return ${entry}(p);

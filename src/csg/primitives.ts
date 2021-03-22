@@ -63,14 +63,15 @@ const poly2 = (points: Vec2[]): Shape2 => {
   const poly = points.map(p => `vec2(${f(p[0])}, ${f(p[1])})`).join(',');
   const n = points.length;
   sp.gl = addFunc('float', 'vec2 p', [
+    `// polygon`,
     `vec2[${n}] poly = vec2[${n}](${poly});`,
     `vec2[${n}] e;`,
     `vec2[${n}] v;`,
     `vec2[${n}] pq;`,
     // data
     `for( int i=0; i<${n}; i++) {`,
-    `    int i2= int(mod(float(i+1),float(${n})));`, //i+1
-    `e[i] = poly[i2] - poly[i];`,
+    `    int i2 = int(mod(float(i+1),float(${n})));`, //i+1
+    `    e[i] = poly[i2] - poly[i];`,
     `    v[i] = p - poly[i];`,
     `    pq[i] = v[i] - e[i]*clamp( dot(v[i],e[i])/dot(e[i],e[i]), 0.0, 1.0 );`,
     `}`,
@@ -135,6 +136,7 @@ export function box(x: number = 2, y: number = x, z: number = y): Shape3 {
   }
 
   sp.gl = addFunc('float', 'vec3 p', [
+    `// box`,
     `vec3 q = abs(p) - ${v3([x1, y1, z1])}; `,
     `return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0); `
   ].join('\n'), []);
