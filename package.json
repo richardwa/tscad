@@ -16,6 +16,7 @@
     "postbuild": "cd .. && npm pack ./tscad && cd tscad",
     "test-viewer": "parcel ./src/viewer/viewer.html",
     "viewer": "ts-node ./src/bin/viewer.ts",
+    "render": "ts-node ./src/bin/render.ts",
     "test": "ts-node ./index.spec.ts",
     "ts": "ts-node"
   },

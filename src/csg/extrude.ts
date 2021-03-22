@@ -48,12 +48,7 @@ export function mirror(plane: Plane, s: Shape3): Shape3 {
 // tile in 1-Dimension
 const tile1D = (p: [times: number, width: number]) => {
   const [times, width] = p;
-  const upper = Math.floor(times / 2);
-  const lower = -Math.floor(times / 2) + ((times + 1) % 2);
-  const f = (x: number) => x - width * clamp(Math.round(x / width), lower, upper);
-  // offset even numbers to keep centered after tiling
-  const offset = width / 2;
-  return (times % 2 === 1) ? f : (x: number) => f(x + offset);
+  return (x: number) => x - width * clamp(Math.round(x / width), -times, times);
 }
 
 type TileParams = {
@@ -66,8 +61,8 @@ export function tile(o: TileParams, s: Shape3): Shape3 {
   const tileZ = o.z ? tile1D(o.z) : identity;
   return wrap((p) => s([tileX(p[0]), tileY(p[1]), tileZ(p[2])]),
     'float', 'vec3 p', [
-      `vec3 c = vec3(${f(o.x ? o.x[0] : 0)},${f(o.y ? o.y[0] : 0)},${f(o.z ? o.z[0] : 0)});`,
-      `vec3 m = vec3(${f(o.x ? o.x[1] : 0)},${f(o.y ? o.y[1] : 0)},${f(o.z ? o.z[1] : 0)});`,
+      `vec3 m = vec3(${f(o.x ? o.x[0] : 0)},${f(o.y ? o.y[0] : 0)},${f(o.z ? o.z[0] : 0)});`,
+      `vec3 c = vec3(${f(o.x ? o.x[1] : 0)},${f(o.y ? o.y[1] : 0)},${f(o.z ? o.z[1] : 0)});`,
       `vec3 q = p-c*clamp(round(p/c),-m,m);`,
       `return $1( q );`
     ].join('\n'), [s.gl]);
