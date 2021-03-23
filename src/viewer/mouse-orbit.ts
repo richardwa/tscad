@@ -1,5 +1,4 @@
 import { clamp, Vector } from "../util/math";
-import * as _ from 'lodash';
 
 export type ClickAndDragCB = {
   current: Vec2;

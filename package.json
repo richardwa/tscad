@@ -29,6 +29,7 @@
   "dependencies": {
     "@types/kd-tree-javascript": "^1.0.0",
     "@types/node": "^14.14.14",
+    "chokidar": "^2.1.8",
     "kd-tree-javascript": "^1.0.3",
     "open": "^8.0.2",
     "ts-node": "^9.1.1",

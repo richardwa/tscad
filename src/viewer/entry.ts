@@ -12,6 +12,18 @@ canvas.height = initialState.iResolution[1];
 document.body.append(canvas);
 canvas.oncontextmenu = function (e) { e.preventDefault(); e.stopPropagation(); }
 
+if (window.shaderSrc) {
+  setInterval(() => {
+    fetch('/hasChanges')
+      .then(response => response.json())
+      .then(data => {
+        if (data) {
+          document.location.reload();
+        }
+      });
+  }, 1000);
+}
+
 const shaderSrc: ShaderSrc = window.shaderSrc || getShaderSrc(main.gl);
 const setState = setupWebGL(canvas, shaderSrc);
 
