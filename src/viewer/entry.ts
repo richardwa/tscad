@@ -13,15 +13,19 @@ document.body.append(canvas);
 canvas.oncontextmenu = function (e) { e.preventDefault(); e.stopPropagation(); }
 
 if (window.shaderSrc) {
-  setInterval(() => {
-    fetch('/hasChanges')
-      .then(response => response.json())
-      .then(data => {
-        if (data) {
-          document.location.reload();
-        }
-      });
-  }, 1000);
+  const socket = new WebSocket("ws://" + window.location.host);
+  socket.onopen = function (e) {
+    socket.send("connection established");
+  };
+  socket.onmessage = (event) => {
+    console.log(`from server: ${event.data}`);
+    if (event.data === "reload") {
+      socket.close(1000);
+      setTimeout(() => {
+        window.location.reload();
+      },100);
+    }
+  };
 }
 
 const shaderSrc: ShaderSrc = window.shaderSrc || getShaderSrc(main.gl);
