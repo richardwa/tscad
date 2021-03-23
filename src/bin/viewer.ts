@@ -30,11 +30,15 @@ const requestListener: http.RequestListener = (req, res) => {
   const cwdFile = path.join(cwd, req.url);
   console.log(cwdFile);
   if (fs.existsSync(cwdFile)) {
+    for (const path in require.cache) {
+      if (path.endsWith('.js') || path.endsWith('.ts')) { // only clear *.js, not *.node
+        delete require.cache[path]
+      }
+    }
     import(cwdFile)
       .then(({ main }) => {
         const shaderSrc = getShaderSrc(main.gl);
         const script = `<script>window.shaderSrc = ${JSON.stringify(shaderSrc)};</script>`;
-        delete require.cache[require.resolve(cwdFile)];
         res.writeHead(200);
         res.end(homePage + script);
       }).catch((err) => {

@@ -28,7 +28,8 @@ export function rect(x: number = 2, y: number = x): Shape2 {
     return outside + inside;
   }
   sp.gl = addFunc('float', 'vec2 p', [
-    `vec2 d = abs(p)-vec2(${f(x), f(y)});`,
+    `// rect`,
+    `vec2 d = abs(p)-vec2(${f(x1)}, ${f(y1)});`,
     `return length(max(d,0.0))+min(max(d.x,d.y),0.0); `
   ].join('\n'), []);
   return sp;
