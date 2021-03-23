@@ -1,6 +1,6 @@
 
 import { diff, union } from '../csg/boolean';
-import { extrude, mirror, revolve, tile } from '../csg/extrude';
+import { extrude, mirror, revolve, tile, tileCircular } from '../csg/extrude';
 import { rotate, translate } from '../csg/manipulate';
 import { box, circle, cylinder, poly, rect, sphere } from '../csg/primitives';
 
@@ -16,9 +16,9 @@ const torus = revolve('z', 5, c);
 const buntCake = revolve('z', 15, p);
 
 // axis check
-const xCheck = translate([10,0,0], box(10));
-const yCheck = translate([0,10,0], torus);
-const zCheck = translate([0,0,10], cylinder(10));
-const axisCheck = union( xCheck, yCheck, zCheck); 
+const xCheck = translate([10, 0, 0], box(10));
+const yCheck = translate([0, 10, 0], torus);
+const zCheck = translate([0, 0, 10], cylinder(10));
+const axisCheck = union(xCheck, yCheck, zCheck);
 
-export const main =  union(sphere(10), extrude(10, rect(20,30)));//tile({x:[1,50]}, mirror('xy', translate([0, 0, 15], buntCake)));
+export const main = tileCircular({ n: 3 }, xCheck);

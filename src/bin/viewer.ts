@@ -100,8 +100,8 @@ wsServer.on('request', function (request) {
 
 const watchDir = process.argv.length > 2 ? path.join(cwd, process.argv[2]) : cwd;
 console.log('watching', watchDir);
-chokidar.watch(watchDir, { ignored: ['node_modules/', '.*/'] }).on('all', (event, path) => {
-  console.log(event, path);
+chokidar.watch(watchDir, { ignored: ['node_modules/', '.*/'] }).on('change', (path) => {
+  console.log(path);
   try {
     clients.forEach(c => c.sendUTF("reload", e => console.log(e)));
   } catch (e) {

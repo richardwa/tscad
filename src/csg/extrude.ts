@@ -1,5 +1,7 @@
 import { clamp, Vector } from "../util/math";
+import { union } from "./boolean";
 import { addFunc, f, wrap } from "./glsl-util";
+import { rotate } from "./manipulate";
 
 export function extrude(height: number, s: Shape2): Shape3 {
   const h = height / 2;
@@ -66,4 +68,19 @@ export function tile(o: TileParams, s: Shape3): Shape3 {
       `vec3 q = p-c*clamp(round(p/c),-m,m);`,
       `return $1( q );`
     ].join('\n'), [s.gl]);
+}
+
+type TileCircularParams = {
+  n: number,
+  degrees?: number
+}
+export const tileCircular = (o: TileCircularParams, s: Shape3): Shape3 => {
+  const arclength = o.degrees || 360;
+  const angle = arclength / o.n;
+  let tmp = s;
+  for (let i = 0; i < o.n; i++) {
+    const rot = rotate('z', angle, tmp);
+    tmp = union(s, rot);
+  }
+  return tmp;
 }
