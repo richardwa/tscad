@@ -2,6 +2,7 @@
 
 export * from './src/util/process-mesh';
 export * from './src/dual3/dual-march';
+export * from './src/slice/march-squares';
 export * from './src/csg/primitives';
 export * from './src/csg/boolean';
 export * from './src/csg/extrude';

@@ -1,17 +1,3 @@
-export const initialState = {
-  iResolution: [600, 600, 1] as Vec3,
-  cameraPos: [0, 0, -80] as Vec3,
-  cameraDir: [0, 0, 1] as Vec3,
-  cameraTop: [1, 0, 0] as Vec3,
-  zoom: 4
-};
-
-export type State = typeof initialState;
-export type ShaderSrc = {
-  entry: string,
-  funcs: string[]
-}
-
 export const fragmentShaderSrc = ({ entry, funcs }: ShaderSrc) => `#version 300 es
 precision highp float;
 
@@ -133,7 +119,19 @@ export const vertexShaderSrc = `#version 300 es
     gl_Position = vec4(position, 0.0, 1.0);  
   } 
 `;
+export const initialState = {
+  iResolution: [600, 600, 1] as Vec3,
+  cameraPos: [0, 0, -80] as Vec3,
+  cameraDir: [0, 0, 1] as Vec3,
+  cameraTop: [1, 0, 0] as Vec3,
+  zoom: 4
+};
 
+export type State = typeof initialState;
+export type ShaderSrc = {
+  entry: string,
+  funcs: string[]
+}
 export const setupWebGL = (canvas: HTMLCanvasElement, src: ShaderSrc) => {
 
   const gl = canvas.getContext("webgl2");
