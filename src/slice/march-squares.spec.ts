@@ -15,7 +15,8 @@ console.time('render');
 const faces = slice({
   layerHeight: .2,
   height: 30,
-  size: 2,
+  size: .2,
+  minSize: .1,
   shape,
 });
 console.timeEnd('render');

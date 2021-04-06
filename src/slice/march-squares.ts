@@ -11,7 +11,7 @@ const marchSquare = (s: Square, fn: Shape2): Line[] => {
   }
   const lines: Line[] = [];
   const zeros = edges.map(([a, b]) =>
-    interpolate(s[a], s[b], results[a], results[b]));
+    interpolate(s[a], s[b], results[a], results[b]));// 0.1, fn));
 
   if (zeros.length > 2) {
     // saddle case
@@ -77,8 +77,8 @@ const getSquares = (bounds: Bounds2, size: number, minSize: number, fn: Shape2):
     const results = square.map(fn) as OctArray<number>;
     const [p0, p1, p2, p3] = square;
     const maxLen = Math.max(
-      p1[0] - p0[0],
-      p2[1] - p0[1],
+      Math.abs(p1[0] - p0[0]),
+      Math.abs(p2[1] - p0[1]),
     );
 
     // Optimization check, if we are far away (wrt cube size) from the surface, no need to divide further
@@ -91,8 +91,8 @@ const getSquares = (bounds: Bounds2, size: number, minSize: number, fn: Shape2):
       return splitSquare(square).flatMap(_process);
     }
 
-    // adaptive cubes - continue split if too much error
-    if (maxLen > minSize) {
+    //adaptive cubes - continue split if too much error
+    if (false && maxLen > minSize) {
       const edge_mask = results.reduce(positiveNumReducer, 0);
       const edges = edgeTable[edge_mask];
       if (edges.length > 2) {
