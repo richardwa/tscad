@@ -40,11 +40,14 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ){
   float d2 = GetDist(GetPoint(fragCoord+vec2(0,1)));
   float d3 = GetDist(GetPoint(fragCoord+vec2(1,1)));
 
-  if (sign(d0) == sign(d1)  && sign(d0) == sign(d2) && sign(d0) == sign(d3)){
+  float hash = max(sign(d0),0.) + max(sign(d1),0.)*2. + max(sign(d2),0.)*4. + max(sign(d3),0.)*8.;
+
+  if (hash == 0. || hash == 15.) {
     fragColor = vec4(0.,0.,0.,0.0);
   }else{
     vec2 n = GetNormal(p);
-    fragColor = vec4(max(n.x,0.),max(-n.x,0.),max(n.y,0.),max(-n.y,0.));
+    n = n/2. + 0.5;
+    fragColor = vec4(n, hash/256., 1);
   }
   
 }
@@ -154,7 +157,7 @@ export const setupWebGL = (canvas: HTMLCanvasElement, src: ShaderSrc) => {
     var pixels = new Uint8Array(length * 4);
     gl.readPixels(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
     const arr32 = new Uint32Array(pixels.buffer);
-    const filtered: Array<{ pos: Vec3, n: Vec2 }> = [];
+    const filtered: Array<{ pos: Vec3, hash: number, n: Vec2 }> = [];
 
     const ratio = new Vector(state.upper).minus(state.lower).divide(state.iResolution).result;
     for (let i = 0; i < length; i++) {
@@ -165,9 +168,9 @@ export const setupWebGL = (canvas: HTMLCanvasElement, src: ShaderSrc) => {
         const pixelIndex = i * 4;
         filtered.push({
           pos: [x, y, z],
+          hash: pixels[pixelIndex + 2],
           n: [
-            pixels[pixelIndex] + pixels[pixelIndex + 1] * -1,
-            pixels[pixelIndex + 2] + pixels[pixelIndex + 3] * -1
+            pixels[pixelIndex] - 128, pixels[pixelIndex + 1] - 128
           ]
         })
       }

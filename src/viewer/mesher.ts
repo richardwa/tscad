@@ -32,12 +32,10 @@ const shaderSrc: ShaderSrc = window.shaderSrc || getShaderSrc(main.gl);
 const setState = setupWebGL(canvas, shaderSrc);
 console.log('initial state', JSON.stringify(initialState));
 
-const doLayer = (step: number) => {
-  const pixels = setState({ ...initialState, step });
+const steps = initialState.iResolution[2];
+for (let i = 0; i < steps; i++) {
+  const pixels = setState({ ...initialState, step: i });
   console.log(pixels);
-  if (step < 100) {
-    setTimeout(() => doLayer(step + 1), 1000);
-  }
 }
-doLayer(0);
+
 
