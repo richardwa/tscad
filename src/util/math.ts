@@ -14,6 +14,25 @@ export class Vector<T extends number[]>{
     this.result = a;
     return this;
   }
+
+  divide(v: T) {
+    const a = [] as T;
+    for (let i in this.result) {
+      a[i] = this.result[i] / v[i];
+    }
+    this.result = a;
+    return this;
+  }
+
+  times(v: T) {
+    const a = [] as T;
+    for (let i in this.result) {
+      a[i] = this.result[i] * v[i];
+    }
+    this.result = a;
+    return this;
+  }
+
   dot(v: T) {
     let sum = 0;
     for (let i in this.result) {

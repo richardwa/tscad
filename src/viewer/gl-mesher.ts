@@ -1,11 +1,12 @@
+import { Vector } from "../util/math";
+
 export const fragmentShaderSrc = ({ entry, funcs }: ShaderSrc) => `#version 300 es
 precision highp float;
 
 uniform vec3 iResolution;
-uniform vec3 cameraPos;
-uniform vec3 cameraDir;
-uniform vec3 cameraTop;
-uniform float zoom;
+uniform vec3 lower;
+uniform vec3 upper;
+uniform float step;
 
 out vec4 FragColor;
 
@@ -19,92 +20,32 @@ float GetDist(vec3 p) {
   return ${entry}(p);
 }
 
-float RayMarch(vec3 ro, vec3 rd) {
-	float dO=0.;
-    
-  for(int i=0; i<MAX_STEPS; i++) {
-    vec3 p = ro + rd*dO;
-    float dS = GetDist(p);
-    dO += dS;
-    if(dO>MAX_DIST || dS<SURF_DIST) break;
-  }
-    
-  return dO;
+vec3 GetPoint(vec2 fragCoord){
+  return lower + vec3(fragCoord,step)/iResolution * (upper - lower);
 }
 
-vec3 GetNormal(vec3 p) {
+vec2 GetNormal(vec3 p) {
 	float d = GetDist(p);
-  vec2 e = vec2(.01, 0);
-  
-  vec3 n = d - vec3(
-    GetDist(p-e.xyy),
-    GetDist(p-e.yxy),
-    GetDist(p-e.yyx));
-    
+  vec2 n = d - vec2(
+    GetDist(p-vec3(.01, 0, 0)),
+    GetDist(p-vec3(0, .01, 0))
+  );
   return normalize(n);
 }
 
-float GetLight(vec3 p) {
-  vec3 lightPos = cameraPos;
-  lightPos.xz += vec2(0,1)*2.;
-  vec3 l = normalize(lightPos-p);
-  vec3 n = GetNormal(p);
-  float dif = dot(n, l);
-  return dif;
-}
-
-vec4 getAxisPixel(vec3 rd, vec3 ro){
-  float threshold = 0.002*length(cameraPos)/zoom;
-
-  vec3 u = vec3(1.,0.,0.);
-  vec3 c = cross(u, rd);
-  float d = abs(dot(ro,c))/length(c);
-  if (d < threshold){
-    return vec4(u,length(cross(ro,u)));
-  }
-
-  u = vec3(0.,1.,0.);
-  c = cross(u, rd);
-  d = abs(dot(ro,c))/length(c);
-  if (d < threshold){
-    return vec4(u,length(cross(ro,u)));
-  }
-
-  u = vec3(0.,0.,1.);
-  c = cross(u, rd);
-  d = abs(dot(ro,c))/length(c);
-  if (d < threshold){
-    return vec4(u,length(cross(ro,u)));
-  }
-  return  vec4(0.,0.,0.,-1.);
-}
-
-
 void mainImage( out vec4 fragColor, in vec2 fragCoord ){
-  vec2 uv = fragCoord/iResolution.xy;
-  uv = uv * 2. - 1.;
-  vec3 col = vec3(0);
-  vec3 ro = cameraPos;
-  vec3 right = cross(cameraDir,cameraTop);
+  vec3 p = GetPoint(fragCoord);
+  float d0 = GetDist(p);
+  float d1 = GetDist(GetPoint(fragCoord+vec2(1,0)));
+  float d2 = GetDist(GetPoint(fragCoord+vec2(0,1)));
+  float d3 = GetDist(GetPoint(fragCoord+vec2(1,1)));
 
-  vec3 rd = normalize(cameraDir*zoom+ uv.x*right + uv.y*cameraTop);
-  vec4 axisPixel = getAxisPixel(rd,ro);
-  
-  float d = RayMarch(ro, rd);
-  if (d >= MAX_DIST){
-    if (axisPixel[3] > 0.){
-      fragColor= vec4(axisPixel.xyz,1.);
-    }else{
-      fragColor= vec4(.25,.25,.50,1.);
-    }
-    return;
+  if (sign(d0) == sign(d1)  && sign(d0) == sign(d2) && sign(d0) == sign(d3)){
+    fragColor = vec4(0.,0.,0.,0.0);
+  }else{
+    vec2 n = GetNormal(p);
+    fragColor = vec4(max(n.x,0.),max(-n.x,0.),max(n.y,0.),max(-n.y,0.));
   }
-  
-  vec3 p = ro + rd * d; 
-  float dif = GetLight(p);
-  col += vec3(dif);
-  col += axisPixel.xyz;
-  fragColor = vec4(col,1.0);
   
 }
 
@@ -120,11 +61,10 @@ export const vertexShaderSrc = `#version 300 es
   } 
 `;
 export const initialState = {
-  iResolution: [600, 600, 1] as Vec3,
-  cameraPos: [0, 0, -80] as Vec3,
-  cameraDir: [0, 0, 1] as Vec3,
-  cameraTop: [1, 0, 0] as Vec3,
-  zoom: 4
+  iResolution: [600, 600, 100] as Vec3,
+  lower: [-30, -30, -10],
+  upper: [30, 30, 20],
+  step: 0
 };
 
 export type State = typeof initialState;
@@ -210,9 +150,30 @@ export const setupWebGL = (canvas: HTMLCanvasElement, src: ShaderSrc) => {
     // draw
     gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-    var pixels = new Uint8Array(gl.drawingBufferWidth * gl.drawingBufferHeight * 4);
+    const length = gl.drawingBufferWidth * gl.drawingBufferHeight;
+    var pixels = new Uint8Array(length * 4);
     gl.readPixels(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-    console.log(pixels);
+    const arr32 = new Uint32Array(pixels.buffer);
+    const filtered: Array<{ pos: Vec3, n: Vec2 }> = [];
+
+    const ratio = new Vector(state.upper).minus(state.lower).divide(state.iResolution).result;
+    for (let i = 0; i < length; i++) {
+      if (arr32[i] > 0) {
+        const x = state.lower[0] + ratio[0] * (i % gl.drawingBufferWidth);
+        const y = state.lower[1] + ratio[1] * Math.floor(i / gl.drawingBufferWidth);
+        const z = state.lower[2] + ratio[2] * state.step;
+        const pixelIndex = i * 4;
+        filtered.push({
+          pos: [x, y, z],
+          n: [
+            pixels[pixelIndex] + pixels[pixelIndex + 1] * -1,
+            pixels[pixelIndex + 2] + pixels[pixelIndex + 3] * -1
+          ]
+        })
+      }
+
+    }
+    return filtered;
   }
   setState(initialState);
   return setState;

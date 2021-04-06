@@ -21,4 +21,4 @@ const yCheck = translate([0, 10, 0], torus);
 const zCheck = translate([0, 0, 10], cylinder(10));
 const axisCheck = union(xCheck, yCheck, zCheck);
 
-export const main = tileCircular({ n: 3 }, xCheck);
+export const main = buntCake;
