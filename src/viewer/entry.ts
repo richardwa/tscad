@@ -1,8 +1,9 @@
-import { Vector } from '../util/math';
+
 import { initialState, setupWebGL, ShaderSrc, State } from './gl-util';
 import { registerClickAndDrag, registerScrollWheel, SphericalSystem, sphericalToCartesion } from './mouse-orbit';
 import { main } from './sample';
 import { getShaderSrc } from '../csg/glsl-util';
+import { V3 } from '../util/math';
 declare global {
   interface Window { shaderSrc?: ShaderSrc; }
 }
@@ -23,7 +24,7 @@ if (window.shaderSrc) {
       socket.close(1000);
       setTimeout(() => {
         window.location.reload();
-      },100);
+      }, 100);
     }
   };
 }
@@ -56,10 +57,10 @@ registerClickAndDrag(canvas, ({ current, startPos, end, leftClick }) => {
   } else {
     // pan
     const origin = orbitalState.origin;
-    const deltaY = new Vector(state.cameraTop).scale(screenY).result;
-    const deltaX = new Vector(state.cameraTop).cross(state.cameraDir).scale(screenX).result;
-    const delta = new Vector(deltaX).add(deltaY).scale(orbitalState.pos[0] / 10).result;
-    tmp.origin = new Vector(origin).add(delta).result;
+    const deltaY = V3.scale(screenY, state.cameraTop);
+    const deltaX = V3.scale(screenX, V3.cross(state.cameraTop, state.cameraDir));
+    const delta = V3.scale(orbitalState.pos[0] / 10, V3.add(deltaX, deltaY));
+    tmp.origin = V3.add(origin, delta);
   }
   const _state = { ...state, ...sphericalToCartesion(tmp) };
   if (end) {

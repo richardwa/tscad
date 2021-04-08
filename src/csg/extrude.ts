@@ -1,4 +1,4 @@
-import { clamp, Vector } from "../util/math";
+import { clamp, V2 } from "../util/math";
 import { union } from "./boolean";
 import { addFunc, f, wrap } from "./glsl-util";
 import { rotate } from "./manipulate";
@@ -9,7 +9,7 @@ export function extrude(height: number, s: Shape2): Shape3 {
     const d = s([p[0], p[1]]);
     const w = Math.abs(p[2]) - h;
 
-    const outside = new Vector([Math.max(d, 0), Math.max(w, 0)]).magnitude();
+    const outside = V2.length([Math.max(d, 0), Math.max(w, 0)]);
     const inside = Math.min(Math.max(d, w), 0);
     return outside + inside;
   }
@@ -24,11 +24,11 @@ export function extrude(height: number, s: Shape2): Shape3 {
 
 export function revolve(axis: Axis, offset: number, s: Shape2): Shape3 {
   switch (axis) {
-    case 'x': return wrap((p) => s([new Vector([p[1], p[2]]).magnitude() - offset, p[0]]),
+    case 'x': return wrap((p) => s([V2.length([p[1], p[2]]) - offset, p[0]]),
       'float', 'vec3 p', `return $1(vec2(length(p.yz)-${f(offset)},p.x));`, [s.gl]);
-    case 'y': return wrap((p) => s([new Vector([p[0], p[2]]).magnitude() - offset, p[1]]),
+    case 'y': return wrap((p) => s([V2.length([p[0], p[2]]) - offset, p[1]]),
       'float', 'vec3 p', `return $1(vec2(length(p.xz)-${f(offset)},p.y));`, [s.gl]);
-    case 'z': return wrap((p) => s([new Vector([p[0], p[1]]).magnitude() - offset, p[2]]),
+    case 'z': return wrap((p) => s([V2.length([p[0], p[1]]) - offset, p[2]]),
       'float', 'vec3 p', `return $1(vec2(length(p.xy)-${f(offset)},p.z));`, [s.gl]);
   }
 }

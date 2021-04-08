@@ -1,99 +1,48 @@
 
 // some basic vector maths
-export class Vector<T extends number[]>{
-  result: T;
-  constructor(v: T) {
-    this.result = v;
-  }
 
-  minus(v: T) {
-    const a = [] as T;
-    for (let i in this.result) {
-      a[i] = this.result[i] - v[i];
-    }
-    this.result = a;
-    return this;
-  }
+type Vec3 = [number, number, number];
+type Vec2 = [number, number];
 
-  divide(v: T) {
-    const a = [] as T;
-    for (let i in this.result) {
-      a[i] = this.result[i] / v[i];
-    }
-    this.result = a;
-    return this;
-  }
-
-  times(v: T) {
-    const a = [] as T;
-    for (let i in this.result) {
-      a[i] = this.result[i] * v[i];
-    }
-    this.result = a;
-    return this;
-  }
-
-  dot(v: T) {
-    let sum = 0;
-    for (let i in this.result) {
-      sum += this.result[i] * v[i];
-    }
-    return sum;
-  }
-
-  add(v: T) {
-    const a = [] as T;
-    for (let i in this.result) {
-      a[i] = this.result[i] + v[i];
-    }
-    this.result = a;
-    return this;
-  }
-  scale(s: number) {
-    const a = [] as T;
-    for (let i in this.result) {
-      a[i] = this.result[i] * s;
-    }
-    this.result = a;
-    return this;
-  }
-
-  cross2d(v: Vec2) {
-    return this.result[0] * v[1] - this.result[1] * v[0];
-  }
-
-  cross(v: Vec3) {
-    const a = [0, 0, 0] as T;
-    a[0] = this.result[1] * v[2] - this.result[2] * v[1];
-    a[1] = this.result[2] * v[0] - this.result[0] * v[2];
-    a[2] = this.result[0] * v[1] - this.result[1] * v[0];
-    this.result = a;
-    return this;
-  }
-
-  toUnitVector() {
-    const mag = this.magnitude();
-    return this.scale(1 / mag);
-  }
-
-  magnitude() {
-    let sum = 0;
-    for (let v of this.result) {
-      sum += v * v;
-    }
-    return Math.sqrt(sum);
-  }
+export const V3 = {
+  add: ([a, b, c]: Vec3, [x, y, z]: Vec3) => [a + x, b + y, c + z] as Vec3,
+  minus: ([a, b, c]: Vec3, [x, y, z]: Vec3) => [a - x, b - y, c - z] as Vec3,
+  times: ([a, b, c]: Vec3, [x, y, z]: Vec3) => [a * x, b * y, c * z] as Vec3,
+  divide: ([a, b, c]: Vec3, [x, y, z]: Vec3) => [a / x, b / y, c / z] as Vec3,
+  dot: ([a, b, c]: Vec3, [x, y, z]: Vec3) => a * x + b * y + c * z,
+  scale: (a: number, [x, y, z]: Vec3) => [a * x, a * y, a * z] as Vec3,
+  length: ([a, b, c]: Vec3) => Math.sqrt(a * a + b * b + c * c),
+  normalize: (a: Vec3) => V3.scale(1 / V3.length(a), a),
+  cross: ([a, b, c]: Vec3, [x, y, z]: Vec3) => [
+    b * z - c * y,
+    c * x - a * z,
+    a * y - b * x
+  ] as Vec3
 }
 
-export function getSurfaceNormal(p: Vec3, fn: Shape3): Vector<Vec3> {
+
+export const V2 = {
+  add: ([a, b]: Vec2, [x, y]: Vec2) => [a + x, b + y] as Vec2,
+  minus: ([a, b]: Vec2, [x, y]: Vec2) => [a - x, b - y] as Vec2,
+  times: ([a, b]: Vec2, [x, y]: Vec2) => [a * x, b * y] as Vec2,
+  divide: ([a, b]: Vec2, [x, y]: Vec2) => [a / x, b / y] as Vec2,
+  dot: ([a, b]: Vec2, [x, y]: Vec2) => a * x + b * y,
+  scale: (a: number, [x, y]: Vec2) => [a * x, a * y] as Vec2,
+  length: ([a, b]: Vec2) => Math.sqrt(a * a + b * b),
+  normalize: (a: Vec2) => V2.scale(1 / V2.length(a), a),
+  cross: ([a, b]: Vec2, [x, y]: Vec2) => a * y - b * x
+}
+
+
+export function getSurfaceNormal(p: Vec3, fn: Shape3): Vec3 {
   const h = 0.001
   const val = fn(p);
   const [x, y, z] = p;
-  return new Vector([
+  return V3.normalize([
     fn([x + h, y, z]) - val,
     fn([x, y + h, z]) - val,
     fn([x, y, z + h]) - val
-  ] as Vec3).toUnitVector();
+  ] as Vec3);
 }
 
 // return x between a and b
@@ -145,8 +94,12 @@ export const getCentroid = (t: Vec3[]) => {
   return sum.map(p => p / 3) as Vec3;
 }
 
-export const getCenter = <T extends Vec2 | Vec3>(p1: T, p2: T) =>
-  new Vector(p1).add(p2).scale(1 / 2).result as T;
+
+export const getCenter = (p1: Vec3, p2: Vec3): Vec3 =>
+  V3.scale(1 / 2, V3.add(p1, p2 as Vec3));
+export const getCenter2 = (p1: Vec2, p2: Vec2): Vec2 =>
+  V2.scale(1 / 2, V2.add(p1, p2 as Vec2));
+
 
 export const splitCube = (cube: Cube): Cube[] => {
   const center = getCenter(cube[0], cube[7]) as Vec3;
@@ -161,7 +114,7 @@ export const splitCube = (cube: Cube): Cube[] => {
   return [c0, c1, c2, c3, c4, c5, c6, c7];
 }
 export const splitSquare = (square: Square): Square[] => {
-  const center = getCenter(square[0], square[3]) as Vec2;
+  const center = getCenter2(square[0], square[3]) as Vec2;
   const c0 = boundsToCorners2([square[0], center]);
   const c3 = boundsToCorners2([center, square[3]]);
   const c1 = boundsToCorners2([c0[1], c3[1]]);
@@ -169,15 +122,23 @@ export const splitSquare = (square: Square): Square[] => {
   return [c0, c1, c2, c3];
 }
 
-export const interpolate = <T extends Vec2 | Vec3>(p1: T, p2: T, e1: number, e2: number): T => {
-  const diff = new Vector(p2).minus(p1);
+export const interpolate = (p1: Vec3, p2: Vec3, e1: number, e2: number): Vec3 => {
+  const diff = V3.minus(p2 as Vec3, p1);
   const abs_e1 = Math.abs(e1);
   const abs_e2 = Math.abs(e2);
-  return diff.scale(abs_e1 / (abs_e1 + abs_e2)).add(p1).result;
+  return V3.add(V3.scale(abs_e1 / (abs_e1 + abs_e2), diff), p1);
 }
 
-export const findZeroRecursive = <T extends Vec2 | Vec3>(p1: T, p2: T, e1: number, e2: number, threshold: number, fn: (t: T) => number): T => {
-  const center = getCenter(p1, p2);
+export const interpolate2 = (p1: Vec2, p2: Vec2, e1: number, e2: number): Vec2 => {
+  const diff = V2.minus(p2, p1);
+  const abs_e1 = Math.abs(e1);
+  const abs_e2 = Math.abs(e2);
+  return V2.add(V2.scale(abs_e1 / (abs_e1 + abs_e2), diff), p1);
+}
+
+
+export const findZeroRecursive = (p1: Vec3, p2: Vec3, e1: number, e2: number, threshold: number, fn: (t: Vec3) => number): Vec3 => {
+  const center = getCenter(p1, p2 as Vec3);
   const val = fn(center);
   if (Math.abs(val) < threshold) {
     return center;
@@ -185,5 +146,17 @@ export const findZeroRecursive = <T extends Vec2 | Vec3>(p1: T, p2: T, e1: numbe
     return findZeroRecursive(p1, center, e1, val, threshold, fn);
   } else {
     return findZeroRecursive(center, p2, val, e2, threshold, fn);
+  }
+}
+
+export const findZeroRecursive2 = (p1: Vec2, p2: Vec2, e1: number, e2: number, threshold: number, fn: (t: Vec2) => number): Vec2 => {
+  const center = getCenter2(p1, p2);
+  const val = fn(center);
+  if (Math.abs(val) < threshold) {
+    return center;
+  } else if (Math.sign(e1) !== Math.sign(val)) {
+    return findZeroRecursive2(p1, center, e1, val, threshold, fn);
+  } else {
+    return findZeroRecursive2(center, p2, val, e2, threshold, fn);
   }
 }

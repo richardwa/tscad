@@ -1,15 +1,15 @@
-import { clamp, Vector } from '../util/math';
+import { clamp, V2, V3 } from '../util/math';
 import { extrude } from './extrude';
 import { addFunc, f, v3 } from './glsl-util';
 
 export function circle(r: number = 1): Shape2 {
-  const sp = (p: Vec2) => new Vector(p).magnitude() - r;
+  const sp = (p: Vec2) => V2.length(p) - r;
   sp.gl = addFunc('float', 'vec2 p', `return length(p)-${f(r)};`, []);
   return sp;
 }
 
 export function sphere(r: number = 1): Shape3 {
-  const sp = (p: Vec3) => new Vector(p).magnitude() - r;
+  const sp = (p: Vec3) => V3.length(p) - r;
   sp.gl = addFunc('float', 'vec3 p', `return length(p)-${f(r)};`, []);
   return sp;
 }
@@ -23,7 +23,7 @@ export function rect(x: number = 2, y: number = x): Shape2 {
   const sp = ([x, y]: Vec2) => {
     const i = Math.max(Math.abs(x) - x1, 0);
     const j = Math.max(Math.abs(y) - y1, 0);
-    const outside = new Vector([Math.max(i, 0), Math.max(j, 0)]).magnitude();
+    const outside = V2.length([Math.max(i, 0), Math.max(j, 0)]);
     const inside = Math.min(Math.max(i, j), 0);
     return outside + inside;
   }
@@ -38,21 +38,21 @@ export function rect(x: number = 2, y: number = x): Shape2 {
 const cross2d: GLNode = addFunc('float', 'vec2 v0, vec2 v1', 'return v0.x*v1.y - v0.y*v1.x;', []);
 const poly2 = (points: Vec2[]): Shape2 => {
   const sp = (p: Vec2) => {
-    const a = new Vector(p).minus(points[0]);
-    let distance = a.dot(a.result);
+    const a = V2.minus(p, points[0]);
+    let distance = V2.dot(a, a);
     let sign = 1;
     const len = points.length
     for (let i = 0; i < len; i++) {
       const i2 = (i + 1) % len;
-      const e = new Vector(points[i2]).minus(points[i]).result;
-      const v = new Vector(p).minus(points[i]).result;
-      const pq = new Vector(v).minus(new Vector(e).scale(clamp(
-        new Vector(v).dot(e) / new Vector(e).dot(e), 0, 1)).result);
-      distance = Math.min(distance, pq.dot(pq.result));
+      const e = V2.minus(points[i2], points[i]);
+      const v = V2.minus(p, points[i]);
+      const pq = V2.minus(v, V2.scale(clamp(
+        V2.dot(v, e) / V2.dot(e, e), 0, 1), e));
+      distance = Math.min(distance, V2.dot(pq, pq));
 
       //winding number
-      const v2 = new Vector(p).minus(points[i2]).result;
-      const val3 = new Vector(e).cross2d(v);
+      const v2 = V2.minus(p, points[i2]);
+      const val3 = V2.cross(e, v);
       const cond = [v[1] >= 0 ? 1 : 0, v2[1] < 0 ? 1 : 0, val3 > 0 ? 1 : 0];
       if (Math.max(...cond) === Math.min(...cond)) {
         sign *= -1;
@@ -131,7 +131,7 @@ export function box(x: number = 2, y: number = x, z: number = y): Shape3 {
     const i = Math.abs(x) - x1;
     const j = Math.abs(y) - y1;
     const k = Math.abs(z) - z1;
-    const outside = new Vector([Math.max(i, 0), Math.max(j, 0), Math.max(k, 0)]).magnitude();
+    const outside = V3.length([Math.max(i, 0), Math.max(j, 0), Math.max(k, 0)]);
     const inside = Math.min(Math.max(i, j, k), 0);
     return outside + inside;
   }

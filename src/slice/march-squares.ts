@@ -1,4 +1,4 @@
-import { boundsToCorners2, getCenter, positiveNumReducer, interpolate, splitSquare, findZeroRecursive } from '../util/math';
+import { boundsToCorners2, getCenter, positiveNumReducer, interpolate, splitSquare, findZeroRecursive, interpolate2, getCenter2 } from '../util/math';
 import { SpatialIndex } from '../util/spatial-index';
 import { edgeTable } from './marching-squares-tables';
 
@@ -11,7 +11,7 @@ const marchSquare = (s: Square, fn: Shape2): Line[] => {
   }
   const lines: Line[] = [];
   const zeros = edges.map(([a, b]) =>
-    interpolate(s[a], s[b], results[a], results[b]));// 0.1, fn));
+    interpolate2(s[a], s[b], results[a], results[b]));// 0.1, fn));
 
   if (zeros.length > 2) {
     // saddle case
@@ -47,7 +47,7 @@ export const getDualSquares = (squares: Square[]): Square[] => {
   const spatialIndex = new SpatialIndex(Array.from(points.values()));
 
   squares.forEach(square => {
-    const center = getCenter(square[0], square[3]);
+    const center = getCenter2(square[0], square[3]);
     const size = Math.abs(square[0][0] - square[1][0]);
     spatialIndex.queryCube(center, size).forEach(p => {
       const matches = square.map(c => match(c, p));
@@ -101,7 +101,7 @@ const getSquares = (bounds: Bounds2, size: number, minSize: number, fn: Shape2):
       }
       if (edges.length !== 0) {
         const lines: Line[] = marchSquare(square, fn);
-        const error = Math.max(...lines.map(l => getCenter(...l)).map(fn));
+        const error = Math.max(...lines.map(l => getCenter2(...l)).map(fn));
         if (error > minSize) {
           return splitSquare(square).flatMap(_process);
         }

@@ -1,5 +1,5 @@
 import { edges, edgeTable, triTable } from './marching-cubes-tables';
-import { boundsToCorners, getCenter, getCentroid, positiveNumReducer, interpolate, splitCube, Vector } from '../util/math';
+import { boundsToCorners, getCenter, getCentroid, positiveNumReducer, interpolate, splitCube, V3 } from '../util/math';
 import { SpatialIndex } from '../util/spatial-index';
 
 const getIntersections = (cube: OctArray<Vec3>, results: OctArray<number>, edge_mask: number) => {
@@ -41,7 +41,7 @@ const march = (cube: Cube, fn: Shape3): Triangle[] => {
 const getCubes = (bounds: Bounds, size: number, minSize: number, fn: Shape3): Cube[] => {
   const _process = (cube: Cube): Cube[] => {
     const results = cube.map(fn) as OctArray<number>;
-    const maxLen = Math.max(...new Vector(cube[7]).minus(cube[0]).result);
+    const maxLen = Math.max(...V3.minus(cube[7], cube[0]));
 
     // Optimization check, if we are far away (wrt cube size) from the surface, no need to divide further
     if (Math.min(...results.map(Math.abs)) > maxLen) {

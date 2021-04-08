@@ -1,4 +1,4 @@
-import { clamp, Vector } from "../util/math";
+import { clamp, V3 } from "../util/math";
 
 export type ClickAndDragCB = {
   current: Vec2;
@@ -67,11 +67,11 @@ export const sphericalToCartesion = ({ pos: [radius, theta, _phi], origin }: Sph
     radius * Math.sin(phi) + origin[2],
     xzRadius * Math.cos(theta) + origin[1],
   ];
-  const cameraDir = new Vector(origin).minus(cameraPos).toUnitVector().result as Vec3;
+  const cameraDir = V3.normalize(V3.minus(origin, cameraPos));
 
   const up: Vec3 = [0, 0, 1];
 
-  const cameraTop = new Vector(cameraDir).cross(up).cross(cameraDir).toUnitVector().result;
+  const cameraTop = V3.normalize(V3.cross(V3.cross(cameraDir, up), cameraDir));
 
   return {
     cameraPos,

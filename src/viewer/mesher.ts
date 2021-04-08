@@ -1,6 +1,4 @@
-import { Vector } from '../util/math';
 import { initialState, setupWebGL, ShaderSrc, State } from './gl-mesher';
-import { registerClickAndDrag, registerScrollWheel, SphericalSystem, sphericalToCartesion } from './mouse-orbit';
 import { main } from './sample';
 import { getShaderSrc } from '../csg/glsl-util';
 declare global {

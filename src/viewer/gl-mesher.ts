@@ -1,4 +1,4 @@
-import { Vector } from "../util/math";
+import { V3 } from "../util/math";
 
 export const fragmentShaderSrc = ({ entry, funcs }: ShaderSrc) => `#version 300 es
 precision highp float;
@@ -65,8 +65,8 @@ export const vertexShaderSrc = `#version 300 es
 `;
 export const initialState = {
   iResolution: [600, 600, 100] as Vec3,
-  lower: [-30, -30, -10],
-  upper: [30, 30, 20],
+  lower: [-30, -30, -10] as Vec3,
+  upper: [30, 30, 20] as Vec3,
   step: 0
 };
 
@@ -159,7 +159,7 @@ export const setupWebGL = (canvas: HTMLCanvasElement, src: ShaderSrc) => {
     const arr32 = new Uint32Array(pixels.buffer);
     const filtered: Array<{ pos: Vec3, hash: number, n: Vec2 }> = [];
 
-    const ratio = new Vector(state.upper).minus(state.lower).divide(state.iResolution).result;
+    const ratio = V3.divide(V3.minus(state.upper, state.lower), state.iResolution);
     for (let i = 0; i < length; i++) {
       if (arr32[i] > 0) {
         const x = state.lower[0] + ratio[0] * (i % gl.drawingBufferWidth);

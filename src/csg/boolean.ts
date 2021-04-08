@@ -1,4 +1,4 @@
-import { clamp, mix, Vector } from "../util/math";
+import { clamp, mix } from "../util/math";
 import { addFunc, f } from "./glsl-util";
 
 type Ops = 'union' | 'diff' | 'intersect';
