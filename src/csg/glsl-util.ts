@@ -1,4 +1,3 @@
-import { getOriginalNode } from "typescript";
 import { ShaderSrc } from "../viewer/gl-util";
 
 // used for format floats suchs that 1 will show as 1.0
