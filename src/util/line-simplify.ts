@@ -14,7 +14,7 @@ export class LineSimplify<N, K> {
   keyFn: (v: N) => K;
   constructor(keyFn: (v: N) => K) {
     this.keyFn = keyFn;
-    this.threshold = 0.5;
+    this.threshold = 0.8;
   }
 
   clear() {
@@ -23,6 +23,15 @@ export class LineSimplify<N, K> {
 
   addSegment(s: Segment<N>) {
     this.segments.set(this.keyFn(s.node), s);
+  }
+
+  log(s: Segment<N>) {
+    console.log(JSON.stringify({
+      node: this.keyFn(s.node),
+      next: this.keyFn(s.next),
+      n: s.normal.map(o => Math.abs(o) < .05 ? 0 : Math.sign(o)).join(),
+      hash: s.hash,
+    }));
   }
 
   /**
@@ -40,14 +49,7 @@ export class LineSimplify<N, K> {
       while (!visited.has(key)) {
         visited.add(key);
         cycle.push(head);
-
-        console.log(JSON.stringify({
-          node: this.keyFn(head.node),
-          next: this.keyFn(head.next),
-          hash: head.hash,
-          n: head.normal.map(o => Math.abs(o) < .02 ? 0 : Math.sign(o)).join()
-        }));
-
+        //this.log(head);
         key = this.keyFn(head.next);
         head = this.segments.get(key);
       }
@@ -57,25 +59,22 @@ export class LineSimplify<N, K> {
   }
 
   similar(s1: Segment<N>, s2: Segment<N>) {
-    return V2.dot(s1.normal, s2.normal) > (1 - this.threshold);
+    return V2.dot(s1.normal, s2.normal) > this.threshold;
   }
   combine(s1: Segment<N>, s2: Segment<N>): Segment<N> {
     return {
-      node: s1.node,
       length: s1.length + s2.length,
+      node: s1.node,
+      next: s2.next,
       normal: V2.normalize(V2.add(
         V2.scale(s1.length, s1.normal),
         V2.scale(s2.length, s2.normal)
-      )),
-      next: s2.next
+      ))
     };
   }
 
   process(): Segment<N>[] {
     const cycles = this.getCycles();
-    console.log('cycles', cycles.length);
-    console.log('each cycles', cycles.map(c => c.length));
-
     return cycles.flatMap(cycle => {
       const reduced: Segment<N>[] = [];
       let prev;
@@ -91,9 +90,10 @@ export class LineSimplify<N, K> {
       }
       // last one
       if (this.similar(prev, cycle[0])) {
-        prev = this.combine(prev, cycle[0]);
+        cycle[0] = this.combine(prev, cycle[0]);
+      } else {
+        reduced.push(prev);
       }
-      reduced.push(prev);
       return reduced
     });
   }

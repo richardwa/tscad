@@ -64,10 +64,10 @@ export const vertexShaderSrc = `#version 300 es
   } 
 `;
 export const initialState = {
-  iResolution: [20, 20, 20] as Vec3,
+  iResolution: [100, 100, 100] as Vec3,
   lower: [-20, -20, -20] as Vec3,
   upper: [20, 20, 20] as Vec3,
-  step: 0
+  step: 50
 };
 
 export type State = typeof initialState;

@@ -39,10 +39,9 @@ const simplify = new LineSimplify((v: Vec2) => v[0] + v[1] * width);
 
 // @ts-ignore
 window.simplify = simplify;
-for (let i = 10; i < 11; i++) {
+for (let i = steps / 2; i < steps / 2 + 1; i++) {
   const state = { ...initialState, step: i };
   const pixels = setState(state);
-
   setTimeout(() => {
     simplify.clear();
     const arr32 = new Uint32Array(pixels.buffer);
@@ -56,7 +55,6 @@ for (let i = 10; i < 11; i++) {
 
         simplify.addSegment({
           length: 1,
-          hash,
           node: [x, y],
           next: [x + a, y + b],
           normal: V2.normalize([
@@ -67,7 +65,6 @@ for (let i = 10; i < 11; i++) {
       }
     }
     const reduced = simplify.process();
-    console.log(simplify.segments.size, 'to', reduced.length);
   });
 }
 
