@@ -64,9 +64,9 @@ export const vertexShaderSrc = `#version 300 es
   } 
 `;
 export const initialState = {
-  iResolution: [600, 600, 100] as Vec3,
-  lower: [-30, -30, -10] as Vec3,
-  upper: [30, 30, 20] as Vec3,
+  iResolution: [20, 20, 20] as Vec3,
+  lower: [-20, -20, -20] as Vec3,
+  upper: [20, 20, 20] as Vec3,
   step: 0
 };
 
@@ -156,27 +156,7 @@ export const setupWebGL = (canvas: HTMLCanvasElement, src: ShaderSrc) => {
     const length = gl.drawingBufferWidth * gl.drawingBufferHeight;
     var pixels = new Uint8Array(length * 4);
     gl.readPixels(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-    const arr32 = new Uint32Array(pixels.buffer);
-    const filtered: Array<{ pos: Vec3, hash: number, n: Vec2 }> = [];
-
-    const ratio = V3.divide(V3.minus(state.upper, state.lower), state.iResolution);
-    for (let i = 0; i < length; i++) {
-      if (arr32[i] > 0) {
-        const x = state.lower[0] + ratio[0] * (i % gl.drawingBufferWidth);
-        const y = state.lower[1] + ratio[1] * Math.floor(i / gl.drawingBufferWidth);
-        const z = state.lower[2] + ratio[2] * state.step;
-        const pixelIndex = i * 4;
-        filtered.push({
-          pos: [x, y, z],
-          hash: pixels[pixelIndex + 2],
-          n: [
-            pixels[pixelIndex] - 128, pixels[pixelIndex + 1] - 128
-          ]
-        })
-      }
-
-    }
-    return filtered;
+    return pixels;
   }
   setState(initialState);
   return setState;
