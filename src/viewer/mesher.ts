@@ -1,7 +1,7 @@
 import { initialState, setupWebGL, ShaderSrc, State } from './gl-mesher';
 import { main } from './sample';
 import { getShaderSrc } from '../csg/glsl-util';
-import { LineSimplify } from '../util/line-simplify';
+import { LineSimplify, Segment } from '../util/line-simplify';
 import { V2, V3 } from '../util/math';
 import { outgoingDirection } from '../slice/march-vector-table';
 declare global {
@@ -39,32 +39,44 @@ const simplify = new LineSimplify((v: Vec2) => v[0] + v[1] * width);
 
 // @ts-ignore
 window.simplify = simplify;
-for (let i = steps / 2; i < steps / 2 + 1; i++) {
-  const state = { ...initialState, step: i };
+const output: Segment<Vec2>[][] = [];
+// @ts-ignore
+window.output = output;
+console.time("render");
+let done = 0;
+for (let j = 0; j < steps; j++) {
+  const state = { ...initialState, step: j };
   const pixels = setState(state);
-  setTimeout(() => {
-    simplify.clear();
-    const arr32 = new Uint32Array(pixels.buffer);
-    for (let i = 0; i < arr32.length; i++) {
-      if (arr32[i] > 0) {
-        const pixelIndex = i * 4;
-        const x = i % width;
-        const y = Math.floor(i / width);
-        const hash = pixels[pixelIndex + 2];
-        const [a, b] = outgoingDirection[hash];
+  simplify.clear();
+  const arr32 = new Uint32Array(pixels.buffer);
+  for (let i = 0; i < arr32.length; i++) {
+    if (arr32[i] > 0) {
+      const pixelIndex = i * 4;
+      const x = i % width;
+      const y = Math.floor(i / width);
+      const hash = pixels[pixelIndex + 2];
+      const [a, b] = outgoingDirection[hash];
 
-        simplify.addSegment({
-          length: 1,
-          node: [x, y],
-          next: [x + a, y + b],
-          normal: V2.normalize([
-            pixels[pixelIndex] - 128,
-            pixels[pixelIndex + 1] - 128
-          ])
-        });
-      }
+      simplify.addSegment({
+        length: 1,
+        node: [x, y],
+        next: [x + a, y + b],
+        normal: V2.normalize([
+          pixels[pixelIndex] - 128,
+          pixels[pixelIndex + 1] - 128
+        ])
+      });
     }
-    const reduced = simplify.process();
-  });
+  }
+  const reduced = simplify.getReducedSegments();
+  //console.log("segments", j, simplify.segments.size,'>',reduced.length);
+  if  (reduced.length > 0){
+    output.push(reduced);
+  }
+
+  done++;
+  if (done === steps) {
+    console.timeEnd("render");
+  }
 }
 

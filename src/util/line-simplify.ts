@@ -1,6 +1,6 @@
 import { V2, V3 } from "./math";
 
-type Segment<N> = {
+export type Segment<N> = {
   normal: Vec2,
   node: N,
   next: N,
@@ -73,7 +73,7 @@ export class LineSimplify<N, K> {
     };
   }
 
-  process(): Segment<N>[] {
+  getReducedSegments(): Segment<N>[] {
     const cycles = this.getCycles();
     return cycles.flatMap(cycle => {
       const reduced: Segment<N>[] = [];
@@ -98,4 +98,3 @@ export class LineSimplify<N, K> {
     });
   }
 }
-

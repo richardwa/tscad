@@ -24,8 +24,7 @@ vec3 GetPoint(vec2 fragCoord){
   return lower + vec3(fragCoord,step)/iResolution * (upper - lower);
 }
 
-vec2 GetNormal(vec3 p) {
-	float d = GetDist(p);
+vec2 GetNormal(vec3 p, float d) {
   vec2 n = d - vec2(
     GetDist(p-vec3(.01, 0, 0)),
     GetDist(p-vec3(0, .01, 0))
@@ -34,18 +33,31 @@ vec2 GetNormal(vec3 p) {
 }
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord ){
-  vec3 p = GetPoint(fragCoord);
-  float d0 = GetDist(p);
-  float d1 = GetDist(GetPoint(fragCoord+vec2(1,0)));
-  float d2 = GetDist(GetPoint(fragCoord+vec2(0,1)));
-  float d3 = GetDist(GetPoint(fragCoord+vec2(1,1)));
+  vec3 p0 = GetPoint(fragCoord);
+  vec3 p1 = GetPoint(fragCoord+vec2(1,0));
+  vec3 p2 = GetPoint(fragCoord+vec2(0,1));
+  vec3 p3 = GetPoint(fragCoord+vec2(1,1));
+  float d0 = GetDist(p0);
+  float d1 = GetDist(p1);
+  float d2 = GetDist(p2);
+  float d3 = GetDist(p3);
 
   float hash = max(sign(d0),0.) + max(sign(d1),0.)*2. + max(sign(d2),0.)*4. + max(sign(d3),0.)*8.;
 
   if (hash == 0. || hash == 15.) {
     fragColor = vec4(0.,0.,0.,0.0);
   }else{
-    vec2 n = GetNormal(p);
+    vec2 n;
+    if (d0 > 0.) {
+      n = GetNormal(p0, d0);
+    }else if (d1 > 0.) {
+      n = GetNormal(p1, d1);
+    }else if (d2 > 0.) {
+      n = GetNormal(p2, d2);
+    }else {
+      n = GetNormal(p3, d3);
+    }
+    
     n = n/2. + 0.5;
     fragColor = vec4(n, hash/256., 1);
   }
@@ -64,7 +76,7 @@ export const vertexShaderSrc = `#version 300 es
   } 
 `;
 export const initialState = {
-  iResolution: [100, 100, 100] as Vec3,
+  iResolution: [2000, 2000, 2000] as Vec3,
   lower: [-20, -20, -20] as Vec3,
   upper: [20, 20, 20] as Vec3,
   step: 50
@@ -78,9 +90,6 @@ export type ShaderSrc = {
 export const setupWebGL = (canvas: HTMLCanvasElement, src: ShaderSrc) => {
 
   const gl = canvas.getContext("webgl2");
-
-  // @ts-ignore
-  window.gl = gl;
 
   gl.clearColor(0, 0, 0, 1);
   gl.clear(gl.COLOR_BUFFER_BIT);
