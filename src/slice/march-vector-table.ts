@@ -1,5 +1,3 @@
-
-
 export const outgoingDirection = [
   /// ○ -- ○
   /// |    |
@@ -79,6 +77,5 @@ export const outgoingDirection = [
   /// ● -- ●
   /// |    |
   /// ● -- ● 15
-  [],
-
+  []
 ]

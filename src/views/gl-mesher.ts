@@ -1,5 +1,3 @@
-import { V3 } from "../util/math";
-
 export const fragmentShaderSrc = ({ entry, funcs }: ShaderSrc) => `#version 300 es
 precision highp float;
 
@@ -67,71 +65,81 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ){
 void main() {
   mainImage(FragColor, gl_FragCoord.xy);
 }
-`;
+`
 
 export const vertexShaderSrc = `#version 300 es
   in vec2 position;
   void main() {
     gl_Position = vec4(position, 0.0, 1.0);  
   } 
-`;
+`
 export const initialState = {
   iResolution: [2000, 2000, 2000] as Vec3,
   lower: [-20, -20, -20] as Vec3,
   upper: [20, 20, 20] as Vec3,
   step: 50
-};
+}
 
-export type State = typeof initialState;
+export type State = typeof initialState
 export type ShaderSrc = {
-  entry: string,
+  entry: string
   funcs: string[]
 }
 export const setupWebGL = (canvas: HTMLCanvasElement, src: ShaderSrc) => {
+  const gl = canvas.getContext('webgl2')
+  if (!gl) {
+    return
+  }
 
-  const gl = canvas.getContext("webgl2");
+  gl.clearColor(0, 0, 0, 1)
+  gl.clear(gl.COLOR_BUFFER_BIT)
 
-  gl.clearColor(0, 0, 0, 1);
-  gl.clear(gl.COLOR_BUFFER_BIT);
+  const vertexShader = gl.createShader(gl.VERTEX_SHADER)
+  if (!vertexShader) {
+    return
+  }
+  gl.shaderSource(vertexShader, vertexShaderSrc)
+  gl.compileShader(vertexShader)
+  console.log(gl.getShaderInfoLog(vertexShader))
 
-  var vertexShader = gl.createShader(gl.VERTEX_SHADER);
-  gl.shaderSource(vertexShader, vertexShaderSrc);
-  gl.compileShader(vertexShader);
-  console.log(gl.getShaderInfoLog(vertexShader));
+  const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)
+  if (!fragmentShader) {
+    return
+  }
+  const fragmentSrc = fragmentShaderSrc(src)
+  const fragmentSrcLines = fragmentSrc
+    .split('\n')
+    .map((l, i) => `${i + 1}| ${l}`)
+    .join('\n')
+  console.log(fragmentSrcLines)
+  gl.shaderSource(fragmentShader, fragmentSrc)
+  gl.compileShader(fragmentShader)
+  console.log(gl.getShaderInfoLog(fragmentShader))
 
-  var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-  const fragmentSrc = fragmentShaderSrc(src);
-  const fragmentSrcLines = fragmentSrc.split('\n').map((l, i) => `${i + 1}| ${l}`).join('\n');
-  console.log(fragmentSrcLines);
-  gl.shaderSource(fragmentShader, fragmentSrc);
-  gl.compileShader(fragmentShader);
-  console.log(gl.getShaderInfoLog(fragmentShader));
+  const program = gl.createProgram()
+  if (!program) {
+    return
+  }
+  gl.attachShader(program, vertexShader)
+  gl.attachShader(program, fragmentShader)
+  gl.linkProgram(program)
 
-  var program = gl.createProgram();
-  gl.attachShader(program, vertexShader);
-  gl.attachShader(program, fragmentShader);
-  gl.linkProgram(program);
+  const vertices = new Float32Array([-1, -1, -1, 1, 1, 1, -1, -1, 1, -1, 1, 1])
 
-  var vertices = new Float32Array([
-    -1, -1, -1, 1, 1, 1,
-    -1, -1, 1, -1, 1, 1,
-  ]);
+  const buffer = gl.createBuffer()
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+  gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW)
 
-  var buffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-  gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+  gl.useProgram(program)
+  const gllets: any = {}
+  Object.keys(initialState).forEach((key) => {
+    console.log('locating', key)
+    gllets[key] = gl.getUniformLocation(program, key)
+  })
 
-  gl.useProgram(program);
-  const glVars: any = {};
-  Object.keys(initialState).forEach(key => {
-    console.log('locating', key);
-    glVars[key] = gl.getUniformLocation(program, key);
-  });
-
-
-  const position = gl.getAttribLocation(program, 'position');
-  gl.enableVertexAttribArray(position);
-  gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+  const position = gl.getAttribLocation(program, 'position')
+  gl.enableVertexAttribArray(position)
+  gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0)
 
   const setState = (state: State) => {
     // set bindings
@@ -139,34 +147,42 @@ export const setupWebGL = (canvas: HTMLCanvasElement, src: ShaderSrc) => {
       if (val instanceof Array) {
         switch (val.length) {
           // case 1:
-          //   gl.uniform1fv(glVars[key], val);
+          //   gl.uniform1fv(gllets[key], val);
           //   break;
           // case 2:
-          //   gl.uniform2fv(glVars[key], val);
+          //   gl.uniform2fv(gllets[key], val);
           //   break;
           case 3:
-            gl.uniform3fv(glVars[key], val);
-            break;
+            gl.uniform3fv(gllets[key], val)
+            break
           // case 4:
-          //   gl.uniform4fv(glVars[key], val);
+          //   gl.uniform4fv(gllets[key], val);
           //   break;
           default:
-            throw 'unable to accomodate larger than 4 entries';
+            throw 'unable to accomodate larger than 4 entries'
         }
       } else {
-        gl.uniform1f(glVars[key], val);
+        gl.uniform1f(gllets[key], val)
       }
       //console.log('setting', key, val);
-    });
+    })
 
     // draw
-    gl.drawArrays(gl.TRIANGLES, 0, 6);
+    gl.drawArrays(gl.TRIANGLES, 0, 6)
 
-    const length = gl.drawingBufferWidth * gl.drawingBufferHeight;
-    var pixels = new Uint8Array(length * 4);
-    gl.readPixels(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-    return pixels;
+    const length = gl.drawingBufferWidth * gl.drawingBufferHeight
+    const pixels = new Uint8Array(length * 4)
+    gl.readPixels(
+      0,
+      0,
+      gl.drawingBufferWidth,
+      gl.drawingBufferHeight,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      pixels
+    )
+    return pixels
   }
-  setState(initialState);
-  return setState;
+  setState(initialState)
+  return setState
 }
