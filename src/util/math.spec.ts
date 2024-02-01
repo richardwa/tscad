@@ -1,4 +1,3 @@
-/// <reference path="../../types.d.ts" />
 
 import { V3 } from './math'
 

@@ -84,17 +84,8 @@ export const getDualCubes = (cubes: Cube[]): Cube[] => {
   const setDual = (corner: Vec3, i: number, center: Vec3) => {
     const key = keyFn(corner)
     let dual = dualMap.get(key)
-    if (dual === undefined) {
-      dual = [
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined
-      ]
+    if (!dual) {
+      dual = [] as unknown as OctArray<Vec3>
       dualMap.set(key, dual)
     }
     dual[7 - i] = center
@@ -117,12 +108,12 @@ export const getDualCubes = (cubes: Cube[]): Cube[] => {
         if (!a.get(v)) {
           a.set(v, [i])
         } else {
-          a.get(v).push(i)
+          a.get(v)?.push(i)
         }
         return a
       }, new Map<number, number[]>())
       const pType = Math.max(...Array.from(groupMatches.keys()))
-      groupMatches.get(pType).forEach((i) => {
+      groupMatches.get(pType)?.forEach((i) => {
         setDual(p, i, center)
       })
     })
@@ -145,7 +136,7 @@ export function dualMarch(p: Props): Triangle[] {
   const cachefn = (v: Vec3) => {
     const key = keyFn(v)
     if (cache.has(key)) {
-      return cache.get(key)
+      return cache.get(key) as number
     } else {
       const val = p.shape(v)
       cache.set(key, val)

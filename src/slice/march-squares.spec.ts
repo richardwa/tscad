@@ -1,10 +1,10 @@
-/// <reference path="../../types.d.ts" />
-
 import { union } from '../csg/boolean'
 import { rotate, translate } from '../csg/manipulate'
 import { box, sphere } from '../csg/primitives'
 import { slice } from './march-squares'
-import { processPolygons, writeOBJ } from '../util/process-mesh'
+import { processPolygons } from '../util/process-mesh'
+import { writeOBJ} from '../util/testutil.spec'
+
 
 const shape = rotate(
   'y',

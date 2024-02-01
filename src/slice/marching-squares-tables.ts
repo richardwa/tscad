@@ -102,7 +102,5 @@ const cases = [
 ]
 
 export const edgeTable: number[][][] = cases.map((pairs) => {
-  if (pairs) {
-    return pairs.map((p) => edges[p])
-  }
+  return pairs.map((p) => edges[p])
 })

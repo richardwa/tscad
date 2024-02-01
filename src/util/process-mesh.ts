@@ -1,21 +1,3 @@
-import * as fs from 'fs'
-
-type WriteObjProps = {
-  faces: number[][]
-  vertices: number[][]
-  name: string
-  outDir?: string
-}
-export function writeOBJ(p: WriteObjProps) {
-  const os = fs.createWriteStream(`${p.outDir || './target'}/${p.name}.obj`)
-  //write obj file
-  for (const pos of p.vertices) {
-    os.write('v ' + pos.join(' ') + '\n')
-  }
-  for (const face of p.faces) {
-    os.write('f ' + face.map((i) => i + 1).join(' ') + '\n')
-  }
-}
 
 export function processPolygons(polygons: Vec3[][]) {
   const vertexCache: Map<string, number> = new Map()
@@ -34,7 +16,7 @@ export function processPolygons(polygons: Vec3[][]) {
           vertexCache.set(hash, index)
           return index
         }
-      })
+      }) as Vec3
       faces.push(translated)
     } catch (e) {
       error++

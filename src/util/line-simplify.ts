@@ -46,14 +46,14 @@ export class LineSimplify<N, K> {
       if (visited.has(key)) {
         continue
       }
-      let head = this.segments.get(key)
+      let head = this.segments.get(key) as Segment<N>
       const cycle: Segment<N>[] = []
       while (!visited.has(key)) {
         visited.add(key)
         cycle.push(head)
         //this.log(head);
         key = this.keyFn(head.next)
-        head = this.segments.get(key)
+        head = this.segments.get(key) as Segment<N>
       }
       cycles.push(cycle)
     }
@@ -76,7 +76,7 @@ export class LineSimplify<N, K> {
     const cycles = this.getCycles()
     return cycles.flatMap((cycle) => {
       const reduced: Segment<N>[] = []
-      let prev
+      let prev: Segment<N> | undefined
       for (const segment of cycle) {
         if (!prev) {
           prev = segment
@@ -88,11 +88,14 @@ export class LineSimplify<N, K> {
         }
       }
       // last one
-      if (this.similar(prev, cycle[0])) {
-        cycle[0] = this.combine(prev, cycle[0])
-      } else {
-        reduced.push(prev)
+      if (prev) {
+        if (this.similar(prev, cycle[0])) {
+          cycle[0] = this.combine(prev, cycle[0])
+        } else {
+          reduced.push(prev)
+        }
       }
+
       return reduced
     })
   }

@@ -18,7 +18,7 @@ export class HashMap<K, V> {
     if (val) {
       return val[1]
     }
-    return undefined
+    throw 'key not found'
   }
   has(key: K): boolean {
     return this.map.has(this.keyfn(key))

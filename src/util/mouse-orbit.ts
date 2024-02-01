@@ -8,8 +8,8 @@ export type ClickAndDragCB = {
 }
 export const registerClickAndDrag = (el: HTMLElement, cb: (p: ClickAndDragCB) => void) => {
   let mouseListen = false
-  let startPos: Vec2 = [null, null]
-  let leftClick: boolean = null
+  let startPos: Vec2
+  let leftClick: boolean = false
 
   const start = (e: MouseEvent) => {
     mouseListen = true
@@ -21,7 +21,7 @@ export const registerClickAndDrag = (el: HTMLElement, cb: (p: ClickAndDragCB) =>
       mouseListen = false
       const current: Vec2 = [e.clientX, e.clientY]
       cb({ current, startPos, end: true, leftClick })
-      leftClick = null
+      leftClick = false
     }
   }
   const moving = (e: MouseEvent) => {

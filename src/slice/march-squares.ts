@@ -43,7 +43,7 @@ export const getDualSquares = (squares: Square[]): Square[] => {
     const key = keyFn(corner)
     let dual = dualMap.get(key)
     if (dual === undefined) {
-      dual = [undefined, undefined, undefined, undefined]
+      dual = [] as unknown as Square
       dualMap.set(key, dual)
     }
     dual[3 - i] = center
@@ -67,12 +67,12 @@ export const getDualSquares = (squares: Square[]): Square[] => {
         if (!a.get(v)) {
           a.set(v, [i])
         } else {
-          a.get(v).push(i)
+          a.get(v)?.push(i)
         }
         return a
       }, new Map<number, number[]>())
       const pType = Math.max(...Array.from(groupMatches.keys()))
-      groupMatches.get(pType).forEach((i) => {
+      groupMatches.get(pType)?.forEach((i) => {
         setDual(p, i, center)
       })
     })
@@ -101,7 +101,7 @@ const getSquares = (bounds: Bounds2, size: number, minSize: number, fn: Shape2):
     }
 
     //adaptive cubes - continue split if too much error
-    if (false && maxLen > minSize) {
+    if (maxLen > minSize) {
       const edge_mask = results.reduce(positiveNumReducer, 0)
       const edges = edgeTable[edge_mask]
       if (edges.length > 2) {
@@ -148,7 +148,7 @@ export function slice(p: Props): Square3[] {
   console.log('layer height', layerHeight)
 
   const quads: Square3[] = []
-  let count = [0, 0]
+  const count = [0, 0]
   for (let h = bottom + halfHeight; h < top; h += layerHeight) {
     const shape2 = (v: Vec2) => p.shape([...v, h])
     shape2.gl = p.shape.gl
