@@ -1,4 +1,3 @@
-
 export function processPolygons(polygons: Vec3[][]) {
   const vertexCache: Map<string, number> = new Map()
   const vertices: Vec3[] = []

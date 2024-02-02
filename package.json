@@ -1,5 +1,5 @@
 {
-  "name": "tscad-vue",
+  "name": "tscad",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -10,9 +10,13 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --build --force",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/ bin/ *.ts",
+    "render": "npx vite-node ./bin/render.ts"
   },
   "dependencies": {
+    "@picocss/pico": "^1.5.11",
+    "chokidar": "^2.1.8",
+    "kd-tree-javascript": "^1.0.3",
     "vue": "^3.4.15",
     "vue-router": "^4.2.5"
   },

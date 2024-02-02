@@ -1,11 +1,17 @@
 {
   "extends": "./tsconfig.app.json",
+  "include": [
+    "bin/**/*",
+    "src/**/*",
+  ],
   "exclude": [],
   "compilerOptions": {
     "composite": true,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.vitest.tsbuildinfo",
-
     "lib": [],
-    "types": ["node", "jsdom"]
+    "types": [
+      "node",
+      "jsdom"
+    ]
   }
 }
