@@ -3,6 +3,7 @@
   "include": [
     "bin/**/*",
     "src/**/*",
+    "projects/**/*"
   ],
   "exclude": [],
   "compilerOptions": {

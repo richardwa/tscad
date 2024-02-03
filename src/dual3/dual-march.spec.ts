@@ -3,7 +3,7 @@ import { rotate, translate } from '../csg/manipulate'
 import { box, sphere } from '../csg/primitives'
 import { dualMarch } from './dual-march'
 import { processPolygons } from '../util/process-mesh'
-import { writeOBJ } from '../util/testutil.spec'
+import { writeOBJ } from '../../bin/render'
 
 const shape = rotate(
   'y',

@@ -1,4 +1,4 @@
-import { type ShaderSrc } from '@/util/gl-util'
+import { type ShaderSrc } from '../util/gl-util'
 
 // used for format floats suchs that 1 will show as 1.0
 export const f = (n: number) =>

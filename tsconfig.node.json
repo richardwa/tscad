@@ -3,6 +3,7 @@
   "include": [
     "bin/**/*",
     "src/**/*",
+    "projects/**/*",
     "*.ts"
   ],
   "compilerOptions": {
@@ -11,6 +12,9 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "lib": [
+      "dom"
+    ],
     "types": [
       "node"
     ]
