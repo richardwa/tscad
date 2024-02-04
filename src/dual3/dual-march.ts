@@ -8,7 +8,7 @@ import {
   splitCube,
   V3
 } from '../util/math'
-import { SpatialIndex } from '../util/spatial-index' 
+import { SpatialIndex } from '../util/spatial-index'
 
 const getIntersections = (cube: OctArray<Vec3>, results: OctArray<number>, edge_mask: number) => {
   const fnZeros: Array12<Vec3> = [] as any
@@ -84,8 +84,17 @@ export const getDualCubes = (cubes: Cube[]): Cube[] => {
   const setDual = (corner: Vec3, i: number, center: Vec3) => {
     const key = keyFn(corner)
     let dual = dualMap.get(key)
-    if (!dual) {
-      dual = [] as unknown as OctArray<Vec3>
+    if (dual === undefined) {
+      dual = [
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined
+      ] as unknown as OctArray<Vec3>
       dualMap.set(key, dual)
     }
     dual[7 - i] = center
