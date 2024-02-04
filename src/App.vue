@@ -3,19 +3,21 @@ import { RouterLink, RouterView } from 'vue-router'
 </script>
 
 <template>
-  <header>
-    <div class="wrapper">
-      <nav>
-        <RouterLink class="link" to="/raymarch/sample.ts">Sample.ts</RouterLink>
-      </nav>
-    </div>
-  </header>
-
-  <RouterView />
+  <main class="container">
+    <header>
+      <div class="wrapper">
+        <nav>
+          <ul>
+            <li>
+              <RouterLink to="/">Home</RouterLink>
+            </li>
+            <li>
+              <RouterLink to="/raymarch/sample.ts">Viewer</RouterLink>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+    <RouterView />
+  </main>
 </template>
-
-<style scoped>
-.link {
-  margin: 1rem;
-}
-</style>

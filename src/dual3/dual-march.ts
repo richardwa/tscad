@@ -8,7 +8,7 @@ import {
   splitCube,
   V3
 } from '../util/math'
-import { SpatialIndex } from '../util/spatial-index'
+import { SpatialIndex } from '../util/spatial-index' 
 
 const getIntersections = (cube: OctArray<Vec3>, results: OctArray<number>, edge_mask: number) => {
   const fnZeros: Array12<Vec3> = [] as any

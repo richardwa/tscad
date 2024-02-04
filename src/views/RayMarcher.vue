@@ -10,17 +10,21 @@ import { V3 } from '../util/math'
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { getShaderSrc } from '../csg/glsl-util'
+import { downloadBinaryFile, replaceFileExtension } from '../util/browser-files'
+import { dualMarch } from '../dual3/dual-march'
+import { processPolygons } from '../util/process-mesh'
 
 const route = useRoute()
 const file = route.params.file as string
-console.log(file)
-
+const newFile = replaceFileExtension(file, 'obj')
 const canvasRef = ref(null)
+let mainShape: any = null
 onMounted(async () => {
   const canvas = canvasRef.value
   if (!canvas) return
 
   const { main } = await import(/* @vite-ignore */ `../../projects/${file}`)
+  mainShape = main
   const shaderSrc: ShaderSrc = getShaderSrc(main.gl)
 
   const setState = setupWebGL(canvas, shaderSrc)
@@ -71,18 +75,42 @@ onMounted(async () => {
     })
   })
 })
+
+const render = () => {
+  if (!mainShape) {
+    alert('no shape loaded')
+    return
+  }
+
+  console.time('render')
+  const faces = dualMarch({
+    size: 2,
+    minSize: 1,
+    shape: mainShape
+  })
+  console.timeEnd('render')
+  const mesh = processPolygons(faces)
+  const sb: string[] = []
+  //write obj file
+  for (const pos of mesh.vertices) {
+    sb.push('v ' + pos.join(' '))
+  }
+  for (const face of mesh.faces) {
+    sb.push('f ' + face.map((i) => i + 1).join(' '))
+  }
+
+  downloadBinaryFile(new TextEncoder().encode(sb.join('\n')), newFile)
+}
 </script>
 
 <template>
+  <div class="grid">
+    <button>reset view</button>
+    <button @click="render">download {{ newFile }}</button>
+  </div>
   <canvas
     ref="canvasRef"
     :width="initialState.iResolution[0]"
     :height="initialState.iResolution[1]"
   />
 </template>
-
-<style scoped>
-.link {
-  margin: 1rem;
-}
-</style>
