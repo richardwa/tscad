@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@picocss/pico": "^1.5.11",
-    "chokidar": "^2.1.8",
+    "chokidar": "^3.5.3",
     "kd-tree-javascript": "^1.0.3",
     "vue": "^3.4.15",
     "vue-router": "^4.2.5"
