@@ -11,7 +11,12 @@ type WriteObjProps = {
 }
 
 export function writeOBJ(p: WriteObjProps) {
-  const os = fs.createWriteStream(`${p.outDir || './target'}/${p.name}.obj`)
+  const folder = p.outDir || './target'
+  if (!fs.existsSync(folder)) {
+    fs.mkdirSync(folder)
+    console.log(`Folder created at: ${folder}`)
+  }
+  const os = fs.createWriteStream(`${folder}/${p.name}.obj`)
   //write obj file
   for (const pos of p.vertices) {
     os.write('v ' + pos.join(' ') + '\n')
