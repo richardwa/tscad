@@ -17,7 +17,7 @@ test('render using slices', () => {
   const faces = slice({
     layerHeight: 0.2,
     height: 30,
-    size: 0.2,
+    size: 2,
     minSize: 0.2,
     shape
   })
