@@ -1,30 +1,7 @@
 import { processPolygons } from '../src/util/process-mesh'
 import { dualMarch } from '../src/dual3/dual-march'
+import { writeOBJ, createFileStream } from './file-helper'
 import * as path from 'path'
-import * as fs from 'fs'
-
-type WriteObjProps = {
-  faces: number[][]
-  vertices: number[][]
-  name: string
-  outDir?: string
-}
-
-export function writeOBJ(p: WriteObjProps) {
-  const folder = p.outDir || './target'
-  if (!fs.existsSync(folder)) {
-    fs.mkdirSync(folder)
-    console.log(`Folder created at: ${folder}`)
-  }
-  const os = fs.createWriteStream(`${folder}/${p.name}.obj`)
-  //write obj file
-  for (const pos of p.vertices) {
-    os.write('v ' + pos.join(' ') + '\n')
-  }
-  for (const face of p.faces) {
-    os.write('f ' + face.map((i) => i + 1).join(' ') + '\n')
-  }
-}
 
 const file = path.join(process.cwd(), process.argv.slice(2)[0])
 console.log(file)
@@ -38,5 +15,6 @@ import(file).then(({ main }) => {
   })
   console.timeEnd('render')
   const mesh = processPolygons(faces)
-  writeOBJ({ faces: mesh.faces, vertices: mesh.vertices, name })
+  const os = createFileStream(`${name}.obj`)
+  writeOBJ({ faces: mesh.faces, vertices: mesh.vertices }, os)
 })

@@ -43,7 +43,7 @@ export const getDualSquares = (squares: Square[]): Square[] => {
     const key = keyFn(corner)
     let dual = dualMap.get(key)
     if (dual === undefined) {
-      dual = [] as unknown as Square
+      dual = [undefined, undefined, undefined, undefined] as unknown as Square
       dualMap.set(key, dual)
     }
     dual[3 - i] = center
