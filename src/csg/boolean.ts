@@ -117,9 +117,9 @@ const opRouter =
 
     const [head, ...rest] = shapes
     if (radius && radius > 0) {
-      return rest.reduce((a, v, i) => roundOps[op](radius, a, v), head)
+      return rest.reduce((a, v) => roundOps[op](radius, a, v), head)
     } else {
-      return rest.reduce((a, v, i) => ops[op](a, v), head)
+      return rest.reduce((a, v) => ops[op](a, v), head)
     }
   }
 export const union = opRouter('union')

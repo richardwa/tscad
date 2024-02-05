@@ -102,7 +102,7 @@ export const getDualCubes = (cubes: Cube[]): Cube[] => {
 
   const points = cubes
     .flatMap((cube) => cube)
-    .reduce((a, v, i) => {
+    .reduce((a, v) => {
       a.set(keyFn(v), v)
       return a
     }, new Map<String, Vec3>())

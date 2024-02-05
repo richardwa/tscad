@@ -4,7 +4,7 @@ import { box, sphere } from '../csg/primitives'
 import { dualMarch } from './dual-march'
 import { processPolygons } from '../util/process-mesh'
 import { writeOBJ, createFileStream } from '../../bin/file-helper'
-import {  test } from 'vitest'
+import { test } from 'vitest'
 
 test('render using dual march', () => {
   const shape = rotate(

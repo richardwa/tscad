@@ -1,10 +1,7 @@
 import {
   boundsToCorners2,
-  getCenter,
   positiveNumReducer,
-  interpolate,
   splitSquare,
-  findZeroRecursive,
   interpolate2,
   getCenter2
 } from '../util/math'
@@ -18,7 +15,6 @@ const marchSquare = (s: Square, fn: Shape2): Line[] => {
   if (edges.length === 0) {
     return []
   }
-  const lines: Line[] = []
   const zeros = edges.map(([a, b]) => interpolate2(s[a], s[b], results[a], results[b])) // 0.1, fn));
 
   if (zeros.length > 2) {
@@ -51,7 +47,7 @@ export const getDualSquares = (squares: Square[]): Square[] => {
 
   const points = squares
     .flatMap((c) => c)
-    .reduce((a, v, i) => {
+    .reduce((a, v) => {
       a.set(keyFn(v), v)
       return a
     }, new Map<String, Vec2>())
@@ -87,6 +83,7 @@ export const getDualSquares = (squares: Square[]): Square[] => {
 const getSquares = (bounds: Bounds2, size: number, minSize: number, fn: Shape2): Square[] => {
   const _process = (square: Square): Square[] => {
     const results = square.map(fn) as OctArray<number>
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [p0, p1, p2, p3] = square
     const maxLen = Math.max(Math.abs(p1[0] - p0[0]), Math.abs(p2[1] - p0[1]))
 

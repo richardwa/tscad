@@ -21,6 +21,6 @@ export class SpatialIndex<T extends Vec2 | Vec3> {
 
   queryCube(center: T, size: number): T[] {
     // @ts-ignore
-    return this.kdtree.nearest(center, 1000, (size * 1.01) / 2).map(([c, i]) => c)
+    return this.kdtree.nearest(center, 1000, (size * 1.01) / 2).map(([c]) => c)
   }
 }

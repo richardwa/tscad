@@ -1,4 +1,4 @@
-import { V2, V3 } from './math'
+import { V2 } from './math'
 
 export type Segment<N> = {
   normal: Vec2

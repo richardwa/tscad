@@ -5,9 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "run-p type-check \"build-only {@}\" --",
+    "build": "run-p lint type-check format",
     "test": "vitest run",
-    "build-only": "vite build",
     "type-check": "vue-tsc --build --force",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "format": "prettier --write src/ bin/ *.ts",
@@ -15,7 +14,6 @@
   },
   "dependencies": {
     "@picocss/pico": "^1.5.11",
-    "chokidar": "^3.5.3",
     "kd-tree-javascript": "^1.0.3",
     "vue": "^3.4.15",
     "vue-router": "^4.2.5"
