@@ -3,7 +3,7 @@ import { rotate, translate } from '../csg/manipulate'
 import { box, sphere } from '../csg/primitives'
 import { slice } from './march-squares'
 import { processPolygons } from '../util/process-mesh'
-import { writeOBJ, createFileStream } from '../../bin/file-helper'
+import { writeOBJ, createFileStream } from '../../server/file-helper'
 import { test } from 'vitest'
 
 test('render using slices', () => {

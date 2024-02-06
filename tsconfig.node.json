@@ -1,7 +1,7 @@
 {
   "extends": "@tsconfig/node20/tsconfig.json",
   "include": [
-    "bin/**/*",
+    "server/**/*",
     "src/**/*",
     "projects/**/*",
     "*.ts"

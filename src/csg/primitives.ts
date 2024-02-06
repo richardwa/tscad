@@ -2,23 +2,23 @@ import { clamp, V2, V3 } from '../util/math'
 import { extrude } from './extrude'
 import { addFunc, f, v3 } from './glsl-util'
 
-export function circle(r: number = 1): Shape2 {
+export function circle(r: number): Shape2 {
   const sp = (p: Vec2) => V2.length(p) - r
   sp.gl = addFunc('float', 'vec2 p', `return length(p)-${f(r)};`, [])
   return sp
 }
 
-export function sphere(r: number = 1): Shape3 {
+export function sphere(r: number): Shape3 {
   const sp = (p: Vec3) => V3.length(p) - r
   sp.gl = addFunc('float', 'vec3 p', `return length(p)-${f(r)};`, [])
   return sp
 }
 
-export function cylinder(radius: number = 1, height = 2): Shape3 {
+export function cylinder(radius: number, height: number): Shape3 {
   return extrude(height, circle(radius))
 }
 
-export function rect(x: number = 2, y: number = x): Shape2 {
+export function rect(x: number, y: number = x): Shape2 {
   const x1 = x / 2,
     y1 = y / 2
   const sp = ([x, y]: Vec2) => {
