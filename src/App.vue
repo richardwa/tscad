@@ -11,9 +11,6 @@ import { RouterLink, RouterView } from 'vue-router'
             <li>
               <RouterLink to="/">Home</RouterLink>
             </li>
-            <li>
-              <RouterLink to="/raymarch/sample.ts">Viewer</RouterLink>
-            </li>
           </ul>
         </nav>
       </div>

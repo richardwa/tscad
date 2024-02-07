@@ -4,7 +4,7 @@
     "server/**/*",
     "src/**/*",
     "projects/**/*"
-  ],
+, "vite-serve-index.ts"  ],
   "exclude": [],
   "compilerOptions": {
     "composite": true,

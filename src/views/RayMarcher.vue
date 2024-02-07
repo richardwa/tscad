@@ -13,7 +13,6 @@ import { getShaderSrc } from '../csg/glsl-util'
 import { downloadBinaryFile, replaceFileExtension } from '../util/browser-files'
 import { dualMarch } from '../dual3/dual-march'
 import { processPolygons } from '../util/process-mesh'
-console.log('await import')
 
 const route = useRoute()
 const file = route.params.file as string
@@ -23,7 +22,6 @@ let mainShape: any = null
 onMounted(async () => {
   const canvas = canvasRef.value
   if (!canvas) return
-  console.log('await import')
   const { main } = await import(/* @vite-ignore */ `../../projects/${file}`)
   console.log('main', main)
   mainShape = main

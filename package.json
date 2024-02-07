@@ -9,8 +9,8 @@
     "test": "vitest run",
     "type-check": "vue-tsc --build --force",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
-    "format": "prettier --write src/ bin/ *.ts",
-    "render": "npx vite-node ./bin/render.ts"
+    "format": "prettier --write src/ server/ *.ts",
+    "render": "npx vite-node ./server/render.ts"
   },
   "dependencies": {
     "@picocss/pico": "^1.5.11",
