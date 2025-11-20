@@ -15,6 +15,7 @@ export class Router {
   }
 
   getRoot() {
+    this.render();
     return this.root;
   }
 
