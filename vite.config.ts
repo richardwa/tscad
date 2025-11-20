@@ -20,7 +20,7 @@ export default defineConfig({
     allowedHosts: true,
     strictPort: true,
     fs: {
-      allow: ['..'],
+      allow: [".."],
     },
   },
   build: {
