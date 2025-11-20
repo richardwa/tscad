@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { diff, union } from "../common/csg/boolean";
+import { diff, union } from "../src/common/csg/boolean";
 import {
   extrude,
   mirror,
   revolve,
   tile,
   tileCircular,
-} from "../common/csg/extrude";
-import { rotate, translate } from "../common/csg/manipulate";
+} from "../src/common/csg/extrude";
+import { rotate, translate } from "../src/common/csg/manipulate";
 import {
   box,
   circle,
@@ -15,7 +15,7 @@ import {
   poly,
   rect,
   sphere,
-} from "../common/csg/primitives";
+} from "../src/common/csg/primitives";
 
 const inf = 1000;
 type HexTileOptions = {

@@ -13,7 +13,7 @@ export const configureRoutes = (app: Server) => {
 
   const serverImpl: ServerApi = {
     listProjects: async () => {
-      const files = await readdir("./src/projects");
+      const files = await readdir("./projects");
       return files;
     },
   };
