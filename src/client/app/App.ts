@@ -1,18 +1,13 @@
-import { div, h } from "../lib";
-import { NavLink } from "./util/components";
+import { div, h, grid } from "../lib";
 
 import { router } from "./routes";
+import { ProjectList } from "./views/ProjectList";
 
 export const App = () =>
   h("main")
     .cn("container")
     .inner(
-      h("header").inner(
-        div()
-          .cn("wrapper")
-          .inner(
-            h("nav").inner(h("ul").inner(h("li").inner(NavLink("/", "Home")))),
-          ),
-        router.getRoot(),
-      ),
+      grid("auto 1fr")
+        .css("gap", ".25rem")
+        .inner(ProjectList(), router.getRoot()),
     );

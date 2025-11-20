@@ -17,6 +17,7 @@ export const NavLink = (href: string, ...children: Array<RNode | string>) =>
   h("a")
     .attr("href", href)
     .attr("target", "_blank")
+    .css("cursor", "pointer")
     .inner(...children);
 
 export const ClickLink = (...children: Array<RNode | string>) =>

@@ -19,8 +19,8 @@ import {
 import { dualMarch } from "../../../common/dual3/dual-march";
 import { processPolygons } from "../../../common/util/process-mesh";
 import { fragment, h } from "../../lib";
-import { Button } from "../util/components";
-import {main} from '../../../projects/sample';
+import { Button } from "./components";
+import { main } from "../../../projects/sample";
 
 const downloadShape = (mainShape: any, fileName: string) => {
   const objFileName = replaceFileExtension(fileName, "obj");
