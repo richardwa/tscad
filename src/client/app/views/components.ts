@@ -7,6 +7,12 @@ export const Panel = (...children: Array<RNode | string>) =>
     .css("background-color", "#424242")
     .inner(...children);
 
+export const Header = (...children: Array<RNode | string>) =>
+  h("div")
+    .css("height", "2rem")
+    .css("line-height", "2rem")
+    .inner(...children);
+
 export const Button = (...children: Array<RNode | string>) =>
   h("button")
     .attr("type", "button")

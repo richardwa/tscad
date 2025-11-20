@@ -1,17 +1,14 @@
 import { fragment, h, vbox, div } from "../../lib";
 import { fetchJson } from "../../../common/interface";
-import { ClickLink } from "./components";
+import { ClickLink, Header } from "./components";
 import { router } from "../routes";
 
 export const ProjectList = () =>
   vbox()
-    .css("border", "1px solid gray")
-    .css("min-height", "calc(100vh - 2px)")
+    .css("border-right", "1px solid gray")
+    .css("min-height", "100vh")
     .inner(
-      div()
-        .css("border-bottom", "1px solid gray")
-        .css("padding", ".25rem")
-        .inner("Projects"),
+      div().css("border-bottom", "1px solid gray").inner(Header("Projects").css("text-align", "center")),
       vbox()
         .css("padding", ".25rem")
         .do(async (node) => {
