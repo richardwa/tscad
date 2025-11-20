@@ -1,4 +1,4 @@
-import { clamp, V3 } from "./math";
+import { clamp, V3 } from "../../../common/util/math";
 
 export type ClickAndDragCB = {
   current: Vec2;

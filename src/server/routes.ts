@@ -1,6 +1,6 @@
 import express, { Request, Response, Server, NextFunction } from "express";
 import { apiPath, type ServerApi } from "../common/interface";
-import { getGitLog, getBranches } from "./resources/git";
+import { readdir } from "fs/promises";
 
 export const configureRoutes = (app: Server) => {
   // @ts-ignore
@@ -12,8 +12,10 @@ export const configureRoutes = (app: Server) => {
   app.use(logger);
 
   const serverImpl: ServerApi = {
-    gitBranches: getBranches,
-    gitLogs: getGitLog,
+    listProjects: async () => {
+      const files = await readdir("./src/projects");
+      return files;
+    },
   };
   const routes = express.Router();
   Object.entries(serverImpl).forEach(([key, fn]) => {

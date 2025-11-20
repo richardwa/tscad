@@ -1,4 +1,7 @@
-export function downloadBinaryFile(data: BinaryData, fileName: string) {
+export function downloadBinaryFile(
+  data: Uint8Array<ArrayBuffer>,
+  fileName: string,
+) {
   // Create a Blob object from the binary data
   const blob = new Blob([data], { type: "application/octet-stream" });
 

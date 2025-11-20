@@ -1,8 +1,10 @@
 import { Router } from "../lib";
-import { GitDemo } from "./gitdemo";
+import { Home } from "./views/Home";
+import { RayMarcher } from "./views/RayMarcher";
 
 const router = new Router();
 
-router.addRoute("/", () => GitDemo());
+router.addRoute("/", () => Home());
+router.addRoute("/raymarch/:file", (params) => RayMarcher(params.file));
 
 export { router };

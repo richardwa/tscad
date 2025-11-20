@@ -1,4 +1,4 @@
-import { h, RNode, Signal } from "../lib";
+import { h, RNode, Signal } from "../../lib";
 
 export const Panel = (...children: Array<RNode | string>) =>
   h("div")

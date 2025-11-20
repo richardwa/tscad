@@ -1,5 +1,5 @@
-import { processPolygons } from "../src/util/process-mesh";
-import { dualMarch } from "../src/dual3/dual-march";
+import { processPolygons } from "../common/util/process-mesh";
+import { dualMarch } from "../common/dual3/dual-march";
 import { writeOBJ, createFileStream } from "./file-helper";
 import * as path from "path";
 

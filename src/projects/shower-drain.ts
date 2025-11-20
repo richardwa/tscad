@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { diff, union } from '../src/csg/boolean'
-import { extrude, mirror, revolve, tile, tileCircular } from '../src/csg/extrude'
-import { rotate, translate } from '../src/csg/manipulate'
-import { box, circle, cylinder, poly, rect, sphere } from '../src/csg/primitives'
+import { diff, union } from '../common/csg/boolean'
+import { extrude, mirror, revolve, tile, tileCircular } from '../common/csg/extrude'
+import { rotate, translate } from '../common/csg/manipulate'
+import { box, circle, cylinder, poly, rect, sphere } from '../common/csg/primitives'
 import { ring } from './utils'
 
 const options = {
