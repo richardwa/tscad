@@ -1,98 +1,70 @@
-# Solid Vanilla JS
-example of react-like (more so solidjs-like) framework.  Great for understanding how these frameworks under the hood.  like solidjs I explored to make dom maniuplation more stream lined, without resorting to a virtual dom.  the entire library is about 200 lines (see 'src/client/lib') - so easily comprehendable by any interested dev.
+# TSCAD
+
+Constructive Solid Geometry (CSG) using Signed Distance Functions (SDF) and Typescript
 
 ## Features
 
-### dom representation using functions
-this is similar to what jsx compiles to.  I can add jsx support, but there are use cases where the plain function calls actually work better.
-```ts
-vbox()
-    .inner(
-        div("test 1"), 
-        div("test 2"));
+- Language support / coder friendly - I want a 3D modeling tool similar to openscad, but with a full language tools, IDE, etc for easy coding. This is why typescript is my first choice.
+- Implicit Functions - The other aspect that peaked my interest is ImplicitCAD. I was impressed with the elegance in the maths. Haskell is an awesome language and i would recommend anyone learn it, however IDE support was still missing at the time of this writing.
+- Rounded Union - I always felt this was missing in Openscad, and was a major driver for me to find my own solution. With SDF this is very easy to implement.
+- Version Control - using code has other major advantages like version control and diff's.
+- exports to OBJ file format. I was able to export STL (ascii) initially, but it turns out that OBJ was even easier and gave smaller file sizes.
+
+## Cons
+- 3D mesh files are ugly!!! Why is it that the viewer renders a sharp image but the obj file is so imprecise?  Unfortunately this is the downfall of using SDF, It is very easy for the ray marcher algorithm but very difficult to get out polygons.  If anyone has the perfect solution it would be used in MRI imaging and other multi-million dollar systems.
+
+## Setup
+
+```sh
+git clone https://github.com/richardwa/tscad.git
+bun install
 ```
 
-### async updates
-```ts
-vbox().do(async (node) => {
-    const branches = await fetch("/branches");
-    node.inner(
-        ...branches.map((branch) => div(branch))
-    );
-}),
+## Start viewer http://localhost:5173/raymarch/sample.ts
+
+```sh
+bun run dev
 ```
 
-### signals / reactivity / watch
-```ts
-const count = signal(0);
-div().watch(count, (node) => node.inner(count.get().toString()));
-setInterval(()=> {
-    count.set(count.get()+1);
-}, 5000);
+## write to obj file
+
+```sh
+bun run render ./projects/sample.ts
 ```
 
-### memoized components
-```ts
- grid("repeat(4,max-content)")
-    .watch([maxLines, selectedBranch], async (node) => {
-        const branch = selectedBranch.get();
-        const logs = await fetchJson("gitLogs", branch, maxLines.get());
-        ...
-        node.inner(
-            ...logs.map((log) =>
-                // memo data is tied to the node (here it is grid/parent)
-                node.memo(
-                    // define our unique key
-                    [branch, log.commitHash].join(" "), 
-                    // since we get back the similar data on subsequent calls, 
-                    // we only generate a logrow if it has a new commithash
-                    () => logRow(log),
-                ),
-            ),
-        );
-    }),
-```
+## CSG Functions
 
-### inline css
-I do use tailwind, and i even like it.  but i do feel it is too complicated (build plugins + ide plugins)for what you get.  granted the usage of it is pretty good once you get the initial setup.  However i do feel plain inline css is 80% there
-```ts
-vbox()
-    .css("padding", "1rem")
-    .css("gap", "1rem")
-```
+- These were mostly implemented using Inigo's site and examples. It is a joy at how wonderful and simple these functions are.
+- boolean operations: union, diff, intersect
+- extrusions: extrude, revolve, mirror, tile
+- manipulations: translate, rotate, scale
+- 3D primitives: cube, sphere, cylinder
+- 2D primitives: square, circle, regular polygons, arbitary polygons
+- core CSG library is implemented in typescript and webgl (glsl)
 
-### SPA Routing
+## Implicit Surface Extraction - Dual Marching Cubes
 
-```ts
-// define routes
-const router = new Router();
-router.addRoute("/", () => GitDemo());
+- I spent alot of time working on this to get all the features I was looking for in an extraction algorithm.
+- bounds can be arbitarily large without incurring much cost.
+- variable sized cubes when extracting surface to get a good shape and not spend too much cycles/file size on the flat parts
+- somewhat easy to understand implemetation. At first my implemenations had alot of conditionals (up, down , left, right etc) when working on cubes. There were symetries to be exploited for shorter code, but took a while to find the best way.
+- while i may still look into mesh simplification, I don't want to solely rely on post processing. Didn't want to waste cycles on creating then removing small triangles.
+- no cracks on the rendered object
+- example: rounded union of cube and sphere with variable sized mesh
 
-// use routes
-router.navigate("/");
+## 3D Printing / Slicing
 
-// add router view into dom
-export const App = () => div(div("Title"), router.getRoot());
+- while Dual Marching Cubes can produce reasonable high quality models, there are can still be rendering artifacts. To overcome these, we can use the 'slicing' render which gives a solid with holes but should be usable by a slicer.  Only downside is to pre-rotate the shape on how it should sit on the bed.
 
-```
+## References
 
-### Client-Server bindings
-just add to interface, and implement server side.  client shares types using fetchJson
-```ts
-// interface
-export type ServerApi = {
-  gitBranches: () => Promise<string[]>;
-  gitLogs: (branch: string, lines?: number) => Promise<GitLog[]>;
-};
-
-// server
-const serverImpl: ServerApi = {
-    gitBranches: () => ...,
-    gitLogs: () => ...,
-};
-
-// client
-import { fetchJson } from "../common/interface";
-const logs = await fetchJson("gitLogs", branch, maxLines.get()); // input and return are typed!
-
-```
+- https://github.com/mikolalysenko/isosurface
+- https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
+  - Inigo has detailed many algorithms for SDF manipulation, I will be implementing alot of these.
+  - he also has a nice youtube channel focused on combining graphics and math
+- https://shadertoy.com
+- http://paulbourke.net/geometry/polygonise/
+- https://github.com/colah/ImplicitCAD
+- https://github.com/curv3d/curv
+- https://www.openscad.org/
+- https://openjscad.org/
