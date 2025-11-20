@@ -4,14 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "start": "vite",
     "format": "bun x prettier -w *.json *.ts ./src",
-    "prebuild": "bun run format",
-    "build": "tsc && vite build"
+    "check": "tsc && vite build"
   },
   "dependencies": {
-    "kd-tree-javascript": "^1.0.3",
-    "@picocss/pico": "^1.5.11"
+    "kd-tree-javascript": "^1.0.3"
   },
   "devDependencies": {
     "@types/express": "types/express",
