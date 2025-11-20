@@ -77,5 +77,5 @@ export const outgoingDirection = [
   /// ● -- ●
   /// |    |
   /// ● -- ● 15
-  []
-]
+  [],
+];

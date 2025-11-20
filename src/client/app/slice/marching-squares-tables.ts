@@ -16,8 +16,8 @@ const edges = [
   [0, 1],
   [1, 3],
   [3, 2],
-  [2, 0]
-]
+  [2, 0],
+];
 
 const cases = [
   /// ○ -- ○
@@ -98,9 +98,9 @@ const cases = [
   /// ● -- ●
   /// |    |
   /// ● -- ● 15
-  []
-]
+  [],
+];
 
 export const edgeTable: number[][][] = cases.map((pairs) => {
-  return pairs.map((p) => edges[p])
-})
+  return pairs.map((p) => edges[p]);
+});

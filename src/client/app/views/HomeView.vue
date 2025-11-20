@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref } from "vue";
 
-const files = ref<string[]>([])
+const files = ref<string[]>([]);
 onMounted(async () => {
-  const resp = await fetch('/ls')
-  files.value = await resp.json()
-})
+  const resp = await fetch("/ls");
+  files.value = await resp.json();
+});
 </script>
 <template>
   <main class="grid">

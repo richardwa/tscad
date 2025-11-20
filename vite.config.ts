@@ -1,6 +1,6 @@
 import path from "path";
 import { defineConfig, ViteDevServer } from "vite";
-import express, { Request, Response, NextFunction } from "express";
+import express from "express";
 import { configureRoutes } from "./src/server/routes";
 
 const expressPlugin = () => ({
