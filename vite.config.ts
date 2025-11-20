@@ -1,19 +1,28 @@
-import { fileURLToPath, URL } from 'node:url'
-import serveIndex from './vite-serve-index'
+import path from "path";
+import { defineConfig, ViteDevServer } from "vite";
+import express, { Request, Response, NextFunction } from "express";
+import { configureRoutes } from "./src/server/routes";
 
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import vueJsx from '@vitejs/plugin-vue-jsx'
-
-// https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [vue(), vueJsx(), serveIndex()],
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
-    }
+const expressPlugin = () => ({
+  name: "vite-plugin-express",
+  configureServer(server: ViteDevServer) {
+    const app = express();
+    configureRoutes(app);
+    server.middlewares.use(app);
   },
+});
+
+export default defineConfig({
+  root: "src/client",
   server: {
-    open: '/raymarch/sample.ts'
-  }
-})
+    port: 5177,
+    host: true,
+    allowedHosts: true,
+    strictPort: true,
+  },
+  build: {
+    outDir: path.resolve(__dirname, "dist"),
+    emptyOutDir: true,
+  },
+  plugins: [expressPlugin()],
+});
