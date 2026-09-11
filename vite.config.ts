@@ -1,7 +1,6 @@
 import path from "path";
 import { defineConfig, ViteDevServer } from "vite";
-import express from "express";
-import { configureRoutes } from "./src/server/routes";
+import express from "express";import { configureRoutes } from "./src/server/routes.ts";
 
 const expressPlugin = () => ({
   name: "vite-plugin-express",
@@ -24,7 +23,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: path.resolve(__dirname, "dist"),
+    outDir: path.resolve(import.meta.dirname, "dist"),
     emptyOutDir: true,
   },
   plugins: [expressPlugin()],

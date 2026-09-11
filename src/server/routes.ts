@@ -1,5 +1,5 @@
 import express, { Request, Response, Express, NextFunction } from "express";
-import { apiPath, type ServerApi } from "../common/interface";
+import { apiPath, type ServerApi } from "../common/interface.ts";
 import { readdir } from "fs/promises";
 
 export const configureRoutes = (app: Express) => {

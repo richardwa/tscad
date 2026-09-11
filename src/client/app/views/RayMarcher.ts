@@ -69,7 +69,12 @@ export const RayMarcher = (file: string) =>
     node.inner(
       h("div")
         .cn("grid")
-        .inner(Button().inner("reset view"), Button().inner("Download")),
+        .inner(
+          Button().inner("reset view"),
+          Button()
+            .on("click", () => downloadShape(main, file))
+            .inner("Download"),
+        ),
       h("canvas")
         .attr("width", String(initialState.iResolution[0]))
         .attr("height", String(initialState.iResolution[1]))
