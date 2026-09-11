@@ -1,4 +1,4 @@
-import { fragment, h, vbox, div } from "../../lib";
+import { fragment, h, vbox, div } from "solid-vanilla";
 import { fetchJson } from "../../../common/interface";
 import { ClickLink, Header } from "./components";
 import { router } from "../routes";
@@ -8,16 +8,18 @@ export const ProjectList = () =>
     .css("border-right", "1px solid gray")
     .css("min-height", "100vh")
     .inner(
-      div().css("border-bottom", "1px solid gray").inner(Header("Projects").css("text-align", "center")),
+      div()
+        .css("border-bottom", "1px solid gray")
+        .inner(Header().css("text-align", "center").inner("Projects")),
       vbox()
         .css("padding", ".25rem")
         .do(async (node) => {
           const files = await fetchJson("listProjects");
           node.inner(
             ...files.map((file) =>
-              ClickLink(file).on("click", () =>
-                router.navigate(`/raymarch/${file}`),
-              ),
+              ClickLink()
+                .on("click", () => router.navigate(`/raymarch/${file}`))
+                .inner(file),
             ),
           );
         }),

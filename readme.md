@@ -23,7 +23,7 @@ bun install
 ## Start viewer http://localhost:5173/raymarch/sample.ts
 
 ```sh
-bun run dev
+bun start
 ```
 
 ## write to obj file

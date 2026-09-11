@@ -18,8 +18,8 @@ import {
 } from "../util/browser-files";
 import { dualMarch } from "../../../common/dual3/dual-march";
 import { processPolygons } from "../../../common/util/process-mesh";
-import { fragment, h } from "../../lib";
-import { Button , Header} from "./components";
+import { fragment, h } from "solid-vanilla";
+import { Button, Header } from "./components";
 
 // @ts-ignore
 const modules = import.meta.glob("../../../../projects/*");
@@ -57,17 +57,19 @@ export const RayMarcher = (file: string) =>
     const path = `../../../../projects/${file}`;
     const loader = modules[path];
     if (!loader) {
-      node.inner(Header("import failed"));
+      node.inner(Header().inner("import failed"));
       return;
     }
     const { main } = await loader();
     if (!main) {
-      node.inner(Header(`${file} does not export { main: Shape3 }`));
+      node.inner(Header().inner(`${file} does not export { main: Shape3 }`));
       return;
     }
 
     node.inner(
-      h("div").cn("grid").inner(Button("reset view"), Button("Download")),
+      h("div")
+        .cn("grid")
+        .inner(Button().inner("reset view"), Button().inner("Download")),
       h("canvas")
         .attr("width", String(initialState.iResolution[0]))
         .attr("height", String(initialState.iResolution[1]))

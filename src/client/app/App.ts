@@ -1,4 +1,4 @@
-import { div, h, grid } from "../lib";
+import { h, grid } from "solid-vanilla";
 
 import { router } from "./routes";
 import { ProjectList } from "./views/ProjectList";

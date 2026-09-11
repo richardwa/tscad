@@ -1,8 +1,8 @@
-import express, { Request, Response, Server, NextFunction } from "express";
+import express, { Request, Response, Express, NextFunction } from "express";
 import { apiPath, type ServerApi } from "../common/interface";
 import { readdir } from "fs/promises";
 
-export const configureRoutes = (app: Server) => {
+export const configureRoutes = (app: Express) => {
   // @ts-ignore
   app.use(express.json());
   const logger = (req: Request, res: Response, next: NextFunction) => {

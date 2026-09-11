@@ -9,14 +9,15 @@
     "check": "tsc && vite build"
   },
   "dependencies": {
-    "kd-tree-javascript": "^1.0.3"
+    "kd-tree-javascript": "^1.0.3",
+    "solid-vanilla": "github:richardwa/solid-vanilla#d758c02"
   },
   "devDependencies": {
-    "@types/express": "types/express",
-    "express": "^5.1.0",
-    "prettier": "^3.6.2",
-    "typescript": "~5.9.3",
-    "vite": "^7.2.2",
-    "vitest": "^4.0.12"
+    "@types/express": "^5.0.6",
+    "express": "^5.2.1",
+    "prettier": "^3.9.6",
+    "typescript": "~7.0.2",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.0"
   }
 }
